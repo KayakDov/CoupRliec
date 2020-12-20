@@ -8,12 +8,9 @@ import RnSpace.points.Point;
 import Matricies.SymmetricMatrix;
 import Convex.Cube;
 import Convex.HalfSpace;
-import Convex.Indicator;
-import Convex.Interval;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
 import Convex.PolytopeCone;
-import Convex.Sphere;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
 import Convex.thesisProjectionIdeas.RecursiveProjPolytopeCone;
 import listTools.Pair1T;
@@ -21,13 +18,6 @@ import java.io.IOException;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import listTools.Choose;
 
 public class Main {
@@ -39,14 +29,6 @@ public class Main {
         System.out.println(m1);
         System.out.println(m2);
         System.out.println(m1.mult(m2));
-    }
-
-    private static double cube(double x) {
-        return x * x * x;
-    }
-
-    private static double squared(double x) {
-        return x * x;
     }
 
     public static void testSomeMatrixFunctions() {
@@ -330,11 +312,11 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 3;
-        int numFaces = 100;
+        int dim = 10;
+        int numFaces = 1000;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("i = " + i);
             GradDescentFeasibility poly = new GradDescentFeasibility(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);

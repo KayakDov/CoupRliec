@@ -127,23 +127,20 @@ public class LinearSpace implements ConvexSet {
         return Matrix.fromRows(normals);
     }
 
-    private Matrix colSpaceMatrix = null;
-
     /**
      * A new matrix whose column space defines this linear space
      *
      * @return
      */
     public Matrix colSpaceMatrix() {
-        if (colSpaceMatrix != null) return colSpaceMatrix;
-
+ 
         ReducedRowEchelon rre = new ReducedRowEchelon(matrix());
 
         Matrix IMinus = Matrix.identityMatrix(Math.max(rre.rows, rre.cols)).minus(rre.squareMatrixFromAbove());
 
         if (rre.noFreeVariable()) return new Point(rre.rows);
 
-        return colSpaceMatrix = Matrix.fromCols(rre.getFreeVariables().map(i -> IMinus.col(i)));
+        return Matrix.fromCols(rre.getFreeVariables().map(i -> IMinus.col(i)));
 
     }
 

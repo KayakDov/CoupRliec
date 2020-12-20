@@ -5,22 +5,14 @@
             <url>src/main/Main.java</url>
             <bookmark id="1">
                 <name/>
-                <line>225</line>
+                <line>183</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Matricies/Matrix.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Sphere.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/ConvexSet.java</file>
             <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/main/Main.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Linear/Plane.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/listTools/Choose.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Hull.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/RnSpace/points/Point.java</file>
-            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Polytope.java</file>
         </group>
     </open-files>
 </project-private>
