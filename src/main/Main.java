@@ -19,9 +19,10 @@ import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import listTools.Choose;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 public class Main {
-
 
     public static void testMatrixMult() {
         Matrix m1 = new Matrix(new double[][]{{0, 2}, {1, 1}});
@@ -75,14 +76,10 @@ public class Main {
 
     }
 
-
     public static void testCuboidHalvs() {
         Cube c = new Cube(new Point(0, 0), new Point(1, 2));
         System.out.println(c.halves(0));
     }
-
-
-
 
     public static void testMatrixRemoveColRow() {
         Matrix m = new Matrix(3).setAll((i, j) -> i + j + 0.0);
@@ -148,7 +145,6 @@ public class Main {
         System.out.println(c.getVertices());
     }
 
-
     public static void testPlaneNormalAvg() {
         Matrix m = new Matrix(3, 3);
         m.setRow(0, new Point(0, 0, 0));
@@ -165,7 +161,6 @@ public class Main {
         System.out.println(m);
     }
 
-    
     public static void testLinearSpace() {
 //
 //        Matrix m = new Matrix(2, 4);
@@ -308,15 +303,13 @@ public class Main {
 
     }
 
-
-
     public static void polytopeFeasabilityTest() {
 
-        int dim = 10;
+        int dim = 50;
         int numFaces = 1000;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             System.out.println("i = " + i);
             GradDescentFeasibility poly = new GradDescentFeasibility(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
@@ -412,22 +405,23 @@ public class Main {
 
     }
 
-
-    public static void testPolytopeFesibilitySpecifi(){
+    public static void testPolytopeFesibilitySpecifi() {
         HalfSpace[] hs = new HalfSpace[3];
         hs[0] = new HalfSpace(new Point(2), new Point(-1, 0));
         hs[1] = new HalfSpace(new Point(0, 1), new Point(1, .1));
-        hs[2] = new HalfSpace(new Point(2), new Point(1,1));
-        
+        hs[2] = new HalfSpace(new Point(2), new Point(1, 1));
+
         Point y = new Point(0, 1);
-        
+
         System.out.println(new GradDescentFeasibility(new Polytope(hs)).fesibility(y));
-        
+
     }
-    
+
     public static void main(String[] args) throws IOException {
 
         polytopeFeasabilityTest();
+        
+
 //        GradDescentFeasibility.loadFromErrorFile();
     }
 

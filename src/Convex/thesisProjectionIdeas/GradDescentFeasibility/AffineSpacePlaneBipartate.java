@@ -125,6 +125,8 @@ public class AffineSpacePlaneBipartate {
         planeNodes.put(plane, planeNode);
         
         affineSpaceNodes()/*.filter(asn -> !asn.affineSpace.hasAPoint())*/.forEach(asn -> asn.affineSpace.setP(y));
+
+//        System.out.println(affineSpaceNodes.size());
     }
 
     public void revmovePlane(Plane plane) {
