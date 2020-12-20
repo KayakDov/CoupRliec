@@ -3,9 +3,7 @@ package Convex;
 import Convex.Linear.Plane;
 import Convex.Linear.AffineSpace;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
-import DiscreteMath.Choose;
 import Matricies.Matrix;
-import RnSpace.Sequence;
 import RnSpace.points.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +20,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import listTools.Choose;
 
 /**
  * This is a convex polyhedron in R^3 By default, instances do not keep track of
@@ -232,69 +231,69 @@ public class Polytope implements ConvexSet {
      * @param y
      * @return
      */
-    @Override
-    public Point proj(Point y) {
-
-        if (!hasHalfSpaces()) {
-            return y;
-        }
-        if (lastProjectionSource != null
-                && lastProjectionSource.equals(y)) {
-            return new Point(lastProjection);
-        }
-
-        return new DykstraSeq().cauchyLimit(y, epsilon);
-
-    }
-
+//    @Override
+//    public Point proj(Point y) {
+//
+//        if (!hasHalfSpaces()) {
+//            return y;
+//        }
+//        if (lastProjectionSource != null
+//                && lastProjectionSource.equals(y)) {
+//            return new Point(lastProjection);
+//        }
+//
+//        return new DykstraSeq().cauchyLimit(y, epsilon);
+//
+//    }
+//
     /**
      * Dykstra's algorithm as represented by the sequence
      */
-    class DykstraSeq implements Sequence {
-
-        private LinkedList<Point> e = new LinkedList<>();
-
-        private LinkedList<Point> prevX = new LinkedList<>();
-
-        DykstraSeq() {
-            for (int i = 0; i < size(); i++) {
-                e.add(new Point(dim()));
-            }
-
-            for (int i = 0; i < 2 * size(); i++) {
-                prevX.add(new Point(dim()));
-            }
-        }
-
-        private boolean end(Point x, double epsilon) {
-            return prevX.stream().allMatch(prev -> prev.d(x) < epsilon);
-        }
-
-        @Override
-        public Point cauchyLimit(Point start, double end) {
-            Point x = iteration(start, 1);
-
-            for (int i = 2; !end(x, epsilon); i++) {
-                x = iteration(x, i);
-            }
-
-            return x;
-        }
-
-        void e(Point prevX, Point x) {
-            e.add(prevX.plus(e.removeFirst()).minus(x));
-        }
-
-        @Override
-        public Point iteration(Point prevX, int n) {
-            HalfSpace faceN = halfSpaces.get(n % size());
-            Point x = faceN.proj(prevX.plus(e.getFirst()));
-            e(prevX, x);
-            this.prevX.add(x);
-            this.prevX.remove();
-            return x;
-        }
-    }
+//    class DykstraSeq implements Sequence {
+//
+//        private LinkedList<Point> e = new LinkedList<>();
+//
+//        private LinkedList<Point> prevX = new LinkedList<>();
+//
+//        DykstraSeq() {
+//            for (int i = 0; i < size(); i++) {
+//                e.add(new Point(dim()));
+//            }
+//
+//            for (int i = 0; i < 2 * size(); i++) {
+//                prevX.add(new Point(dim()));
+//            }
+//        }
+//
+//        private boolean end(Point x, double epsilon) {
+//            return prevX.stream().allMatch(prev -> prev.d(x) < epsilon);
+//        }
+//
+//        @Override
+//        public Point cauchyLimit(Point start, double end) {
+//            Point x = iteration(start, 1);
+//
+//            for (int i = 2; !end(x, epsilon); i++) {
+//                x = iteration(x, i);
+//            }
+//
+//            return x;
+//        }
+//
+//        void e(Point prevX, Point x) {
+//            e.add(prevX.plus(e.removeFirst()).minus(x));
+//        }
+//
+//        @Override
+//        public Point iteration(Point prevX, int n) {
+//            HalfSpace faceN = halfSpaces.get(n % size());
+//            Point x = faceN.proj(prevX.plus(e.getFirst()));
+//            e(prevX, x);
+//            this.prevX.add(x);
+//            this.prevX.remove();
+//            return x;
+//        }
+//    }
 
     public double epsilon = 1e-9;//1e-9;
 
@@ -558,20 +557,7 @@ public class Polytope implements ConvexSet {
         return new HashSet<>(halfSpaces).equals(new HashSet<>(poly.halfSpaces));
     }
 
-    /**
-     * A random halfspace
-     *
-     * @param numFaces the number of faces
-     * @param radius some point on the surface of the half space will be less
-     * than or equal to radius distance from the origin.
-     * @param dim the number of dimensions the half space is in
-     * @return a random half space.
-     */
-    public static Polytope random(int numFaces, double radius, int dim) {
-        return new Polytope(
-                IntStream.range(0, numFaces)
-                        .mapToObj(i -> HalfSpace.random(radius, dim)));
-    }
+
 
     /**
      * @param numFaces The number of faces of the polytope
@@ -583,7 +569,10 @@ public class Polytope implements ConvexSet {
     public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
         return new Polytope(
                 IntStream.range(0, numFaces).mapToObj(i -> {
-                    Point normal = new Sphere(dim, radius).randomSurfacePoint();
+                    
+                    Point normal = Point.uniformRand(new Point(dim), 1);
+                    normal = normal.mult(1/normal.magnitude());
+                    
                     return new HalfSpace(normal, normal);
                 })
         );
@@ -601,6 +590,11 @@ public class Polytope implements ConvexSet {
 
     public Set<HalfSpace> getHalfSpaceSet() {
         return halfSpaceSet;
+    }
+
+    @Override
+    public Point proj(Point p) {
+        return bruteForceProjection(p);
     }
 
     

@@ -1,11 +1,11 @@
 package Convex;
 
-import DiscreteMath.Choose;
 import Matricies.Matrix;
 import RnSpace.points.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import listTools.Choose;
 
 /**
  *

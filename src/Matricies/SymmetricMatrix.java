@@ -2,10 +2,8 @@ package Matricies;
 
 import Matricies.Matrix;
 import java.util.Arrays;
+import java.util.function.IntToDoubleFunction;
 import java.util.stream.IntStream;
-import FuncInterfaces.ZToR;
-import FuncInterfaces.Z2ToR;
-import FuncInterfaces.Z2ToBool;
 
 /**
  *
@@ -50,14 +48,14 @@ public class SymmetricMatrix extends Matrix {
     @Override
     public SymmetricMatrix setAll(Z2ToR f) {
         
-        setSome((i, j) -> i <= j, (i, j) -> f.of(i, j));
+        setSome((i, j) -> i <= j, (i, j) -> f.apply(i, j));
         setSome((i, j) -> i > j, (i, j) -> get(j, i));
         return this;
     }
 
     @Override
-    protected SymmetricMatrix setAll(ZToR f) {
-        return setAll((i, j) -> f.of(cols * i + j));
+    protected SymmetricMatrix setAll(IntToDoubleFunction f) {
+        return setAll((i, j) -> f.applyAsDouble(cols * i + j));
     }
 
     /**

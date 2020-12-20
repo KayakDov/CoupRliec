@@ -33,14 +33,6 @@ public class Interval extends Cube {
         return t >= start() && t <= end();
     }
 
-    public DoubleStream streamR(double dx) {
-        return super.stream(dx).mapToDouble(point -> point.get(0));
-    }
-
-    public DoubleStream streamR(int n) {
-        return super.stream(len() / n).mapToDouble(point -> point.get(0));
-    }
-
     
     @Override
     public Cube intersection(Cube c) {

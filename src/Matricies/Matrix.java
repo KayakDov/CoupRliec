@@ -1,20 +1,19 @@
 package Matricies;
 
 import listTools.Pair1T;
-import FuncInterfaces.RToR;
-import FuncInterfaces.RnToRm;
 import RnSpace.points.Point;
 import static java.lang.Math.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import FuncInterfaces.ZToR;
-import FuncInterfaces.Z2ToR;
-import FuncInterfaces.Z2ToBool;
-import FuncInterfaces.ZToRn;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.DoubleFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.IntToDoubleFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.ejml.data.DMatrixRMaj;
@@ -67,16 +66,7 @@ public class Matrix {
         return new Matrix(this).setCol(i, p);
     }
 
-    /**
-     * solves a System of linear equations Ax = b iff A is an nxn matrix. cramer
-     * method
-     *
-     * @param b
-     * @return
-     */
-    public Point systemSol(double[] b) {
-        return new Point(rows).setAll(i -> swapColumn(i, b).det() / det());
-    }
+
 
     public Point solve(Point b) {
         DMatrixRMaj solve = new DMatrixRMaj(cols, 1);
@@ -321,19 +311,6 @@ public class Matrix {
         return A;
     }
 
-    /**
-     * returns the spectral norm of the matrix. It may not work it their is more
-     * than one highest eigen value
-     *
-     * @return p(M) = max|lambda_i| the absolute value of the highest eigen
-     * value
-     */
-    public double spectralNorm() {
-
-        Matrix guess = new Matrix(rows, 1).setAll(1);
-
-        return SpectralNorm(guess, Double.POSITIVE_INFINITY, 1E-9);
-    }
 
     /**
      *
@@ -395,16 +372,16 @@ public class Matrix {
         return this;
     }
 
-    public Matrix setRow(int i, RnToRm f) {
-        return setRow(i, f.of(row(i)));
-    }
 
     private double alpha(int k, Matrix A) {
         double alpha = 0;
+        
+        DoubleFunction<Double> sign = t -> t >= 0? t: -t;
+        
         for (int j = k + 1; j < rows; j++)
             alpha += A.get(j, k) * A.get(j, k);
         alpha = Math.sqrt(alpha);
-        alpha = -1 * (RToR.sign()).of(A.get(k + 1, k)) * alpha;
+        alpha = -1 * sign.apply(A.get(k + 1, k)) * alpha;
         return alpha;
     }
 
@@ -504,13 +481,13 @@ public class Matrix {
         return this;
     }
 
-    protected Matrix setAll(ZToR f) {
-        Arrays.parallelSetAll(array, i -> f.of(i));
+    protected Matrix setAll(IntToDoubleFunction f) {
+        Arrays.parallelSetAll(array, i -> f.applyAsDouble(i));
         return this;
     }
 
-    protected Matrix map(RToR f) {
-        return new Matrix(rows, cols).setAll((i, j) -> f.of(get(i, j)));
+    protected Matrix map(DoubleFunction<Double> f) {
+        return new Matrix(rows, cols).setAll((i, j) -> f.apply(get(i, j)));
     }
 
     /**
@@ -520,9 +497,11 @@ public class Matrix {
      * @param f
      */
     private final void mySetAll(Z2ToR f) {
-        Arrays.parallelSetAll(array, a -> f.of(rowIndex(a), colIndex(a)));
+        Arrays.parallelSetAll(array, a -> f.apply(rowIndex(a), colIndex(a)));
     }
 
+    public abstract interface Z2ToR extends BiFunction<Integer, Integer, Double>{}
+    
     /**
      * Sets some of the elements of this matrix and leaves the others alone
      *
@@ -530,8 +509,8 @@ public class Matrix {
      * @param f the function that sets the element
      * @return this matrix
      */
-    public Matrix setSome(Z2ToBool filter, Z2ToR f) {
-        Z2ToR filteredF = (i, j) -> filter.of(i, j) ? f.of(i, j) : get(i, j);
+    public Matrix setSome(BiFunction<Integer, Integer, Boolean> filter, Z2ToR f) {
+        Z2ToR filteredF = (i, j) -> filter.apply(i, j) ? f.apply(i, j) : get(i, j);
         mySetAll(filteredF);
         return this;
     }
@@ -643,14 +622,14 @@ public class Matrix {
      * @return the elementary matrix you need to multiply this one by to pivot
      * it.
      */
-    public Matrix pivotMatrix(int row) {
-
-        Matrix e = identityMatrix(rows);
-        Point colI = col(row);
-        for (int j = 0; j < row; j++) colI.set(j, 0);
-        e = e.swapRows(row, colI.argMax());
-        return e;
-    }
+//    public Matrix pivotMatrix(int row) {
+//
+//        Matrix e = identityMatrix(rows);
+//        Point colI = col(row);
+//        for (int j = 0; j < row; j++) colI.set(j, 0);
+//        e = e.swapRows(row, colI.argMax());
+//        return e;
+//    }
 
     /**
      * preforms cancel row operations from the ith row down in the ith column
@@ -789,8 +768,8 @@ public class Matrix {
      * @param f
      * @return
      */
-    public Matrix setRows(ZToRn f) {
-        IntStream.range(0, rows).parallel().forEach(i -> setRow(i, f.of(i)));
+    public Matrix setRows(IntFunction<Point> f) {
+        IntStream.range(0, rows).parallel().forEach(i -> setRow(i, f.apply(i)));
         return this;
     }
 
@@ -800,8 +779,8 @@ public class Matrix {
      * @param f
      * @return
      */
-    public Matrix setCols(ZToRn f) {
-        IntStream.range(0, cols).forEach(i -> setCol(i, f.of(i)));//TODO::paralel 
+    public Matrix setCols(IntFunction<Point> f) {
+        IntStream.range(0, cols).forEach(i -> setCol(i, f.apply(i)));//TODO::paralel 
         return this;
     }
 
@@ -866,17 +845,17 @@ public class Matrix {
      * @param row the row to be swapped
      * @param col the column on which to search for a maximum absolute value
      */
-    public void pivotRow(int row, int col) {
-        RnToRm abs = p -> new Point(p).map(x -> Math.abs(x));
-
-        Point subArray = (new Point(rows - row).setFromSubArray(abs.of(col(col)), row));
-
-        int swapTo = row + subArray.argMax();
-
-        if (swapTo == row) return;
-
-        swapRows(row, swapTo);
-    }
+//    public void pivotRow(int row, int col) {
+//        RnToRm abs = p -> new Point(p).map(x -> Math.abs(x));
+//
+//        Point subArray = (new Point(rows - row).setFromSubArray(abs.of(col(col)), row));
+//
+//        int swapTo = row + subArray.argMax();
+//
+//        if (swapTo == row) return;
+//
+//        swapRows(row, swapTo);
+//    }
 
     /**
      * is this matrix equal to zero.

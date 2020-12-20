@@ -2,7 +2,6 @@ package Convex;
 
 import Convex.Linear.Plane;
 import Convex.Linear.AffineSpace;
-import DiscreteMath.Choose;
 import Matricies.Matrix;
 import RnSpace.points.Point;
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
+import listTools.Choose;
 
 /**
  *

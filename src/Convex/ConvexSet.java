@@ -1,7 +1,6 @@
 
 package Convex;
 
-import FuncInterfaces.Indicator;
 import RnSpace.points.Point;
 
 /**

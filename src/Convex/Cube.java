@@ -1,6 +1,5 @@
 package Convex;
 
-import DiscreteMath.ZToRFunc;
 import listTools.Pair1T;
 import RnSpace.points.Point;
 import java.util.stream.Collectors;
@@ -55,14 +54,7 @@ public class Cube extends Polytope {
         return (b);
     }
 
-    public Stream<Point> stream(double dx) {
-        return IntStream.range(0, (int) (volume() / Math.pow(dx, dim()))).mapToObj(i -> {
-            Point p = new Point(dim())
-                    .setAll(n -> (int) (i / ZToRFunc.st(0, n, m -> dimIterations(m, dx)).product()));
 
-            return p.setAll(k -> p.get(k) % dimIterations(k, dx)).mult(dx).plus(a);
-        });
-    }
 
     /**
      * the number of iteration/intervals in one of the dimensions;
@@ -83,7 +75,7 @@ public class Cube extends Polytope {
 
     public double volume() {
         Point dif = b.minus(a);
-        return ZToRFunc.st(0, a.dim(), i -> dif.get(i)).product();
+        return IntStream.range(0, dim()).mapToDouble(i -> dif.get(i)).reduce((d1, d2) -> d1*d2).getAsDouble();
     }
 
     /**

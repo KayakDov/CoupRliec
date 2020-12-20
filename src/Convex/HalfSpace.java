@@ -151,14 +151,5 @@ public class HalfSpace implements ConvexSet{
         return border.d(x);
     }
     
-    /**
-     * A random halfspace 
-     * @param radius some point on the surface of the half space will be less than or equal to radius distance from the origin.
-     * @param dim the number of dimensions the half space is in
-     * @return a random half space.
-     */
-    public static HalfSpace random(double radius, int dim){
-        return new HalfSpace(Plane.random(radius, dim));
-    }
     
 }

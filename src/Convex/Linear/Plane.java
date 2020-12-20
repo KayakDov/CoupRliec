@@ -7,9 +7,9 @@ import Convex.Polytope;
 import Convex.Sphere;
 import Matricies.Matrix;
 import RnSpace.points.Point;
-import DiscreteMath.Choose;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import listTools.Choose;
 
 /**
  *
@@ -270,18 +270,7 @@ public class Plane extends AffineSpace {
         return p;
     }
 
-    /**
-     * creates a random plane that includes a point at a radius with a maximum
-     * value radius.
-     *
-     * @param radius the maximum distance from the origan for a particuler point
-     * on the plane.
-     * @param dim the number of dimensions of the space.
-     * @return a random plane
-     */
-    public static Plane random(double radius, int dim) {
-        return new Plane(Point.uniformRand(Point.Origin(dim), radius), new Sphere(dim).randomSurfacePoint());
-    }
+
 
     /**
      * returns the intersection of this plane and a line.  If no such intersextion 

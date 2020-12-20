@@ -3,26 +3,12 @@ package main;
 import Convex.Linear.AffineSpace;
 import Convex.Hull;
 import Convex.Polytope;
-import FuncInterfaces.RToR;
-import RnSpace.curves.Curve;
 import Matricies.Matrix;
 import RnSpace.points.Point;
-import RnSpace.rntor.RnToRFunc;
-import RnSpace.curves.Spline;
-import RnSpcae.RnToRmFunc.VectorField;
-import RnSpcae.RnToRmFunc.VectorField2d;
-import RnSpace.rntor.Gradient;
-import RnSpace.rntor.Hessian;
-import RnSpace.Optimization.Min;
 import Matricies.SymmetricMatrix;
-import RnSpace.FunctionPrinter;
 import Convex.Cube;
 import Convex.HalfSpace;
-import Convex.indicatorProjection.ConvexSetIndicator;
-import RnSpace.rntor.polynomial.Laurent;
-import RnSpace.rntor.polynomial.Polynomial;
-import FuncInterfaces.RnToR;
-import FuncInterfaces.RnToRnToR;
+import Convex.Indicator;
 import Convex.Interval;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
@@ -30,16 +16,8 @@ import Convex.PolytopeCone;
 import Convex.Sphere;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
 import Convex.thesisProjectionIdeas.RecursiveProjPolytopeCone;
-import RnSpace.rntor.GraphX;
-import DiscreteMath.Choose;
-import FuncInterfaces.Indicator;
 import listTools.Pair1T;
-import FuncInterfaces.RnToRn;
-import RnSpace.curves.JoinedLines;
-import graph.JChart;
-import graph.Processing;
 import java.io.IOException;
-import realFunction.Point2d;
 import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,171 +28,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
-import listTools.InsertionSort;
-import realFunction.RToRFunc;
-import FuncInterfaces.RnToRpxq;
-import RnSpace.SequenceTI;
+import listTools.Choose;
 
 public class Main {
 
-    public static RnToRFunc f = RnToRFunc.st(x -> (x[0] - 1) * (x[0] - 1)
-            + (x[1] - 3) * (x[1] - 3), 2);
-
-    public static void testNewtonDescent() {
-
-        int n = 4;
-        RnToRFunc f = RnToRFunc.st(x -> {
-
-            return IntStream.range(0, x.length - 1).mapToDouble(i -> 100
-                    * squared(x[i + 1] - x[i] * x[i]) + squared(1 - x[i])).sum();
-
-        }, n);
-
-        Point init = new Point(n).setAll(i -> .8);
-
-        double end = 1e-4, dt = 1e-8;
-
-        Min ndm = Min.newtonsDescentMethod(f, init, end, dt);
-        System.out.println("f(" + ndm + ") = " + f.of(ndm));
-
-        Min gdm = Min.gradDescentNoLineSearch(f, init, end, dt);
-        System.out.println("f(" + gdm + ") = " + f.of(gdm));
-
-    }
-
-    public static void testNewtonRaphsonMethod() {
-        double dt = 1e-10;
-        RToR f = ((RToR) (x -> sin(x))).d(dt);
-        System.out.println(f.newtonMethodMin(0, dt, .01));
-        System.out.println(f.min(0, dt, 2));
-    }
-
-    public static void testPenaltyMethods() {
-        RnToRFunc[] g = new RnToRFunc[]{RnToRFunc.st(x -> x[0] * x[0] + x[1]
-        * x[1] - 4.0, 2)};
-        Min min = Min.interiorPenaltyFunctionMethod(f, g, new GraphX(f, Point.Origin(2)), 1E-6, 1E-4);
-        System.out.println(min);
-        min = Min.exteriorPenaltyFunctionMethod(f, g, new GraphX(f, Point.Origin(2)), 1E-6, 1E-4);
-        System.out.println(min);
-    }
-
-    public static void printVectorFieldDemo() {
-        Processing.setDim(-10, 10, -10, 10);
-
-        VectorField2d vf = new VectorField2d("-6xy", "3y^2-3x^2");
-
-        //Processing.addCurve(circle);
-        int numCurves = 9;
-//        for (int i = 1; i < numCurves; i++)
-//            for (int j = -7; j < 8; j++) {
-//                Curve2dAprx curve = new Curve2dAprx("t", "0 + " + j, -7, 7, 1);
-//                Processing.addCurve(curve);
-//                Processing.addCurve(vf.getCurves(curve, numCurves, 7));
-//            }
-
-        System.out.println(vf.of(new Point2d(4, 4)));
-        for (int i = 0; i < 40; i++) {
-            Processing.addCurve(vf.getCurve(new Point2d(-9 - i / 10.0, 9 - i
-                    / 10.0), 5));
-            Processing.addCurve(vf.getCurve(new Point2d(9 + i / 10.0, 9 - i
-                    / 10.0), 5));
-            Processing.addCurve(vf.getCurve(new Point2d(-3 + i / 7.0, -11), 5));
-        }
-        Processing.openWindow();
-
-    }
-
-    public static void workIntegral() {
-        VectorField vf = new VectorField(0) {
-            @Override
-            public Point of(double[] x) {
-                double[] of = new double[2];
-                of[0] = 0;
-                of[1] = 1;
-                return new Point(of);
-            }
-        };
-
-        Curve c = new Curve(0, 1) {
-            @Override
-            public Point of(double t) {
-                return new Point(0, t);
-            }
-        };
-
-        System.out.println(c.work(vf));
-
-    }
-
-    public static void Spline1(int n) {
-        Processing.setDim(10);
-
-        Random r = new Random();
-
-        Point[] points = new Point[n];
-        for (int i = 0; i < n; i++) {
-            points[i] = new Point(r.nextDouble() * 8 - 4, r.nextDouble() * 8
-                    - 4);
-        }
-
-        Spline spline = new Spline(points);
-
-        Processing.addCurve(spline, 100 * n);
-        for (Point p : points) {
-            Processing.circleAt(p, .1);
-        }
-
-        Processing.openWindow();
-
-    }
-
-    public static void testNelderMead() {
-        Processing.setDim(10);
-        Processing.openWindow();
-        Processing.drawAxes(5);
-
-        RnToRFunc f = RnToRFunc.st(x -> {
-            Processing.circleAt(new Point(x), .2);
-            try {
-                TimeUnit.SECONDS.sleep(0);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            return (cos(x[0]) + cos(x[1]));
-        }, 2);
-
-        System.out.println(Min.nelderMead(f, new Point(2, 2), 1, .00001));
-    }
-
-    public static void derivitiveTest() {
-        RnToR cos = RnToRFunc.st(x -> cos(x[0]), 2),
-                negSinTest = cos.d(0, E - 3);
-
-        RToRFunc fsin = RToRFunc.st(x -> -negSinTest.of(new double[]{x, 0}), -PI
-                * 1.5, PI * 1.5);
-        RToRFunc sin = RToRFunc.st(x -> Math.sin(x), -5, 5);
-
-        Processing.setDim(15);
-        Processing.drawAxes(5);
-        Processing.addCurve(sin, 100);
-        Processing.addCurve(fsin, 100);
-        Processing.openWindow();
-    }
-
-    public static void testHessian() {
-        RnToRFunc f = RnToRFunc.st(x -> x[0] * x[0] * x[0] * x[1], 2);
-        RnToRn df = new Gradient(f, .00001);
-        RnToRpxq hes = new Hessian(f, .00001);
-        System.out.println(hes.of(new double[]{2, 2}));
-    }
-
-    public static void testGradientDescent() {
-
-        RnToRFunc f = RnToRFunc.st(x -> (x[0] - 1) * (x[0] - 1) + (x[1] - 3)
-                * (x[1] - 3), 2);
-        System.out.println(Min.gradientDescentLineSearch(f, new GraphX(f, Point.Origin(2)), .001, .00001));
-
-    }
 
     public static void testMatrixMult() {
         Matrix m1 = new Matrix(new double[][]{{0, 2}, {1, 1}});
@@ -248,28 +65,6 @@ public class Main {
 //        System.out.println(matrix.mult(m2));
     }
 
-    private static void testDerrivitive() {
-        RnToRFunc f = RnToRFunc.st(t -> t[0] * t[0], 1);
-        System.out.println(f.d(0, .0001).of(Point.oneD(3)));
-    }
-
-    private static void testGradient() {
-        RnToRFunc f = RnToRFunc.st(x -> sin(x[0]) + cos(x[1]), 2);
-
-        System.out.println(new Gradient(f, .00001).of(new Point(0, 0)));
-    }
-
-    private static void testBisectionMethodZero() {
-        RToRFunc f = RToRFunc.st(t -> t + 3, -10, 10);
-        System.out.println(f.bisectionMethodZero(.00001, .0001));
-    }
-
-    private static void testSecantMethod() {
-        RToRFunc f = RToRFunc.st(t -> (t - 3) * (t - 3) - 1, -10, 10);
-        System.out.println(f.secantMethodMin(0, .0001));
-
-    }
-
     private static void testMatrixInverse() {
         Matrix m = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 7}});
         Matrix inverse = m.inverse();
@@ -298,117 +93,17 @@ public class Main {
 
     }
 
-    public static void testSetSomeInMatrix() {
-        Matrix m = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 7}});
-        System.out.println(m.setSome((i, j) -> i <= j, (i, j) -> m.get(j, i)));
-    }
-
-    public static void testFunctionPrinter() {
-        RnToR f = t -> t[0] * t[1];
-        Cube c = new Cube(new Point(-1, -1), new Point(1, 1));
-        FunctionPrinter.printFunc("xSquared.plt", f, c, .05);
-    }
-
-    public static void polyTest() {
-        Polynomial p = new Polynomial(new double[]{1, 1, 1, 1, 1, 1}, 2, 2);
-        System.out.println(p);
-        System.out.println(p.of(new double[]{0, 0}));
-        p = new Polynomial(new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1}, 3, 2);
-        System.out.println(p);
-        JChart chart = new JChart(new Interval(-5, 5));
-        RnToRFunc f = new Polynomial(new double[]{1, -1, 1}, 2, 1).setDomain(new Interval(-5, 5)).setName("poly");
-        System.out.println(f);
-        chart.addFunction(f, .01);
-    }
-
-    public static void LaurentTest() {
-        Laurent p = new Laurent(new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 2, 2);
-        System.out.println(p);
-        System.out.println(p.of(new double[]{0, 0}));
-        p = new Laurent(new double[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 3, 2);
-        System.out.println(p);
-        p = new Laurent(new double[]{0, 1, -2}, 1, 1);
-        System.out.println(p);
-        JChart chart = new JChart(new Interval(-6, 6));
-        chart.addFunction(p.setDomain(new Interval(-3, 3)), .01);
-    }
-
-    public static void integralTest() {
-        RnToRFunc f = RnToRFunc.st(x -> 2 * x[0], new Cube(Point.oneD(0), Point.oneD(1)));
-        System.out.println(f.integral(.0000001));
-    }
 
     public static void testCuboidHalvs() {
         Cube c = new Cube(new Point(0, 0), new Point(1, 2));
         System.out.println(c.halves(0));
     }
 
-    public static void testCuboidStream() {
-        new Cube(new Point(1, 1, 1), new Point(2, 2, 2)).stream(.5).forEach(System.out::println);
-    }
 
-    public static void jchartTest() {
-        JChart chart = new JChart();
-        chart.addFunction(RToRFunc.st(x -> x * x - 2, "a", -1, 1), .001);
-        chart.addFunction(RToRFunc.st(x -> x * x, "b", -1, 1), .001);
-    }
 
-    public static Point findLaurent(int deg, RnToRFunc target, Interval interval, double end) {
-
-        RToRFunc abs = RToRFunc.st((RToR) (x -> Math.abs(x)), interval);
-
-        int numCoef = Laurent.numCoeficients(deg, 1);
-
-        RnToRnToR laurent = x -> new Laurent(x, deg, 1);
-
-        RnToRFunc f = RnToRFunc.st(x
-                -> abs.of(laurent.of(x).minus(target))
-                        .integral(interval, .1), numCoef);
-
-        Point initPoint = new Point(numCoef).setAll(i -> 0);
-
-        return Min.nelderMead(f, initPoint, 50 * deg, end);
-//        return Min.newtonsDescentMethod(f, initPoint, .1, .00001);
-
-    }
-
-    public static void fOfXTesting() {
-        RnToR f = x -> {
-            System.out.println("boo");
-            return x[0];
-        };
-
-        GraphX p1 = new GraphX(f, new Point(0, 0));
-
-        System.out.println(p1.y());
-        System.out.println(p1.y());
-    }
-
-    public static void InsertionSortTest() {
-        ArrayList<Integer> list = new ArrayList<>();
-        list.addAll(Arrays.asList(new Integer[]{1, 2, -1, 99, -52, -99}));
-        InsertionSort is = new InsertionSort(list, (Comparator<Integer>) (a, b) -> (int) Math.signum(a
-                - b));
-        System.out.println(list);
-    }
-
-//    public static void testSubGradient() {
-//        Point p = new Point(0, 1);
-//        double dt = 1e-5;
-//        RnToRFunc f = RnToRFunc.st(x -> x[0]*x[1], 2);
-//        System.out.println(new Gradient(f, dt).of(p));
-//        System.out.println(new SubGradient(f, dt, .00001).of(p));
-//        
-//    }
-    public static void testSphere() {
-        Sphere s = new Sphere(2);
-        Curve c = Curve.st(t -> s.surface(Point.oneD(t)), new Interval(0, 4));
-        new JChart().addFunction(c, .001);
-
-    }
 
     public static void testMatrixRemoveColRow() {
-        Matrix m = new Matrix(3).setAll((i, j) -> i + j);
+        Matrix m = new Matrix(3).setAll((i, j) -> i + j + 0.0);
         System.out.println(m);
         System.out.println(m.removeCol(1));
         System.out.println(m.removeRow(0));
@@ -471,26 +166,6 @@ public class Main {
         System.out.println(c.getVertices());
     }
 
-    public static void testConvexSetIndicator() {
-        double dt = 1e-8;
-        double end = 1e-3;
-        int numPoints = 8;
-
-        Indicator id = x -> new Sphere(3).hasElement(new Point(x));
-        ConvexSetIndicator set = ConvexSetIndicator.st(dt, end, new Point(3).set(0, .9), id, numPoints);
-        System.out.println(set.proj(new Point(0, -50, 0)));
-
-        id = x -> x.get(2) > x.get(0) * x.get(0) + x.get(1) * x.get(1) - 3;
-        set = ConvexSetIndicator.st(dt, end, new Point(0, 5, 25.1), id, numPoints);
-        System.out.println(set.proj(new Point(0, 0, -50)));
-
-        for (int i = 0; i < 50; i++) {
-            Cube cuboid = new Cube(new Point(1, 1, 1), new Point(2, 2, 2));
-            id = x -> cuboid.hasElement(new Point(x));
-            set = ConvexSetIndicator.st(dt, end, new Point(1.01, 1.9, 1.5), id, numPoints);
-            System.out.println(set.proj(new Point(0, 0, 0)));
-        }
-    }
 
     public static void testPlaneNormalAvg() {
         Matrix m = new Matrix(3, 3);
@@ -502,60 +177,13 @@ public class Main {
     }
 
     public static void testMatrixSetRow() {
-        Matrix m = new Matrix(3).setAll((i, j) -> i + j + 1);
+        Matrix m = new Matrix(3).setAll((i, j) -> i + j + 1.0);
         System.out.println(m);
         m.setRow(2, new Point(9, 9, 9));
         System.out.println(m);
     }
 
-    public static void cauchyTest() {
-
-        Point lim = ((SequenceTI) x -> x.mult(.5)).cauchyLimit(new Point(1, 5), 1e-10);
-        System.out.println(lim);
-    }
-
-    public static void testJoinedLines() {
-        JoinedLines lines = new JoinedLines(Matrix.fromRows(new Point[]{
-            new Point(0, 0),
-            new Point(1, 1),
-            new Point(5, 6),
-            new Point(100, 200)
-        }));
-
-        System.out.println(lines.ofB());
-        System.out.println(lines.of(1));
-    }
-
-    public static void testSystemOfEquations() {
-//        Matrix m = new Matrix(3);
-//        Point p1 = new Point(1, 1, 0);
-//        Point p2 = new Point(1, 0, 2);
-//        Point p3 = new Point(1, 1, 1);
-//        m.setRow(0, p1).setRow(1, p2).setRow(2, p3);
-//
-//        Point b = new Point(1, 2, 3);
-//        Point x = new SystemOfEquations(m, b).compute();
-//
-//        System.out.println("should read 123: " + m.mult(x));
-//
-//        m = new Matrix(3, 2)
-//                .setRow(0, new Point(0, 4))
-//                .setRow(1, new Point(1, 5))
-//                .setRow(2, new Point(1, 1));
-//
-//        System.out.println(m);
-//
-//        b = new Point(2, 7, 5);
-//
-//        x = new SystemOfEquations(m, b).compute();
-//
-//        System.out.println(x);
-//
-//        System.out.println("should read " + b + ": " + m.mult(x));
-//
-//        System.out.println(m);
-    }
-
+    
     public static void testLinearSpace() {
 //
 //        Matrix m = new Matrix(2, 4);
@@ -702,8 +330,8 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 10;
-        int numFaces = 1000;
+        int dim = 3;
+        int numFaces = 100;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 10; i++) {

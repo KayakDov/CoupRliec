@@ -3,24 +3,19 @@ package RnSpace.points;
 import Convex.ConvexSet;
 import Convex.Linear.Plane;
 import listTools.Pair1T;
-import FuncInterfaces.RToR;
 import Matricies.Matrix;
-import RnSpace.curves.Curve;
 import static java.lang.Math.abs;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import realFunction.Point2d;
-import realFunction.RToRFunc;
-import FuncInterfaces.ZToR;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.DoubleFunction;
 import java.util.function.Function;
-import java.util.stream.Collector;
+import java.util.function.IntFunction;
+import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
-import listTools.IntegerInterval;
 
 /**
  *
@@ -49,16 +44,6 @@ public class Point extends Matrix {//implements Comparable {
         super(n, 1);
     }
 
-    /**
-     * constructor
-     *
-     * @param n the dimension of the new point
-     * @param f the values of the coordinates
-     */
-    public Point(int n, ZToR f) {
-        this(n);
-        setAll(f);
-    }
 
     /**
      * Creates an unsafe point quickly.
@@ -153,6 +138,10 @@ public class Point extends Matrix {//implements Comparable {
         double m = magnitude();
         if(m == 0) return Origin(dim());
         return map(x -> x / m);
+    }
+    
+    public Point map(DoubleFunction<Double> f){
+        return new Point(dim()).setAll(i -> f.apply(array[i]));
     }
 
     /**
@@ -321,16 +310,6 @@ public class Point extends Matrix {//implements Comparable {
         return this;
     }
 
-    /**
-     * Sets each value as start function of it's index
-     *
-     * @param f
-     * @return this point
-     */
-    public Point setAll(ZToR f) {
-        super.setAll(f);
-        return this;
-    }
 
     /**
      *
@@ -351,23 +330,6 @@ public class Point extends Matrix {//implements Comparable {
         return s;
     }
 
-    public Point2d onPlane() {
-        return new Point2d(get(0), get(1));
-    }
-
-    /**
-     * the distance between this point and start curve
-     *
-     * @param c
-     * @param EPSILON accuracy of the distance
-     * @return
-     */
-    public double d(final Curve c, double EPSILON) {
-
-        RToRFunc df = RToRFunc.st(t -> (c.of(t)).d(Point.this) * (c.of(t)).d(Point.this), c.I);
-
-        return d(new Point(c.of(df.min(c.I.midP(), EPSILON))));
-    }
 
     public Point(double x, double y) {
         this(2);
@@ -518,27 +480,6 @@ public class Point extends Matrix {//implements Comparable {
         set(j, temp);
     }
 
-    /**
-     * the index of the maximal element by absolute value
-     *
-     * @return
-     */
-    public int argMax() {
-        return maxIndex(new IntegerInterval(0, dim()));
-    }
-
-    private int maxIndex(IntegerInterval ii) {
-        if (ii.end - ii.start < 20) {
-            int best = ii.start;
-            for (int i = 0; i < ii.end; i++)
-                if (get(i) > get(best)) {
-                    best = i;
-                }
-            return best;
-        }
-        Pair1T<Integer> bests = new Pair1T<>(ii.leftHalf(), ii.rightHalf(), I -> maxIndex(I));
-        return bests.max(Comparator.naturalOrder());
-    }
 
     /**
      * the absolute value at the given index
@@ -667,16 +608,6 @@ public class Point extends Matrix {//implements Comparable {
         return set(x.array);
     }
 
-    /**
-     * Maps the elements of this point to another
-     *
-     * @param f each new point yi = f(xi)
-     * @return start new point
-     */
-    public Point map(RToR f) {
-        return new Point(dim()).setAll(i -> f.of(get(i)));
-    }
-
     public <T> List mapToList(Function<Double, T> f) {
         return stream().parallel().mapToObj(t -> f.apply(t)).collect(Collectors.toList());
     }
@@ -758,6 +689,13 @@ public class Point extends Matrix {//implements Comparable {
         return concat(Point.oneD(d));
     }
 
+    @Override
+    public Point setAll(IntToDoubleFunction f) {
+        Arrays.setAll(array, f);
+        return this;
+    }
+
+    
     /**
      * The constructor, a 4f point
      *
@@ -787,4 +725,5 @@ public class Point extends Matrix {//implements Comparable {
         return new Matrix(array, 1, dim());
     }
 
+    
 }

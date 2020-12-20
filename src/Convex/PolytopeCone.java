@@ -46,12 +46,6 @@ public class PolytopeCone extends Polytope {
         return sample;
     }
 
-    public static PolytopeCone randomPolytopeCone(int numFaces, int numDim) {
-        Sphere unitSphere = new Sphere(numDim);
-        PolytopeCone sample = new PolytopeCone(new Point(numDim));
-        sample.addPlanesWithNormals(IntStream.range(0, numFaces).mapToObj(i -> unitSphere.randomSurfacePoint()));
-        return sample;
-    }
 
 ///////////////////////////possible projection algortihm////////////////////////
     private HalfSpace almostNearest(Point y) {
