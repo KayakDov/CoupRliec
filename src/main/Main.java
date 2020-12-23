@@ -305,8 +305,8 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 50;
-        int numFaces = 1000;
+        int dim = 174;
+        int numFaces = 40;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 10; i++) {
@@ -419,10 +419,17 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        polytopeFeasabilityTest();
-        
+//        polytopeFeasabilityTest();
 
 //        GradDescentFeasibility.loadFromErrorFile();
+    
+        
+        
+         Matrix m = new Matrix(2);
+         
+    
+    
+    
     }
 
 }

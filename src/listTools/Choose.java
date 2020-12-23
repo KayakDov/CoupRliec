@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import processing.data.IntList;
 
 /**
  * Preforms the provided operation on all the subsets of a given size on the

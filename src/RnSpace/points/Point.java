@@ -2,18 +2,15 @@ package RnSpace.points;
 
 import Convex.ConvexSet;
 import Convex.Linear.Plane;
-import listTools.Pair1T;
 import Matricies.Matrix;
 import static java.lang.Math.abs;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 
@@ -44,6 +41,11 @@ public class Point extends Matrix {//implements Comparable {
         super(n, 1);
     }
 
+    public static Point sparse(int dim, int numNonZeroes) {
+        Point m = new Point(dim);
+        m.array = null;
+        return m;
+    }
 
     /**
      * Creates an unsafe point quickly.
@@ -136,11 +138,11 @@ public class Point extends Matrix {//implements Comparable {
      */
     public Point dir() {
         double m = magnitude();
-        if(m == 0) return Origin(dim());
+        if (m == 0) return Origin(dim());
         return map(x -> x / m);
     }
-    
-    public Point map(DoubleFunction<Double> f){
+
+    public Point map(DoubleFunction<Double> f) {
         return new Point(dim()).setAll(i -> f.apply(array[i]));
     }
 
@@ -209,18 +211,19 @@ public class Point extends Matrix {//implements Comparable {
         }
         return sb.append(")").toString();
     }
-    
+
     /**
-     * creates a point from a string formatted as follows: (1.0, 2.0, 3.0) 
-     * @param fromString 
+     * creates a point from a string formatted as follows: (1.0, 2.0, 3.0)
+     *
+     * @param fromString
      */
-    public Point(String fromString){
-        this((int)(fromString.chars().filter(c -> c == (int)(',')).count() + 1));
+    public Point(String fromString) {
+        this((int) (fromString.chars().filter(c -> c == (int) (',')).count() + 1));
 
         fromString = fromString.replaceAll("\\(", "")
                 .replaceAll("\\)", "")
                 .replaceAll(" ", "");
-        
+
         array = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
     }
 
@@ -264,7 +267,7 @@ public class Point extends Matrix {//implements Comparable {
      * @return
      */
     public boolean equals(Point p, double acc) {
-        if(p == null) return false;
+        if (p == null) return false;
         return d(p) < acc;
     }
 
@@ -310,7 +313,6 @@ public class Point extends Matrix {//implements Comparable {
         return this;
     }
 
-
     /**
      *
      * @return the point as an array
@@ -329,7 +331,6 @@ public class Point extends Matrix {//implements Comparable {
             s += Math.abs(get(i));
         return s;
     }
-
 
     public Point(double x, double y) {
         this(2);
@@ -458,7 +459,8 @@ public class Point extends Matrix {//implements Comparable {
      * @return start new randomly distributed point.
      */
     public static Point gaussianRand(int dim, Point mean, Point standardDeviation, Random rand) {
-        return new Point(dim).setAll(i -> rand.nextGaussian() * standardDeviation.get(i) + mean.get(i));
+        return new Point(dim).setAll(i -> rand.nextGaussian()
+                * standardDeviation.get(i) + mean.get(i));
     }
 
     /**
@@ -470,7 +472,8 @@ public class Point extends Matrix {//implements Comparable {
      */
     public Point reflectThrough(Point center, double scale) {
 
-        return new Point(center.dim()).setAll(i -> center.get(i) + scale * (center.get(i) - get(i)));
+        return new Point(center.dim()).setAll(i -> center.get(i) + scale
+                * (center.get(i) - get(i)));
 
     }
 
@@ -479,7 +482,6 @@ public class Point extends Matrix {//implements Comparable {
         set(i, get(j));
         set(j, temp);
     }
-
 
     /**
      * the absolute value at the given index
@@ -529,7 +531,8 @@ public class Point extends Matrix {//implements Comparable {
      */
     public double covariance(Point p) {
         double avg = avg(), pAvg = p.avg();
-        return IntStream.range(0, dim()).parallel().mapToDouble(i -> (avg - get(i)) * (pAvg - p.get(i))).sum() / dim();
+        return IntStream.range(0, dim()).parallel().mapToDouble(i -> (avg
+                - get(i)) * (pAvg - p.get(i))).sum() / dim();
     }
 
     /**
@@ -679,13 +682,14 @@ public class Point extends Matrix {//implements Comparable {
         System.arraycopy(p.array, 0, concat.array, dim(), p.dim());
         return concat;
     }
-    
+
     /**
      * concatenates a single value onto this point.
+     *
      * @param d
-     * @return 
+     * @return
      */
-    public Point concat(double d){
+    public Point concat(double d) {
         return concat(Point.oneD(d));
     }
 
@@ -695,7 +699,6 @@ public class Point extends Matrix {//implements Comparable {
         return this;
     }
 
-    
     /**
      * The constructor, a 4f point
      *
@@ -716,14 +719,13 @@ public class Point extends Matrix {//implements Comparable {
      */
     public Point removeRows(List<Integer> cut) {
         Point removeRows = new Point(dim() - cut.size());
-        for(int to = 0, from = 0; from < dim(); from++)
-            if(!cut.contains(from)) removeRows.set(to++, get(from));
+        for (int to = 0, from = 0; from < dim(); from++)
+            if (!cut.contains(from)) removeRows.set(to++, get(from));
         return removeRows;
     }
-    
-    public Matrix T(){
+
+    public Matrix T() {
         return new Matrix(array, 1, dim());
     }
 
-    
 }
