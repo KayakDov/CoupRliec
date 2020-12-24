@@ -5,10 +5,23 @@
  */
 package Matricies;
 
+import org.ejml.data.DMatrixSparseCSC;
+
 /**
  *
  * @author dov
  */
 public class PointSparse extends MatrixSparse implements Point{
+
+    public PointSparse(int dim) {
+        super(1, dim);
+    }
+
+    @Override
+    public DMatrixSparseCSC ejmlMatrix() {
+        return super.ejmlMatrix(); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
     
 }

@@ -7,16 +7,19 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrix1Row;
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -148,32 +151,43 @@ public class MatrixSparse implements Matrix {
         return mult;
     }
 
-    public PointSparse mult(PointDense p) {
+    public PointDense mult(PointDense p) {
 
-        Point mult = new PointDense(rows());
+        PointDense mult = new PointDense(rows());
         CommonOps_DSCC.mult(ejmlSparse, p.ejmlMatrix(), mult.ejmlMatrix());
 
         return mult;
     }
 
+    public MatrixSparse(int rows, int cols) {
+        ejmlSparse = new DMatrixSparseCSC(rows, cols);
+    }
+
     /**
-     * Multiplies to the two matrices. Launches a thread for each column in
-     * matrix A.
+     * Multiplies to the two matrices. matrix A.
      *
      * @param A
      * @return
      */
     public Matrix mult(Matrix A) {
-        if (cols != A.rows) return null;
-        if (isDense()) {
-            DMatrixRMaj mult = new DMatrixRMaj(rows, A.cols);
-            CommonOps_DDRM.mult(ejmlDenseMatrix(), A.ejmlDenseMatrix(), mult);
-            return new Matrix(mult);
-        } else {
-            Matrix mult = Matrix.sparse(rows, cols, 0);
-            CommonOps_DSCC.mult(ejmlSparse, A.sparseMatrix, mult.sparseMatrix);
-            return mult;
-        }
+        if (cols() != A.rows()) return null;
+        if (isDense()) return A.asDense();
+        else return A.asSparse();
+    }
+
+    public MatrixDense mult(MatrixDense A) {
+        DMatrixRMaj mult = new DMatrixRMaj(rows(), A.cols);
+        CommonOps_DSCC.mult(ejmlMatrix(), A.ejmlMatrix(), mult);
+        return new MatrixDense(mult);
+
+    }
+
+    public MatrixSparse mult(MatrixSparse A) {
+
+        MatrixSparse mult = new MatrixSparse(rows(), cols());
+        CommonOps_DSCC.mult(ejmlSparse, A.ejmlMatrix(), mult.ejmlMatrix());
+        return mult;
+
     }
 
     /**
@@ -183,17 +197,11 @@ public class MatrixSparse implements Matrix {
      * @return
      */
     public Matrix mult(double k) {
-        if (isDense()) return new Matrix(rows, cols).setAll(i -> get(i) * k);
-        else {
-            Matrix mult = sparse(rows, cols, 0);
-            CommonOps_DSCC.add(k, ejmlSparse, 0, null, mult.sparseMatrix, null, null);
-            return mult;
-        }
 
-    }
+        MatrixSparse mult = new MatrixSparse(rows(), cols());
+        CommonOps_DSCC.add(k, ejmlSparse, 0, null, mult.ejmlSparse, null, null);
+        return mult;
 
-    public DMatrixRMaj ejmlDenseMatrix() {
-        return new DMatrixRMaj(rows, cols, true, array);
     }
 
     /**
@@ -202,12 +210,11 @@ public class MatrixSparse implements Matrix {
      * @return
      */
     public double det() {
-        if (isDense()) {
-            if (cols == 1) return array[0];
-            return CommonOps_DDRM.det(ejmlDenseMatrix());
-        } else {
-            return CommonOps_DSCC.det(ejmlSparse);
-        }
+        return CommonOps_DSCC.det(ejmlSparse);
+    }
+
+    public MatrixSparse(int row, int cols, int nonZeroeLength) {
+        ejmlSparse = new DMatrixSparseCSC(row, cols, nonZeroeLength);
     }
 
     /**
@@ -216,34 +223,16 @@ public class MatrixSparse implements Matrix {
      * @param m
      * @return
      */
-    public Matrix plus(Matrix m) {
-        if (isDense()) return new Matrix(rows, cols).setAll(i -> get(i)
-                + m.get(i));
-        else {
-            Matrix plus = sparse(rows, cols, 0);
-            CommonOps_DSCC.add(1, ejmlSparse, 1, m.sparseMatrix, plus.sparseMatrix, null, null);
-            return plus;
-        }
+    public MatrixSparse plus(MatrixSparse m) {
+
+        MatrixSparse plus = new MatrixSparse(rows(), cols(), m.ejmlSparse.getNonZeroLength() + ejmlSparse.getNonZeroLength());
+        CommonOps_DSCC.add(1, ejmlSparse, 1, m.ejmlMatrix(), plus.ejmlMatrix(), null, null);
+        return plus;
+
     }
 
-    /**
-     *
-     * @param n num rows
-     * @param m num columns
-     */
-    public Matrix(int n, int m) {
-        rows = n;
-        cols = m;
-        array = new double[n * m];
-    }
-
-    /**
-     * A square matrix.
-     *
-     * @param n
-     */
-    public Matrix(int n) {
-        this(n, n);
+    public MatrixDense plus(MatrixDense m) {
+        return new MatrixDense(m.rows, m.cols).setAll((i, j) -> m.get(i, j) + ejmlSparse.get(i, j));
     }
 
     public Matrix minus(Matrix m) {
@@ -252,24 +241,7 @@ public class MatrixSparse implements Matrix {
 
     @Override
     public String toString() {
-        if (isDense()) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++)
-                    sb.append(get(i, j)).append(" ");
-                sb.append("\n");
-            }
-
-            return sb.toString().replaceAll(".0 ", " ");
-        } else return ejmlSparse.toString();
-    }
-
-    /**
-     *
-     * @return the largest element in the matrix
-     */
-    public double max() {
-        return Arrays.stream(array).summaryStatistics().getMax();
+        return ejmlSparse.toString();
     }
 
     /**
@@ -277,105 +249,40 @@ public class MatrixSparse implements Matrix {
      * @param n
      * @return the nth column
      */
-    public PointDense col(int n) {
-        if (isDense()) return new PointDense(rows).setAll(i -> get(i, n));
-        else {
-            PointDense col = PointDense.sparse(rows, 0);
-            col.sparseMatrix = CommonOps_DSCC.extractColumn(ejmlSparse, n, null);
-            return col;
-        }
+    public PointSparse col(int n) {
+        PointSparse col = new PointSparse(rows());
+        col.ejmlSparse = CommonOps_DSCC.extractColumn(ejmlSparse, n, null);
+        return col;
+
     }
 
-    public PointDense row(int n) {
-        if (isDense()) return new PointDense(cols).setAll(i -> get(n, i));
-        else {
-            PointDense row = PointDense.sparse(cols, 0);
-            row.sparseMatrix = CommonOps_DSCC.extractRows(ejmlSparse, n, n + 1, null);
-            return row;
-        }
+    public MatrixSparse(DMatrixSparseCSC ejmlSparse) {
+        this.ejmlSparse = ejmlSparse;
     }
 
-    /**
-     * Sets the nth column to v
-     *
-     * @param n
-     * @param v
-     * @return this
-     */
-    public Matrix setRow(int n, PointDense v) {
-        return setRow(n, v.array);
+    public PointSparse row(int n) {
+
+        PointSparse row = new PointSparse(cols());
+        row.ejmlSparse = new MatrixSparse(CommonOps_DSCC.extractRows(ejmlSparse, n, n + 1, null)).T().ejmlMatrix();
+        return row;
+
     }
-
-    public Matrix setRow(int i, double[] x) {
-        System.arraycopy(x, 0, array, cols * i, x.length);
-        return this;
-    }
-
-    private double alpha(int k, Matrix A) {
-        double alpha = 0;
-
-        DoubleFunction<Double> sign = t -> t >= 0 ? t : -t;
-
-        for (int j = k + 1; j < rows; j++)
-            alpha += A.get(j, k) * A.get(j, k);
-        alpha = Math.sqrt(alpha);
-        alpha = -1 * sign.apply(A.get(k + 1, k)) * alpha;
-        return alpha;
-    }
-
-    public Matrix houseHolderTrans() {
-        final int START = 0;
-        return houseHolderTrans(this, START);
-    }
-
-    private Matrix houseHolderTrans(Matrix A, int k) {
-
-        if (k == rows - 1) return A;
-
-        double alpha = alpha(k, A);
-
-        double r = Math.sqrt((alpha * alpha - A.get(k + 1, k) * alpha) / 2.0);
-
-        PointDense v = PointDense.Origin(rows);
-        v.set(k + 1, (A.get(k + 1, k) - alpha) / (2.0 * r));
-
-        for (int j = k + 2; j < rows; j++)
-            v.set(j, A.get(j, k) / (2.0 * r));
-
-        Matrix p = identityMatrix(rows).minus(v.outerProduct(v).mult(2));
-
-        A = p.mult(A).mult(p);
-
-        return houseHolderTrans(A, k + 1);
-    }
-
-    private Matrix transpose = null;
 
     /**
      * M^T, the transpose of this matrix
      *
      * @return a new matrix, the transpose of this matrix
      */
-    public Matrix T() {
-        if (transpose == null)
-            return transpose = new Matrix(cols, rows).setAll((i, j) -> get(j, i));
-        return transpose;
+    public MatrixSparse T() {
+        MatrixSparse T = new MatrixSparse(cols(), rows(), ejmlSparse.getNonZeroLength());
+        CommonOps_DSCC.transpose(ejmlSparse, T.ejmlSparse, null);
+        return T;
     }
 
-    public Matrix inverse() {
-        DMatrixRMaj inverse = new DMatrixRMaj(rows, cols, true, Arrays.copyOf(array, array.length));
-        CommonOps_DDRM.invert(inverse);
-        return new Matrix(inverse.data, rows, cols);
-    }
-
-    /**
-     * sets all the elements of the matrix to a scalar.
-     *
-     * @param x the value to set the elements of the matrix equal to.
-     * @return this matrix.
-     */
-    public Matrix setAll(double x) {
-        return setAll(i -> x);
+    public MatrixDense inverse() {
+        DMatrixRMaj inverse = new DMatrixRMaj(cols(), rows());
+        CommonOps_DSCC.invert(ejmlSparse, inverse);
+        return new MatrixDense(inverse);
     }
 
     /**
@@ -384,28 +291,7 @@ public class MatrixSparse implements Matrix {
      * @return
      */
     public double trace() {
-        return IntStream.range(0, min(cols, rows)).
-                mapToDouble(i -> get(i, i)).sum();
-    }
-
-    /**
-     * gets the row index for an index in the underlying 1-d array.
-     *
-     * @param k the index in the underlying 1-d array
-     * @return the index of the matching row.
-     */
-    protected int rowIndex(int k) {
-        return k / cols;
-    }
-
-    /**
-     * gets the column index for an index in the underlying 1-d array.
-     *
-     * @param k the index in the underlying 1-d array
-     * @return the index of the matching column.
-     */
-    protected int colIndex(int k) {
-        return k % cols;
+        return CommonOps_DSCC.trace(ejmlSparse);
     }
 
     /**
@@ -414,33 +300,35 @@ public class MatrixSparse implements Matrix {
      * @param f a unction of the row and column
      * @return
      */
-    public Matrix setAll(Z2ToR f) {
-        mySetAll(f);
+    
+    @Override
+    public MatrixSparse setAll(Z2ToR f) {
+        int nonZeroes = (int) Matrix.z2Stream(rows(), cols()).filter(p -> f.apply(p) != 0).count();
+
+        DMatrixSparseTriplet dmst = new DMatrixSparseTriplet(rows(), cols(), nonZeroes);
+
+        Matrix.z2Stream(rows(), cols()).filter(p -> f.apply(p) != 0).forEach(p -> dmst.set(p.l, p.r, f.apply(p)));
+
+        DMatrixSparseCSC dmscsc = new DMatrixSparseCSC(rows(), cols(), nonZeroes);
+
+        ConvertDMatrixStruct.convert(dmst, dmscsc);
+
+        ejmlSparse = dmscsc;
+
         return this;
     }
 
-    protected Matrix setAll(IntToDoubleFunction f) {
-        Arrays.parallelSetAll(array, i -> f.applyAsDouble(i));
-        return this;
+    protected MatrixSparse mapToSparse(DoubleFunction<Double> f) {
+
+        return new MatrixSparse(rows(), cols()).setAll((i, j) -> f.apply(get(i, j)));
     }
 
-    protected Matrix map(DoubleFunction<Double> f) {
-        return new Matrix(rows, cols).setAll((i, j) -> f.apply(get(i, j)));
+    protected Matrix mapToDense(DoubleFunction<Double> f) {
+
+        return new MatrixDense(rows(), cols()).setAll((i, j) -> f.apply(get(i, j)));
     }
 
-    /**
-     * this is a version of set all that can't be overridden by children
-     * classes.
-     *
-     * @param f
-     */
-    private final void mySetAll(Z2ToR f) {
-        Arrays.parallelSetAll(array, a -> f.apply(rowIndex(a), colIndex(a)));
-    }
-
-    public abstract interface Z2ToR extends BiFunction<Integer, Integer, Double> {
-    }
-
+    
     /**
      * Sets some of the elements of this matrix and leaves the others alone
      *
@@ -450,30 +338,12 @@ public class MatrixSparse implements Matrix {
      */
     public Matrix setSome(BiFunction<Integer, Integer, Boolean> filter, Z2ToR f) {
         Z2ToR filteredF = (i, j) -> filter.apply(i, j) ? f.apply(i, j) : get(i, j);
-        mySetAll(filteredF);
+        setAll(filteredF);
         return this;
     }
 
-    public Matrix topLeftSubMatrix(int n) {
-        if (n > Math.min(rows, cols))
-            throw new ArithmeticException("Submatrix is bigger than parrent matrix.");
-        return new Matrix(n).setAll((i, j) -> get(i, j));
-    }
 
-    /**
-     * Constructor
-     *
-     * @param array a single array representation of a 2d concept. The first col
-     * elements go in the first row, the second col elements go in the second
-     * row, and so on. Make sure that rows*cols = array.length;
-     * @param rows the number of rows in the matrix.
-     * @param cols the number of cols in the matrix.
-     */
-    public Matrix(double[] array, int rows, int cols) {
-        this.array = array;
-        this.rows = rows;
-        this.cols = cols;
-    }
+    
 
     /**
      * if this is a symmetric matrix, this will create the instance to reflect

@@ -13,6 +13,7 @@ import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
+import org.ejml.data.DMatrixRMaj;
 
 /**
  *
@@ -761,8 +762,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
     }
 
     @Override
-    public Matrix T() {
-        return new Matrix(array, 1, dim());
+    public MatrixDense T() {
+        return new MatrixDense(array, 1, dim());
     }
+
+    
+    
+    
 
 }

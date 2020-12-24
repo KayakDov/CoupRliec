@@ -7,6 +7,7 @@ package Matricies;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import listTools.Pair1T;
 import org.ejml.data.DMatrix;
@@ -30,21 +31,21 @@ public interface Matrix {
      *
      * @return
      */
-    Pair1T<Matrix> QRDecomposition();
+    public Pair1T<Matrix> QRDecomposition();
 
     /**
      * M^T, the transpose of this matrix
      *
      * @return a new matrix, the transpose of this matrix
      */
-    Matrix T();
+    public Matrix T();
 
     /**
      *
      * @param n
      * @return the nth column
      */
-    PointDense col(int n);
+    public Point col(int n);
 
     /**
      * A new matrix that is concatenation of the columns in this matrix and the
@@ -53,23 +54,23 @@ public interface Matrix {
      * @param cols the columns to be concatenated
      * @return a new matrix, the concatenation of this one and the new columns.
      */
-    Matrix colConcat(Matrix cols);
+    public Matrix colConcat(Matrix cols);
 
-    List<PointDense> colList();
+    public List<Point> colList();
 
     /**
      * A stream of the columns of this matrix.
      *
      * @return
      */
-    Stream<PointDense> colStream();
+    public Stream<Point> colStream();
 
     /**
      * The determinant
      *
      * @return
      */
-    double det();
+    public double det();
 
     /**
      *
@@ -77,16 +78,16 @@ public interface Matrix {
      * @param j column
      * @return the value at M_i,j
      */
-    double get(int i, int j);
+    public double get(int i, int j);
 
-    Matrix inverse();
+    public Matrix inverse();
 
     /**
      * Is this a square matrix
      *
      * @return
      */
-    boolean isSquare();
+    public boolean isSquare();
 
     /**
      * is this matrix equal to zero.
@@ -94,7 +95,7 @@ public interface Matrix {
      * @param epsilon
      * @return
      */
-    boolean isZero(double epsilon);
+    public boolean isZero(double epsilon);
 
     /**
      * multiplies the matrix by a vector;
@@ -102,7 +103,7 @@ public interface Matrix {
      * @param p the vector
      * @return the new vector, a result of multiplying the matrix by a vector.
      */
-    PointDense mult(PointDense p);
+    public PointDense mult(PointDense p);
 
     /**
      * Multiplies to the two matrices. Launches a thread for each column in
@@ -111,7 +112,7 @@ public interface Matrix {
      * @param A
      * @return
      */
-    Matrix mult(Matrix A);
+    public Matrix mult(Matrix A);
 
     /**
      * multiplies the matrix by a constant.
@@ -119,7 +120,7 @@ public interface Matrix {
      * @param k the constant
      * @return
      */
-    Matrix mult(double k);
+    public Matrix mult(double k);
 
     /**
      * The sum of two matrices.
@@ -127,11 +128,18 @@ public interface Matrix {
      * @param m
      * @return
      */
-    Matrix plus(Matrix m);
+    public Matrix plus(Matrix m);
 
-    ReducedRowEchelon reducedRowEchelon();
+    public ReducedRowEchelon reducedRowEchelon();
 
-    PointDense row(int n);
+    public Point row(int n);
+    
+    public static Stream<Pair1T<Integer>> z2Stream(int n, int m){
+        return IntStream.range(0, n)
+                .mapToObj(i -> i).flatMap( i ->
+                        IntStream.range(0, m)
+                                .mapToObj(j -> new Pair1T<Integer>(i, j)));
+    }
 
     /**
      * Creates a new matrix whose rows are appended to this one
@@ -139,7 +147,7 @@ public interface Matrix {
      * @param rows the rows to be added
      * @return a new matrix with the rows from both of the previous matrices
      */
-    Matrix rowConcat(Matrix rows);
+    public Matrix rowConcat(Matrix rows);
 
     /**
      * Creates a new matrix whose rows are appended to this one
@@ -147,21 +155,21 @@ public interface Matrix {
      * @param row
      * @return a new matrix with the rows from both of the previous matrices
      */
-    Matrix rowConcat(PointDense row);
+    public Matrix rowConcat(PointDense row);
 
     /**
      * a list of the rows of this array
      *
      * @return
      */
-    List<PointDense> rowList();
+    public List<PointDense> rowList();
 
     /**
      * A stream of the rows of this matrix.
      *
      * @return
      */
-    Stream<PointDense> rowStream();
+    public Stream<PointDense> rowStream();
 
     /**
      * sets A_i,j = d
@@ -171,9 +179,16 @@ public interface Matrix {
      * @param d the value to be placed at (i, j)
      * @return this
      */
-    Matrix set(int i, int j, double d);
+    public Matrix set(int i, int j, double d);
 
-    public interface Z2ToR extends BiFunction<Integer, Integer, Double> {}
+    public interface Z2ToR extends BiFunction<Integer, Integer, Double> {
+
+        
+        public default Double apply(Pair1T<Integer> pair) {
+            return apply(pair.l, pair.r);
+        }
+        
+    }
 
     /**
      * sets all the elements of the matrix, in parallel, to f(i, j)
@@ -181,9 +196,9 @@ public interface Matrix {
      * @param f a unction of the row and column
      * @return
      */
-    Matrix setAll(Z2ToR f);
+    public Matrix setAll(Z2ToR f);
 
-    PointDense solve(PointDense b);
+    public Point solve(Point b);
 
     /**
      * gets the row index for an index in the underlying 1-d array.
