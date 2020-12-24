@@ -140,17 +140,18 @@ public class MatrixSparse implements Matrix {
      * @param p the vector
      * @return the new vector, a result of multiplying the matrix by a vector.
      */
-    public PointSparse mult(Point p) {
+    public PointSparse mult(PointSparse p) {
 
-        Point mult;
-        if (p.isSparse()){
-            mult = new PointDense(rows());
-            CommonOps_DSCC.mult(ejmlSparse, p.asDense().ejmlMatrix(), mult.asDense().ejmlMatrix());
-        }
-        else{
-            mult = new PointSparse(rows());
-            CommonOps_DSCC.mult(ejmlSparse, p.asSparse().ejmlMatrix(), mult.asSparse().ejmlMatrix());
-        }
+        PointSparse mult = new PointSparse(rows());
+        CommonOps_DSCC.mult(ejmlSparse, p.ejmlMatrix(), mult.ejmlMatrix());
+
+        return mult;
+    }
+
+    public PointSparse mult(PointDense p) {
+
+        Point mult = new PointDense(rows());
+        CommonOps_DSCC.mult(ejmlSparse, p.ejmlMatrix(), mult.ejmlMatrix());
 
         return mult;
     }
