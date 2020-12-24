@@ -6,7 +6,7 @@ import Convex.Polytope;
 import listTools.Pair1T;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelon;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 public class AffineSpace implements ConvexSet {
 
     protected LinearSpace linearSpace;
-    public Point b;
+    public PointDense b;
 
-    public Point getB() {
+    public PointDense getB() {
         return b;
     }
 
@@ -48,7 +48,7 @@ public class AffineSpace implements ConvexSet {
      * @param normals
      * @param b
      */
-    public AffineSpace(Point[] normals, Point b) {
+    public AffineSpace(PointDense[] normals, PointDense b) {
         linearSpace = new LinearSpace(normals);
         this.b = b;
     }
@@ -63,7 +63,7 @@ public class AffineSpace implements ConvexSet {
      * @param ls a linear space parallel to this affine space
      * @param onSpace a point in the affine space
      */
-    public AffineSpace(LinearSpace ls, Point onSpace) {
+    public AffineSpace(LinearSpace ls, PointDense onSpace) {
         linearSpace = ls;
         if(!ls.isAllSpace())this.b = nullMatrix().mult(onSpace);
         
@@ -71,17 +71,17 @@ public class AffineSpace implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(Point x) {
+    public boolean hasElement(PointDense x) {
         return nullMatrix().mult(x).equals(b);
     }
 
     @Override
-    public boolean hasElement(Point x, double epsilon) {
+    public boolean hasElement(PointDense x, double epsilon) {
 
         return nullMatrix().mult(x).equals(b, epsilon);
     }
 
-    protected Point p = null;
+    protected PointDense p = null;
 
     public boolean hasAPoint(){
         return p!= null;
@@ -92,7 +92,7 @@ public class AffineSpace implements ConvexSet {
      * given point is in the affine space.
      * @param p 
      */
-    public void setP(Point p) {
+    public void setP(PointDense p) {
         this.p = p;
     }
     
@@ -102,7 +102,7 @@ public class AffineSpace implements ConvexSet {
      *
      * @return
      */
-    public Point p() {
+    public PointDense p() {
 
         if (p != null) return p;
                 
@@ -111,9 +111,9 @@ public class AffineSpace implements ConvexSet {
         
         ReducedRowEchelon rre = new ReducedRowEchelon(nullMatrix());
         
-        Matrix append = Matrix.fromRows(rre.getFreeVariables().map(i -> new Point(rre.cols).set(i, 1)));
+        Matrix append = Matrix.fromRows(rre.getFreeVariables().map(i -> new PointDense(rre.cols).set(i, 1)));
 
-        Point b2 = new Point(nullMatrix().rows + append.rows).setFromSubArray(b, 0);
+        PointDense b2 = new PointDense(nullMatrix().rows + append.rows).setFromSubArray(b, 0);
 
         try {
 
@@ -132,7 +132,7 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     @Override
-    public Point proj(Point x) {
+    public PointDense proj(PointDense x) {
         if (isAllSpace()) return x;
         return p().plus(linearSpace().proj(x.minus(p())));  //An older method
     }
@@ -199,7 +199,7 @@ public class AffineSpace implements ConvexSet {
      * @return an affine space orthoganal to this one that goes through the
      * given point.
      */
-    public AffineSpace orthogonalComplement(Point x) {
+    public AffineSpace orthogonalComplement(PointDense x) {
         return new AffineSpace(linearSpace().OrhtogonalComplement(), x);
     }
 
@@ -210,7 +210,7 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     public static AffineSpace allSpace(int dim) {
-        return new AffineSpace(LinearSpace.allSpace(0), Point.Origin(dim));
+        return new AffineSpace(LinearSpace.allSpace(0), PointDense.Origin(dim));
     }
 
     /**
@@ -268,7 +268,7 @@ public class AffineSpace implements ConvexSet {
      * @return a new affine space smallestContainingSubSpace the given points.
      */
     public static AffineSpace smallestContainingSubSpace(Matrix rowMatrix, double epsilon) {
-        Point displacement = rowMatrix.row(0);
+        PointDense displacement = rowMatrix.row(0);
 
         Matrix displaced = new Matrix(rowMatrix.rows - 1, rowMatrix.cols).setRows(i -> rowMatrix.row(i + 1).minus(displacement));
 
@@ -280,8 +280,8 @@ public class AffineSpace implements ConvexSet {
      *
      * @return
      */
-    public Point notInSpace() {
-        Point out = orthogonalComplement(p())
+    public PointDense notInSpace() {
+        PointDense out = orthogonalComplement(p())
                 .linearSpace()
                 .colSpaceMatrix()
                 .colStream()
@@ -318,7 +318,7 @@ public class AffineSpace implements ConvexSet {
      * @param b
      * @return a line going through the two given points
      */
-    public static AffineSpace twoPointsLine(Point a, Point b) {
+    public static AffineSpace twoPointsLine(PointDense a, PointDense b) {
         return PointSlopeLine(a, b.minus(a));
     }
 
@@ -329,7 +329,7 @@ public class AffineSpace implements ConvexSet {
      * @param grad the given slope
      * @return a line
      */
-    public static AffineSpace PointSlopeLine(Point a, Point grad) {
+    public static AffineSpace PointSlopeLine(PointDense a, PointDense grad) {
 
         return new AffineSpace(LinearSpace.colSpace(grad), a);
     }

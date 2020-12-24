@@ -1,7 +1,7 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -22,13 +22,13 @@ public class Partition {
     private Set<HalfSpace> excluding;
     private HashSet<HalfSpace> visited;
 
-    private Point gradient;
+    private PointDense gradient;
 
-    public Partition(Point y, GradDescentFeasibility poly) {
+    public Partition(PointDense y, GradDescentFeasibility poly) {
         this.poly = poly;
         containing = new ArrayList<>(poly.size());
         excluding = new HashSet<>(poly.size());
-        gradient = new Point(poly.dim());
+        gradient = new PointDense(poly.dim());
         visited = new HashSet<>(poly.size());
 
         Consumer<HalfSpace> sort = hs -> {
@@ -101,7 +101,7 @@ public class Partition {
         return excluding.size() == 0;
     }
 
-    public Stream<HalfSpace> downhillContaining(Point grad, double epsilon) {
+    public Stream<HalfSpace> downhillContaining(PointDense grad, double epsilon) {
         return containing().filter(hs -> /*!visited.contains(hs) &&*/ hs.normal().dot(grad) < -epsilon);
     }
 
@@ -113,11 +113,11 @@ public class Partition {
      * @param epsilon
      * @return
      */
-    public Stream<HalfSpace> downhillExcluding(Point grad, double epsilon) {
+    public Stream<HalfSpace> downhillExcluding(PointDense grad, double epsilon) {
         return excluding().filter(hs -> hs.normal().dot(grad) > epsilon);
     }
 
-    public Stream<HalfSpace> downHill(Point grad, double epsilon) {
+    public Stream<HalfSpace> downHill(PointDense grad, double epsilon) {
         return Stream.concat(downhillContaining(grad, epsilon),
                 downhillExcluding(grad, epsilon));
     }
@@ -132,7 +132,7 @@ public class Partition {
      * @param epsilon
      * @return
      */
-    public HalfSpace nearestDownhillFaceContaining(Point y, Point grad, double epsilon) {
+    public HalfSpace nearestDownhillFaceContaining(PointDense y, PointDense grad, double epsilon) {
 
         if(containing.isEmpty()) return null;
         return downhillContaining(grad, epsilon)
@@ -142,12 +142,12 @@ public class Partition {
         
     }
 
-    public Stream<HalfSpace> excludingSpacesBetweenHereAndThere(Point grad, Point goTo, double epsilon) {
+    public Stream<HalfSpace> excludingSpacesBetweenHereAndThere(PointDense grad, PointDense goTo, double epsilon) {
         return downhillExcluding(grad, epsilon).filter(hs -> hs.hasElement(goTo, epsilon));
     }
 
     
-    public Point getGradient() {
+    public PointDense getGradient() {
         return gradient;
     }
     

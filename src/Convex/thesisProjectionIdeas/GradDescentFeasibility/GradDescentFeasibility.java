@@ -2,7 +2,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
 import Convex.Polytope;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -32,14 +32,14 @@ public class GradDescentFeasibility extends Polytope {
 
     public static void loadFromErrorFile() throws IOException {
         Path errorFile = Path.of("error.txt");
-        Point start = new Point(Files.lines(errorFile).findFirst().get());
+        PointDense start = new PointDense(Files.lines(errorFile).findFirst().get());
 
         Polytope poly = new Polytope(
                 Files.lines(errorFile)
                         .filter(line -> line.startsWith("point"))
                         .map(line -> {
                             String[] pointStrings = line.replace("point ", "").split(" with normal ");
-                            return new HalfSpace(new Point(pointStrings[0]), new Point(pointStrings[1]));
+                            return new HalfSpace(new PointDense(pointStrings[0]), new PointDense(pointStrings[1]));
                         })
             );
         
@@ -62,7 +62,7 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public double sumDist(Point y) {
+    public double sumDist(PointDense y) {
         return stream().parallel().mapToDouble(hs -> hs.d(y)).sum();
     }
 
@@ -73,13 +73,13 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public Point gradSumDist(Point y) {
+    public PointDense gradSumDist(PointDense y) {
 
         return gradSumDist(y, stream().parallel().filter(hs -> !hs.hasElement(y)));
 
     }
 
-    public Point gradSumDist(Point y, Stream<HalfSpace> containing) {
+    public PointDense gradSumDist(PointDense y, Stream<HalfSpace> containing) {
         return containing.map(hs -> hs.normal().dir())
                 .reduce((a, b) -> a.plus(b)).get();
     }
@@ -95,7 +95,7 @@ public class GradDescentFeasibility extends Polytope {
      * @param grad the direction to look for an intersection in.
      * @return the nearest point where the ray from y hits a plane
      */
-    private HalfSpace targetPlane(Point y, Point grad, Partition part) {
+    private HalfSpace targetPlane(PointDense y, PointDense grad, Partition part) {
 
         HalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
 
@@ -116,7 +116,7 @@ public class GradDescentFeasibility extends Polytope {
 
     }
 
-    private void rollThroughSpaces(Point rollToPoint, Partition part) {
+    private void rollThroughSpaces(PointDense rollToPoint, Partition part) {
 
         part.passThroughSpaces(
                 part.excluding()
@@ -131,14 +131,14 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public Point fesibility(Point y) {
+    public PointDense fesibility(PointDense y) {
 
         Partition part = new Partition(y, this);
         if (part.pointIsFeasible()) return y;
 
         LocalPolyhedralCone cone = new LocalPolyhedralCone(part);
 
-        Point start = y;      //TODO remove
+        PointDense start = y;      //TODO remove
 
         for (int i = 0; i <= size(); i++) {
 
@@ -146,7 +146,7 @@ public class GradDescentFeasibility extends Polytope {
                 
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
-                Point oldY = new Point(y);//TODO: remove from final code
+                PointDense oldY = new PointDense(y);//TODO: remove from final code
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
@@ -189,14 +189,14 @@ public class GradDescentFeasibility extends Polytope {
      *
      * @return
      */
-    public Point fesibility() {
-        return fesibility(new Point(dim()));
+    public PointDense fesibility() {
+        return fesibility(new PointDense(dim()));
 
     }
 
     public class FailedDescentException extends RuntimeException {
 
-        public FailedDescentException(String message, Point start, Point y, Partition part) {
+        public FailedDescentException(String message, PointDense start, PointDense y, Partition part) {
             super(message + "\nThe starting point was: "
                     + start
                     + "\nThe distance to the polytope is " + sumDist(y)

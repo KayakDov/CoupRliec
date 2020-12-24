@@ -3,7 +3,7 @@ package Convex.Linear;
 import Convex.ConvexSet;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelon;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.Arrays;
 
 /**
@@ -16,9 +16,9 @@ public class LinearSpace implements ConvexSet {
     
 //    private final Matrix nullSpace;
 
-    private Point[] normals;
+    private PointDense[] normals;
 
-    public LinearSpace(Point[] normals) {
+    public LinearSpace(PointDense[] normals) {
         this.normals = normals;
     }
     
@@ -81,8 +81,8 @@ public class LinearSpace implements ConvexSet {
                 
         nullMatrix.setCols(i -> {
             if(i < basis.cols)
-                return new Point(nullMatrix.rows).setAll(j -> rcef.get(j + basis.cols, i));
-            else return new Point(nullMatrix.rows).set(i - basis.cols, -1);
+                return new PointDense(nullMatrix.rows).setAll(j -> rcef.get(j + basis.cols, i));
+            else return new PointDense(nullMatrix.rows).set(i - basis.cols, -1);
                 
         });
         return new LinearSpace(nullMatrix.rowArray());
@@ -138,19 +138,19 @@ public class LinearSpace implements ConvexSet {
 
         Matrix IMinus = Matrix.identityMatrix(Math.max(rre.rows, rre.cols)).minus(rre.squareMatrixFromAbove());
 
-        if (rre.noFreeVariable()) return new Point(rre.rows);
+        if (rre.noFreeVariable()) return new PointDense(rre.rows);
 
         return Matrix.fromCols(rre.getFreeVariables().map(i -> IMinus.col(i)));
 
     }
 
     @Override
-    public boolean hasElement(Point x) {
+    public boolean hasElement(PointDense x) {
         return hasElement(x, epsilon);
     }
 
     @Override
-    public boolean hasElement(Point x, double epsilon) {
+    public boolean hasElement(PointDense x, double epsilon) {
         if (normals.length == 0) return true;
         return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
     }
@@ -158,14 +158,14 @@ public class LinearSpace implements ConvexSet {
     private Matrix projFunc = null;
 
     @Override
-    public Point proj(Point p) {
+    public PointDense proj(PointDense p) {
         if (isAllSpace()) return p;
         
         if (projFunc == null) {
             Matrix A = colSpaceMatrix();
             if (!A.isZero(epsilon))
                 projFunc = A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
-            else return new Point(p.dim());
+            else return new PointDense(p.dim());
         }
         
         return projFunc.mult(p);
@@ -187,7 +187,7 @@ public class LinearSpace implements ConvexSet {
     }
 
     public static LinearSpace allSpace(int dim) {
-        return new LinearSpace(new Point[0]);
+        return new LinearSpace(new PointDense[0]);
     }
 
     /**
@@ -209,7 +209,7 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public LinearSpace intersection(LinearSpace ls) {
-        Point[] intersection = new Point[normals.length + ls.normals.length];
+        PointDense[] intersection = new PointDense[normals.length + ls.normals.length];
         System.arraycopy(normals, 0, intersection, 0, normals.length);
         System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
         return new LinearSpace(intersection);

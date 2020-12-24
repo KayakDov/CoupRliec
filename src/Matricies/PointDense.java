@@ -1,19 +1,16 @@
-package RnSpace.points;
+package Matricies;
 
 import Convex.ConvexSet;
 import Convex.Linear.Plane;
-import listTools.Pair1T;
 import Matricies.Matrix;
 import static java.lang.Math.abs;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 
@@ -21,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author dov
  */
-public class Point extends Matrix {//implements Comparable {
+public class PointDense extends MatrixDense implements Point {//implements Comparable {
 
     /**
      * constructor
@@ -29,7 +26,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param x
      * @param y
      */
-    public Point(double[] x) {
+    public PointDense(double[] x) {
         super(x.length, 1);
         System.arraycopy(x, 0, array, 0, x.length);
     }
@@ -40,10 +37,15 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @param n
      */
-    public Point(int n) {
+    public PointDense(int n) {
         super(n, 1);
     }
 
+    public static PointDense sparse(int dim, int numNonZeroes) {
+        PointDense m = new PointDense(dim);
+        m.array = null;
+        return m;
+    }
 
     /**
      * Creates an unsafe point quickly.
@@ -68,7 +70,7 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @param p
      */
-    public Point(Point p) {
+    public PointDense(PointDense p) {
         this(p.array.length);
         System.arraycopy(p.array, 0, array, 0, p.array.length);
     }
@@ -80,7 +82,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param mag start scalar the other point gets multiplied by to create this
      * point.
      */
-    public Point(Point p, double mag) {
+    public PointDense(PointDense p, double mag) {
         this(p.dim());
         setAll(i -> p.get(i) * mag);
     }
@@ -89,11 +91,12 @@ public class Point extends Matrix {//implements Comparable {
      * @param dim the number of dimensions of the origin.
      * @return (0,0)
      */
-    public static Point Origin(int dim) {
-        return new Point(dim).setAll(i -> 0);
+    public static PointDense Origin(int dim) {
+        return new PointDense(dim).setAll(i -> 0);
     }
 
-    public Point addToMe(Point p) {
+    @Override
+    public PointDense addToMe(PointDense p) {
         return setAll(i -> get(i) + p.get(i));
     }
 
@@ -102,7 +105,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
-    public Point minus(Point p) {
+    @Override
+    public PointDense minus(PointDense p) {
         return plus(p.mult(-1));
     }
 
@@ -112,11 +116,13 @@ public class Point extends Matrix {//implements Comparable {
      * @param mp The point distant from this one.
      * @return The distance from this point to the given point.
      */
-    public double d(Point mp) {
+    @Override
+    public double d(PointDense mp) {
         return Math.sqrt(distSq(mp));
     }
 
-    public double distSq(Point mp) {
+    @Override
+    public double distSq(PointDense mp) {
         return minus(mp).dot(minus(mp));
     }
 
@@ -125,6 +131,7 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @return The distance of this point from the origan;
      */
+    @Override
     public double magnitude() {
         return d(Origin(dim()));
     }
@@ -134,14 +141,16 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @return
      */
-    public Point dir() {
+    @Override
+    public PointDense dir() {
         double m = magnitude();
-        if(m == 0) return Origin(dim());
+        if (m == 0) return Origin(dim());
         return map(x -> x / m);
     }
-    
-    public Point map(DoubleFunction<Double> f){
-        return new Point(dim()).setAll(i -> f.apply(array[i]));
+
+    @Override
+    public PointDense map(DoubleFunction<Double> f) {
+        return new PointDense(dim()).setAll(i -> f.apply(array[i]));
     }
 
     /**
@@ -151,7 +160,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
-    public double dot(Point p) {
+    @Override
+    public double dot(PointDense p) {
         return IntStream.range(0, Math.min(dim(), p.dim())).
                 mapToDouble(i -> p.get(i) * get(i)).sum();
     }
@@ -162,11 +172,13 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
+    @Override
     public double dot(double[] p) {
-        return dot(new Point(p));
+        return dot(new PointDense(p));
     }
 
-    public Matrix outerProduct(Point p) {
+    @Override
+    public Matrix outerProduct(PointDense p) {
         return new Matrix(dim(), p.dim()).setAll((i, j) -> get(i) * p.get(j));
     }
 
@@ -176,15 +188,18 @@ public class Point extends Matrix {//implements Comparable {
      * @param k
      * @return
      */
-    public Point mult(double k) {
+    @Override
+    public PointDense mult(double k) {
         return map(x -> x * k);
     }
 
+    @Override
     public Matrix mult(Matrix matrix) {
         return new Matrix(this).T().mult(matrix);
     }
 
-    public Point multMe(double k) {
+    @Override
+    public PointDense multMe(double k) {
         return setAll(i -> get(i) * k);
     }
 
@@ -194,7 +209,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param p the unit vector this one is projected onto
      * @return the result of shadowing this vector onto start unit vector
      */
-    public Point inDir(Point p) {
+    @Override
+    public PointDense inDir(PointDense p) {
         return p.dir().mult(dot(p.dir()));
     }
 
@@ -209,18 +225,19 @@ public class Point extends Matrix {//implements Comparable {
         }
         return sb.append(")").toString();
     }
-    
+
     /**
-     * creates a point from a string formatted as follows: (1.0, 2.0, 3.0) 
-     * @param fromString 
+     * creates a point from a string formatted as follows: (1.0, 2.0, 3.0)
+     *
+     * @param fromString
      */
-    public Point(String fromString){
-        this((int)(fromString.chars().filter(c -> c == (int)(',')).count() + 1));
+    public PointDense(String fromString) {
+        this((int) (fromString.chars().filter(c -> c == (int) (',')).count() + 1));
 
         fromString = fromString.replaceAll("\\(", "")
                 .replaceAll("\\)", "")
                 .replaceAll(" ", "");
-        
+
         array = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
     }
 
@@ -228,6 +245,7 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @return this point is defined and has real values
      */
+    @Override
     public boolean isReal() {
         return stream().allMatch(y -> (!Double.isNaN(y) && Double.isFinite(y)));
     }
@@ -238,7 +256,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
-    public boolean equals(Point p) {
+    @Override
+    public boolean equals(PointDense p) {
         return Arrays.equals(array, p.array);
     }
 
@@ -252,7 +271,7 @@ public class Point extends Matrix {//implements Comparable {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        final Point other = (Point) obj;
+        final PointDense other = (PointDense) obj;
         return Arrays.equals(this.array, other.array);
     }
 
@@ -263,8 +282,9 @@ public class Point extends Matrix {//implements Comparable {
      * @param acc the distance aloud to p
      * @return
      */
-    public boolean equals(Point p, double acc) {
-        if(p == null) return false;
+    @Override
+    public boolean equals(PointDense p, double acc) {
+        if (p == null) return false;
         return d(p) < acc;
     }
 
@@ -273,6 +293,7 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @return the number of dimensions the point is defined in.
      */
+    @Override
     public int dim() {
         return array.length;
     }
@@ -283,6 +304,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param i
      * @return
      */
+    @Override
     public double get(int i) {
         if (i >= dim() || i < 0)
             return 0;
@@ -305,16 +327,17 @@ public class Point extends Matrix {//implements Comparable {
      * @param y the new value at that index
      * @return this point
      */
-    public Point set(int i, double y) {
+    @Override
+    public PointDense set(int i, double y) {
         array[i] = y;
         return this;
     }
-
 
     /**
      *
      * @return the point as an array
      */
+    @Override
     public double[] array() {
         return array;
     }
@@ -330,14 +353,13 @@ public class Point extends Matrix {//implements Comparable {
         return s;
     }
 
-
-    public Point(double x, double y) {
+    public PointDense(double x, double y) {
         this(2);
         set(0, x);
         set(1, y);
     }
 
-    public Point(double x, double y, double z) {
+    public PointDense(double x, double y, double z) {
         this(3);
         set(0, x);
         set(1, y);
@@ -362,7 +384,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param b the other point
      * @return the point halfway between the other point and this point.
      */
-    public Point mid(Point b) {
+    public PointDense mid(PointDense b) {
         return plus(b).mult(.5);
     }
 
@@ -372,15 +394,17 @@ public class Point extends Matrix {//implements Comparable {
      * @param p the other point
      * @return the sum of the two points
      */
-    public Point plus(Point p) {
-        return new Point(dim()).setAll(i -> get(i) + p.get(i));
+    @Override
+    public PointDense plus(PointDense p) {
+        return new PointDense(dim()).setAll(i -> get(i) + p.get(i));
     }
 
-    public Point dot(Matrix m) {
+    @Override
+    public PointDense dot(Matrix m) {
         if (m.rows != dim())
             throw new ArithmeticException("wrong number of rows in matrix to multiply by this point");
 
-        return new Point(m.cols).setAll(i -> m.row(i).dot(this));
+        return new PointDense(m.cols).setAll(i -> m.row(i).dot(this));
     }
 
     /**
@@ -390,8 +414,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param dist the distance the new point is shifted.
      * @return start new point as described above.
      */
-    public Point shift(int dim, double dist) {
-        Point shift = new Point(this);
+    public PointDense shift(int dim, double dist) {
+        PointDense shift = new PointDense(this);
         shift.set(dim, get(dim) + dist);
         return shift;
     }
@@ -402,8 +426,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param x the value of the point
      * @return start one dimensional point located at x
      */
-    public static Point oneD(double x) {
-        return new Point(new double[]{x});
+    public static PointDense oneD(double x) {
+        return new PointDense(new double[]{x});
     }
 
     /**
@@ -413,7 +437,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param srcStartPos the starting index of the MyPoint in the array
      * @return start this point
      */
-    public Point setFromSubArray(double[] x, int srcStartPos) {
+    @Override
+    public PointDense setFromSubArray(double[] x, int srcStartPos) {
         System.arraycopy(x, srcStartPos, array, 0, Math.min(dim(), x.length));
         return this;
     }
@@ -425,7 +450,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param start the starting index of the x VALUES in this point
      * @return start this point
      */
-    public Point setFromSubArray(Point x, int start) {
+    public PointDense setFromSubArray(PointDense x, int start) {
         return setFromSubArray(x.array, start);
     }
 
@@ -442,7 +467,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param rand the random number generator.
      * @return start random vertex in start sphere.
      */
-    public static Point uniformRand(Point center, double r) {
+    public static PointDense uniformRand(PointDense center, double r) {
         return center.map(t -> t + r * (2 * rand.nextDouble() - 1));
     }
 
@@ -457,8 +482,9 @@ public class Point extends Matrix {//implements Comparable {
      * @param rand the random number generator
      * @return start new randomly distributed point.
      */
-    public static Point gaussianRand(int dim, Point mean, Point standardDeviation, Random rand) {
-        return new Point(dim).setAll(i -> rand.nextGaussian() * standardDeviation.get(i) + mean.get(i));
+    public static PointDense gaussianRand(int dim, PointDense mean, PointDense standardDeviation, Random rand) {
+        return new PointDense(dim).setAll(i -> rand.nextGaussian()
+                * standardDeviation.get(i) + mean.get(i));
     }
 
     /**
@@ -468,9 +494,10 @@ public class Point extends Matrix {//implements Comparable {
      * @param scale
      * @return the new point
      */
-    public Point reflectThrough(Point center, double scale) {
+    public PointDense reflectThrough(PointDense center, double scale) {
 
-        return new Point(center.dim()).setAll(i -> center.get(i) + scale * (center.get(i) - get(i)));
+        return new PointDense(center.dim()).setAll(i -> center.get(i) + scale
+                * (center.get(i) - get(i)));
 
     }
 
@@ -479,7 +506,6 @@ public class Point extends Matrix {//implements Comparable {
         set(i, get(j));
         set(j, temp);
     }
-
 
     /**
      * the absolute value at the given index
@@ -491,6 +517,7 @@ public class Point extends Matrix {//implements Comparable {
         return abs(get(i));
     }
 
+    @Override
     public DoubleStream stream() {
         return Arrays.stream(array);
     }
@@ -500,6 +527,7 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @return the average value in the point
      */
+    @Override
     public double avg() {
         return stream().parallel().sum() / dim();
     }
@@ -527,9 +555,10 @@ public class Point extends Matrix {//implements Comparable {
      *
      * @param p
      */
-    public double covariance(Point p) {
+    public double covariance(PointDense p) {
         double avg = avg(), pAvg = p.avg();
-        return IntStream.range(0, dim()).parallel().mapToDouble(i -> (avg - get(i)) * (pAvg - p.get(i))).sum() / dim();
+        return IntStream.range(0, dim()).parallel().mapToDouble(i -> (avg
+                - get(i)) * (pAvg - p.get(i))).sum() / dim();
     }
 
     /**
@@ -539,8 +568,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
-    public Matrix covarianceMatrix(Point p) {
-        return covarianceMatrix(new Point[]{this, p});
+    public Matrix covarianceMatrix(PointDense p) {
+        return covarianceMatrix(new PointDense[]{this, p});
     }
 
     /**
@@ -550,7 +579,7 @@ public class Point extends Matrix {//implements Comparable {
      * variable
      * @return the covariance Matrix of the data points
      */
-    public static Matrix covarianceMatrix(Point[] p) {
+    public static Matrix covarianceMatrix(PointDense[] p) {
         return new Matrix(p.length).setAll((i, j) -> p[i].covariance(p[j]));
     }
 
@@ -561,8 +590,9 @@ public class Point extends Matrix {//implements Comparable {
      * @param p the other point
      * @return the cross product of the two points
      */
-    public Point cross(Point p) {
-        return Matrix.fromRows(new Point[]{this, p}).crossProduct();
+    @Override
+    public PointDense cross(PointDense p) {
+        return Matrix.fromRows(new PointDense[]{this, p}).crossProduct();
     }
 
     /**
@@ -572,7 +602,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param p an array of points
      * @return the cross product of the points
      */
-    public static Point cross(Point[] p) {
+    public static PointDense cross(PointDense[] p) {
         return Matrix.fromRows(p).crossProduct();
     }
 
@@ -583,7 +613,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param epsilon
      * @return
      */
-    public boolean sameDirection(Point p, double epsilon) {
+    @Override
+    public boolean sameDirection(PointDense p, double epsilon) {
         return dir().distSq(p.dir()) < epsilon;
     }
 
@@ -593,7 +624,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param x an array of scalars
      * @return this point
      */
-    public Point set(double[] x) {
+    @Override
+    public PointDense set(double[] x) {
         System.arraycopy(x, 0, array, 0, x.length);
         return this;
     }
@@ -604,10 +636,12 @@ public class Point extends Matrix {//implements Comparable {
      * @param x
      * @return
      */
-    public Point set(Point x) {
+    @Override
+    public PointDense set(PointDense x) {
         return set(x.array);
     }
 
+    @Override
     public <T> List mapToList(Function<Double, T> f) {
         return stream().parallel().mapToObj(t -> f.apply(t)).collect(Collectors.toList());
     }
@@ -619,7 +653,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param p
      * @return
      */
-    public boolean lessThan(Point p) {
+    public boolean lessThan(PointDense p) {
         return IntStream.range(0, dim()).allMatch(i -> get(i) < p.get(i));
     }
 
@@ -643,7 +677,8 @@ public class Point extends Matrix {//implements Comparable {
      * @param cs the convex set
      * @return the projection of this point on the convex set
      */
-    public Point proj(ConvexSet cs) {
+    @Override
+    public PointDense proj(ConvexSet cs) {
         return cs.proj(this);
     }
 
@@ -653,6 +688,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param plane
      * @return
      */
+    @Override
     public boolean above(Plane plane) {
         return plane.below(this);
     }
@@ -663,6 +699,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param plane
      * @return
      */
+    @Override
     public boolean below(Plane plane) {
         return plane.above(this);
     }
@@ -673,29 +710,31 @@ public class Point extends Matrix {//implements Comparable {
      * @param p the point to concatenate with this point
      * @return a new point
      */
-    public Point concat(Point p) {
-        Point concat = new Point(dim() + p.dim());
+    @Override
+    public PointDense concat(PointDense p) {
+        PointDense concat = new PointDense(dim() + p.dim());
         System.arraycopy(array, 0, concat.array, 0, dim());
         System.arraycopy(p.array, 0, concat.array, dim(), p.dim());
         return concat;
     }
-    
+
     /**
      * concatenates a single value onto this point.
+     *
      * @param d
-     * @return 
+     * @return
      */
-    public Point concat(double d){
-        return concat(Point.oneD(d));
+    @Override
+    public PointDense concat(double d) {
+        return concat(PointDense.oneD(d));
     }
 
     @Override
-    public Point setAll(IntToDoubleFunction f) {
+    public PointDense setAll(IntToDoubleFunction f) {
         Arrays.setAll(array, f);
         return this;
     }
 
-    
     /**
      * The constructor, a 4f point
      *
@@ -704,7 +743,7 @@ public class Point extends Matrix {//implements Comparable {
      * @param z
      * @param t
      */
-    public Point(double x, double y, double z, double t) {
+    public PointDense(double x, double y, double z, double t) {
         this(new double[]{x, y, z, t});
     }
 
@@ -714,16 +753,16 @@ public class Point extends Matrix {//implements Comparable {
      * @param cut a list of rows to be cut
      * @return a new point without the rows cut.
      */
-    public Point removeRows(List<Integer> cut) {
-        Point removeRows = new Point(dim() - cut.size());
-        for(int to = 0, from = 0; from < dim(); from++)
-            if(!cut.contains(from)) removeRows.set(to++, get(from));
+    public PointDense removeRows(List<Integer> cut) {
+        PointDense removeRows = new PointDense(dim() - cut.size());
+        for (int to = 0, from = 0; from < dim(); from++)
+            if (!cut.contains(from)) removeRows.set(to++, get(from));
         return removeRows;
     }
-    
-    public Matrix T(){
+
+    @Override
+    public Matrix T() {
         return new Matrix(array, 1, dim());
     }
 
-    
 }

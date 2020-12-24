@@ -1,6 +1,6 @@
 package Convex;
 
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.stream.DoubleStream;
 
 /**
@@ -10,7 +10,7 @@ import java.util.stream.DoubleStream;
 public class Interval extends Cube {
 
     public Interval(double a, double b) {
-        super(Point.oneD(a), Point.oneD(b));
+        super(PointDense.oneD(a), PointDense.oneD(b));
     }
 
     public double start() {

@@ -5,18 +5,18 @@
  */
 package Convex;
 
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.function.Predicate;
 
 /**
  *
  * @author Kayak
  */
-public interface Indicator extends Predicate<Point>{
-    public boolean isMember(Point x);
+public interface Indicator extends Predicate<PointDense>{
+    public boolean isMember(PointDense x);
 
     @Override
-    public default boolean test(Point t) {
+    public default boolean test(PointDense t) {
         return isMember(t);
     }
     

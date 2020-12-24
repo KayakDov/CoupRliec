@@ -4,7 +4,7 @@ import Convex.Linear.Plane;
 import Convex.Linear.AffineSpace;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
 import Matricies.Matrix;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,8 +114,8 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public Point b() {
-        return new Point(size()).setAll(i -> halfSpaces.get(i).normal().dot(halfSpaces.get(i).surfacePoint()));
+    public PointDense b() {
+        return new PointDense(size()).setAll(i -> halfSpaces.get(i).normal().dot(halfSpaces.get(i).surfacePoint()));
     }
 
     /**
@@ -143,7 +143,7 @@ public class Polytope implements ConvexSet {
      * @param normals a matrix of the normal vectors of the half spaces
      * @param b the right side of the defning inequality
      */
-    public Polytope(Matrix normals, Point b) {
+    public Polytope(Matrix normals, PointDense b) {
         this();
         halfSpaces.addAll(
                 IntStream.range(0, normals.rows).mapToObj(i -> new HalfSpace(
@@ -171,11 +171,11 @@ public class Polytope implements ConvexSet {
      *
      * @param x
      */
-    public void removeFacesNotContaining(Point x) {
+    public void removeFacesNotContaining(PointDense x) {
         removeIf(face -> !face.onSurface(x, epsilon));
     }
 
-    public void removeFacesNotFacing(Point y) {
+    public void removeFacesNotFacing(PointDense y) {
         removeIf(f -> f.hasElement(y));
     }
 
@@ -209,11 +209,11 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(Point p) {//TODO: make this paralel
+    public boolean hasElement(PointDense p) {//TODO: make this paralel
         return stream().allMatch((HalfSpace hs) -> hs.hasElement(p, epsilon));
     }
 
-    private Point lastProjectionSource = null, lastProjection = null;
+    private PointDense lastProjectionSource = null, lastProjection = null;
 
     public boolean hasHalfSpaces() {
         return halfSpaces.isEmpty();
@@ -362,7 +362,7 @@ public class Polytope implements ConvexSet {
         return Matrix.fromRows(vertexStream());
     }
 
-    private Stream<Point> vertexStream() {
+    private Stream<PointDense> vertexStream() {
         return new Choose<>(halfSpaces, dim()).chooseStream()
                 .filter(hsSet -> new Polytope(hsSet).normalMatix().det() != 0)
                 .map(hsSet -> AffineSpace.intersection(hsSet.stream().map(hs -> hs.boundary())).p())
@@ -381,7 +381,7 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(Point x, double epsilon) {
+    public boolean hasElement(PointDense x, double epsilon) {
         return stream().allMatch(halfSpace -> halfSpace.hasElement(x, epsilon));
     }
 
@@ -434,7 +434,7 @@ public class Polytope implements ConvexSet {
      * @param x the point we're looking for the closest plane to.
      * @return the closest plane.
      */
-    public HalfSpace closestTo(Point x) {
+    public HalfSpace closestTo(PointDense x) {
         return stream().parallel().max(Comparator.comparing(plane -> plane.d(x))).get();
     }
 
@@ -444,7 +444,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public Point feasibilityPoint() throws NoSuchElementException {
+    public PointDense feasibilityPoint() throws NoSuchElementException {
 
 //        return new GradDescentFeasibility();
         return bruteForceFeasibility();
@@ -470,7 +470,7 @@ public class Polytope implements ConvexSet {
      * @param y the point being projected.
      * @return the projection of y onto this convex polytope.
      */
-    public Point bruteForceProjection(Point y) {
+    public PointDense bruteForceProjection(PointDense y) {
 
         if (hasElement(y, epsilon)) {
             return y;
@@ -504,7 +504,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public Point bruteForceFeasibility() {
+    public PointDense bruteForceFeasibility() {
 
         return affineSubSpaces().map(as -> as.p()).filter(p -> hasElement(p)).findAny().get();
     }
@@ -549,7 +549,7 @@ public class Polytope implements ConvexSet {
      * @param x a point on the surface of the polytope.
      * @return all the faces smallestContainingSubSpace x on their surface.
      */
-    private Polytope facesContaining(Point x) {
+    private Polytope facesContaining(PointDense x) {
         return new Polytope(stream().filter(hs -> hs.boundary().hasElement(x)));
     }
 
@@ -570,7 +570,7 @@ public class Polytope implements ConvexSet {
         return new Polytope(
                 IntStream.range(0, numFaces).mapToObj(i -> {
                     
-                    Point normal = Point.uniformRand(new Point(dim), 1);
+                    PointDense normal = PointDense.uniformRand(new PointDense(dim), 1);
                     normal = normal.mult(1/normal.magnitude());
                     
                     return new HalfSpace(normal, normal);
@@ -593,7 +593,7 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public Point proj(Point p) {
+    public PointDense proj(PointDense p) {
         return bruteForceProjection(p);
     }
 

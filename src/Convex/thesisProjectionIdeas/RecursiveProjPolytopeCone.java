@@ -3,7 +3,7 @@ package Convex.thesisProjectionIdeas;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.PolytopeCone;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.Comparator;
 
 /**
@@ -20,12 +20,12 @@ public class RecursiveProjPolytopeCone extends PolytopeCone {
         addAll(pc);
     }
 
-    public RecursiveProjPolytopeCone(Point tip) {
+    public RecursiveProjPolytopeCone(PointDense tip) {
         super(tip);
     }
 
     @Override
-    public Point proj(Point y) {
+    public PointDense proj(PointDense y) {
         return proj(y, AffineSpace.allSpace(y.dim()), y.dim());
     }
 
@@ -38,7 +38,7 @@ public class RecursiveProjPolytopeCone extends PolytopeCone {
      * @return the projection of y onto the intersection of as and this
      * polytope.
      */
-    private Point proj(Point y, AffineSpace as, int dim) {
+    private PointDense proj(PointDense y, AffineSpace as, int dim) {
 
         y = as.proj(y);
 
@@ -64,10 +64,10 @@ public class RecursiveProjPolytopeCone extends PolytopeCone {
      * @return the face, intersected with the affine space, that is closest to
      * y.
      */
-    public AffineSpace containingProj(Point y, AffineSpace as) {
+    public AffineSpace containingProj(PointDense y, AffineSpace as) {
 
         
-        Point toY = y.minus(getTip());
+        PointDense toY = y.minus(getTip());
 
         Plane nearestPlane = stream().map(hs -> hs.boundary())
                 .max(Comparator.comparing(

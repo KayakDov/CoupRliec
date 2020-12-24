@@ -1,7 +1,7 @@
 package Convex;
 
 import Matricies.Matrix;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,18 +14,18 @@ import listTools.Choose;
 public class Simplex extends Polytope {
 
     public Simplex(Matrix points) {
-        List<ArrayList<Point>> pointSets = Arrays.asList(
+        List<ArrayList<PointDense>> pointSets = Arrays.asList(
                 new Choose<>(points.rowList(), points.cols).chooseListsArray());
         
         pointSets.forEach(set -> {
-            HalfSpace hs = new HalfSpace(Matrix.fromRows(set.toArray(Point[]::new)));
-            Point other = points.rowStream().filter(p -> !set.contains(p)).findAny().get();
+            HalfSpace hs = new HalfSpace(Matrix.fromRows(set.toArray(PointDense[]::new)));
+            PointDense other = points.rowStream().filter(p -> !set.contains(p)).findAny().get();
             if (!hs.hasElement(other)) hs = hs.complement();
             add(hs);
         });
     }
 
-    public Simplex(Point[] points) {
+    public Simplex(PointDense[] points) {
         this(Matrix.fromRows(points));
     }
 

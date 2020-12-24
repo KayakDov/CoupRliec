@@ -4,7 +4,7 @@ import Convex.Linear.AffineSpace;
 import Convex.Hull;
 import Convex.Polytope;
 import Matricies.Matrix;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import Matricies.SymmetricMatrix;
 import Convex.Cube;
 import Convex.HalfSpace;
@@ -77,7 +77,7 @@ public class Main {
     }
 
     public static void testCuboidHalvs() {
-        Cube c = new Cube(new Point(0, 0), new Point(1, 2));
+        Cube c = new Cube(new PointDense(0, 0), new PointDense(1, 2));
         System.out.println(c.halves(0));
     }
 
@@ -89,36 +89,38 @@ public class Main {
     }
 
     public static void testPlanes() {
-        Plane p = new Plane(new Point(0, 0), new Point(1, 0));
-        System.out.println(p.below(new Point(5, 3)));
+        Plane p = new Plane(new PointDense(0, 0), new PointDense(1, 0));
+        System.out.println(p.below(new PointDense(5, 3)));
     }
 
     public static void testCrossProdcut() {
-        Point p1 = new Point(1, 0, 0), p2 = new Point(0, 0, 1);
-        Point[] p = new Point[]{p1, p2};
+        PointDense p1 = new PointDense(1, 0, 0);
+        Point p2 = new PointDense(0, 0, 1);
+        PointDense[] p = new PointDense[]{p1, p2};
         System.out.println(p1.cross(p2));
-        System.out.println(Point.cross(p));
+        System.out.println(PointDense.cross(p));
 
     }
 
     public static void testPlane() {
-        Point p1 = new Point(0, 0, 0), p2 = new Point(0, 1, 0), p3 = new Point(1, 0, 0);
-        System.out.println(new Plane(new Point[]{p1, p2, p3}));
+        PointDense p1 = new PointDense(0, 0, 0);
+        Point Point p2 = new PointDense(0, 1, 0), p3 = new PointDense(1, 0, 0), p3 = new Point(1, 0, 0);
+        System.out.println(new Plane(new PointDense[]{p1, p2, p3}));
     }
 
     public static void testPolytope() {
         Polytope p = new Polytope();
-        p.addFace(new HalfSpace(new Point(0, 1), new Point(0, 1)));
-        p.addFace(new HalfSpace(new Point(0, -1), new Point(0, -1)));
-        p.addFace(new HalfSpace(new Point(-1, 0), new Point(-1, 0)));
-        p.addFace(new HalfSpace(new Point(1, 0), new Point(1, 0)));
+        p.addFace(new HalfSpace(new PointDense(0, 1), new PointDense(0, 1)));
+        p.addFace(new HalfSpace(new PointDense(0, -1), new PointDense(0, -1)));
+        p.addFace(new HalfSpace(new PointDense(-1, 0), new PointDense(-1, 0)));
+        p.addFace(new HalfSpace(new PointDense(1, 0), new PointDense(1, 0)));
 
         p.setEpsilon(1E-10);
-        System.out.println(p.proj(new Point(-2, -2)));
-        System.out.println(p.proj(new Point(-2, 2)));
-        System.out.println(p.proj(new Point(2, .5)));
-        System.out.println(p.proj(new Point(2, 2)));
-        System.out.println(p.proj(new Point(2000000, 4000000)));
+        System.out.println(p.proj(new PointDense(-2, -2)));
+        System.out.println(p.proj(new PointDense(-2, 2)));
+        System.out.println(p.proj(new PointDense(2, .5)));
+        System.out.println(p.proj(new PointDense(2, 2)));
+        System.out.println(p.proj(new PointDense(2000000, 4000000)));
 
     }
 
@@ -141,23 +143,23 @@ public class Main {
 
     public static void testPolytopeVertices() {
 
-        Cube c = new Cube(new Point(1, 1, 1), new Point(2, 2, 2));
+        Cube c = new Cube(new PointDense(1, 1, 1), new PointDense(2, 2, 2));
         System.out.println(c.getVertices());
     }
 
     public static void testPlaneNormalAvg() {
         Matrix m = new Matrix(3, 3);
-        m.setRow(0, new Point(0, 0, 0));
-        m.setRow(1, new Point(1, 0, -.001));
-        m.setRow(0, new Point(0, 1, 0));
-        m.setRow(0, new Point(1, 1, .001));
+        m.setRow(0, new PointDense(0, 0, 0));
+        m.setRow(1, new PointDense(1, 0, -.001));
+        m.setRow(0, new PointDense(0, 1, 0));
+        m.setRow(0, new PointDense(1, 1, .001));
         System.out.println(new Plane(m));
     }
 
     public static void testMatrixSetRow() {
         Matrix m = new Matrix(3).setAll((i, j) -> i + j + 1.0);
         System.out.println(m);
-        m.setRow(2, new Point(9, 9, 9));
+        m.setRow(2, new PointDense(9, 9, 9));
         System.out.println(m);
     }
 
@@ -172,40 +174,40 @@ public class Main {
 //        System.out.println(ls.colSpaceMatrix());
 //        System.out.println(ls.nullSpaceMatrix());
 
-        LinearSpace line = LinearSpace.colSpace(new Point(1, 0, 0));
+        LinearSpace line = LinearSpace.colSpace(new PointDense(1, 0, 0));
         System.out.println(line);
-        System.out.println(line.hasElement(new Point(-1, 1, 0)));
+        System.out.println(line.hasElement(new PointDense(-1, 1, 0)));
     }
 
     public static void testAffineSpace() {
         Matrix m = new Matrix(3);
-        m.setCol(0, new Point(0, 0, 1));
-        m.setCol(1, new Point(1, 0, 0));
+        m.setCol(0, new PointDense(0, 0, 1));
+        m.setCol(1, new PointDense(1, 0, 0));
         LinearSpace ls = LinearSpace.colSpace(m);
 
         System.out.println(ls.nullSpaceMatrix());
 
-        AffineSpace as = new AffineSpace(ls, new Point(7, 8, -3));
+        AffineSpace as = new AffineSpace(ls, new PointDense(7, 8, -3));
 
-        System.out.println(as.proj(new Point(20, -17, 5)));
+        System.out.println(as.proj(new PointDense(20, -17, 5)));
     }
 
     public static void testAffineSpaceIntersection() {
 
-        AffineSpace as1 = new AffineSpace(LinearSpace.nullSpace(new Point(0, 0, 1).T()), new Point(0, 0, 1));
-        AffineSpace as2 = new AffineSpace(LinearSpace.nullSpace(new Point(1, 0, 0).T()), new Point(0, 0, 1));
-        AffineSpace as3 = new AffineSpace(LinearSpace.nullSpace(new Point(0, 1, 0).T()), new Point(0, 4, 0));
+        AffineSpace as1 = new AffineSpace(LinearSpace.nullSpace(new PointDense(0, 0, 1).T()), new PointDense(0, 0, 1));
+        AffineSpace as2 = new AffineSpace(LinearSpace.nullSpace(new PointDense(1, 0, 0).T()), new PointDense(0, 0, 1));
+        AffineSpace as3 = new AffineSpace(LinearSpace.nullSpace(new PointDense(0, 1, 0).T()), new PointDense(0, 4, 0));
         //x = 0, z = 1, y is anything
         AffineSpace[] spaces = new AffineSpace[]{as1, as2, as3};
 
         AffineSpace as4 = AffineSpace.intersection(spaces);
 
-        System.out.println(as4.linearSpace().proj(new Point(0, 5, 1)));
+        System.out.println(as4.linearSpace().proj(new PointDense(0, 5, 1)));
 
         System.out.println(as4);
 
-        System.out.println(as4.hasElement(new Point(0, 7, 1)));
-        System.out.println(as4.proj(new Point(-3, 5, 6)));
+        System.out.println(as4.hasElement(new PointDense(0, 7, 1)));
+        System.out.println(as4.proj(new PointDense(-3, 5, 6)));
     }
 
     public static void testMyPolytopeProjection() {
@@ -215,10 +217,10 @@ public class Main {
         Polytope standardPoly = new Hull(
                 //                Matrix.randomColPoints(4, new Point(dim), 5)
                 new Matrix(3, 4)
-                        .setCol(0, new Point(0, 0, 0))
-                        .setCol(1, new Point(0, 0, 1))
-                        .setCol(2, new Point(0, 1, 0))
-                        .setCol(3, new Point(1, 0, 0))
+                        .setCol(0, new PointDense(0, 0, 0))
+                        .setCol(1, new PointDense(0, 0, 1))
+                        .setCol(2, new PointDense(0, 1, 0))
+                        .setCol(3, new PointDense(1, 0, 0))
         //                        .setCol(4, new Point(3, .5))
         );
 
@@ -233,9 +235,9 @@ public class Main {
 //        System.out.println("brute force " + mp.bruteForceProjection(testPoint));
         for (int i = 0; i < 100; i++) {
 
-            Point y = Point.uniformRand(Point.Origin(dim), 100);
+            PointDense y = PointDense.uniformRand(PointDense.Origin(dim), 100);
 
-            Point myProj = mp.proj(y);
+            PointDense myProj = mp.proj(y);
 
             if (!standardPoly.bruteForceProjection(y).equals(myProj, .000001)) {
 
@@ -253,10 +255,10 @@ public class Main {
 
     public static void testAdjacentFacesOfAPolytope() {
 
-        HalfSpace north = new HalfSpace(new Point(1, 1), new Point(0, 1)),
-                south = new HalfSpace(new Point(0, 0), new Point(0, -1)),
-                east = new HalfSpace(new Point(0, 0), new Point(-1, 0)),
-                west = new HalfSpace(new Point(1, 1), new Point(1, 0));
+        HalfSpace north = new HalfSpace(new PointDense(1, 1), new PointDense(0, 1)),
+                south = new HalfSpace(new PointDense(0, 0), new PointDense(0, -1)),
+                east = new HalfSpace(new PointDense(0, 0), new PointDense(-1, 0)),
+                west = new HalfSpace(new PointDense(1, 1), new PointDense(1, 0));
 
         Polytope p = new Polytope(new HalfSpace[]{north, south, east, west});
 //        System.out.println(p);
@@ -277,9 +279,9 @@ public class Main {
     public static void testMatrixIndependentRows() {
 
         Matrix m = new Matrix(3, 3);
-        m.setRow(0, new Point(1, 1, 1));
-        m.setRow(1, new Point(3, -4, 7));
-        m.setRow(2, new Point(2, -5, 6));
+        m.setRow(0, new PointDense(1, 1, 1));
+        m.setRow(1, new PointDense(3, -4, 7));
+        m.setRow(2, new PointDense(2, -5, 6));
         System.out.println(m);
         System.out.println(m.independentRows(.0000001));
     }
@@ -287,13 +289,13 @@ public class Main {
     public static void testConvexCombination() {
 
         Matrix points = new Matrix(3, 4)
-                .setCol(0, new Point(0, 0, 0))
-                .setCol(1, new Point(0, 1, 0))
-                .setCol(2, new Point(1, 0, 0))
-                .setCol(3, new Point(0, 0, 1));
+                .setCol(0, new PointDense(0, 0, 0))
+                .setCol(1, new PointDense(0, 1, 0))
+                .setCol(2, new PointDense(1, 0, 0))
+                .setCol(3, new PointDense(0, 0, 1));
 
 //        Matrix points = Matrix.randomColPoints(3, new Point(5,5,5), 3);
-        Point test = new Point(.1, .1, 0);
+        PointDense test = new PointDense(.1, .1, 0);
 
         Hull.ConvexCombination cc = new Hull.ConvexCombination(points);
 
@@ -305,8 +307,8 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 50;
-        int numFaces = 1000;
+        int dim = 174;
+        int numFaces = 40;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 10; i++) {
@@ -314,7 +316,7 @@ public class Main {
             GradDescentFeasibility poly = new GradDescentFeasibility(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
-            Point feas = poly.fesibility(Point.uniformRand(new Point(dim), 10));
+            PointDense feas = poly.fesibility(PointDense.uniformRand(new PointDense(dim), 10));
 
 //            System.out.println(feas);
         }
@@ -324,14 +326,14 @@ public class Main {
     public static void testAffineSpaceContaining() {
 
         Matrix points = new Matrix(2, 3)
-                .setRow(0, new Point(1, 0, 0))
-                .setRow(1, new Point(0, 1, 0));
+                .setRow(0, new PointDense(1, 0, 0))
+                .setRow(1, new PointDense(0, 1, 0));
 
         System.out.println(points);
 
         AffineSpace as = AffineSpace.smallestContainingSubSpace(points, 1e-6);
 
-        System.out.println(as.hasElement(new Point(3, 4, 5)));
+        System.out.println(as.hasElement(new PointDense(3, 4, 5)));
 
         System.out.println(as.hasElement(points.row(1), 1e-4));
 
@@ -345,15 +347,16 @@ public class Main {
 //-0.5365748474367106*(x-0.0) + 0.5676777837620238*(y-0.0) + 0.624363169094164*(z-0.0)<= 0
 //0.5279418008343463*(x-0.0) + -0.48336838058840675*(y-0.0) + 0.6983068548848197*(z-0.0)<= 0
         int dim = 3;
-        Point p = new Point(dim).setAll(i -> 10);
+        PointDense p = new PointDense(dim).setAll(i -> 10);
 
         boolean equal = true;
-        Point proj = null, bf = null;
+        PointDense proj = null;
+        Point bf = null;
 
-        RecursiveProjPolytopeCone rprc = new RecursiveProjPolytopeCone(new Point(dim));
-        rprc.addPlaneWithNormal(new Point(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
-        rprc.addPlaneWithNormal(new Point(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
-        rprc.addPlaneWithNormal(new Point(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
+        RecursiveProjPolytopeCone rprc = new RecursiveProjPolytopeCone(new PointDense(dim));
+        rprc.addPlaneWithNormal(new PointDense(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
+        rprc.addPlaneWithNormal(new PointDense(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
+        rprc.addPlaneWithNormal(new PointDense(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
 
         proj = rprc.proj(p);
         bf = rprc.bruteForceProjection(p);
@@ -378,15 +381,16 @@ public class Main {
 //-0.5365748474367106*(x-0.0) + 0.5676777837620238*(y-0.0) + 0.624363169094164*(z-0.0)<= 0
 //0.5279418008343463*(x-0.0) + -0.48336838058840675*(y-0.0) + 0.6983068548848197*(z-0.0)<= 0
         int dim = 3;
-        Point p = new Point(dim).setAll(i -> 10);
+        PointDense p = new PointDense(dim).setAll(i -> 10);
 
         boolean equal = true;
-        Point proj = null, bf = null;
+        PointDense proj = null;
+        Point bf = null;
 
-        PolytopeCone rprc = new PolytopeCone(new Point(dim));
-        rprc.addPlaneWithNormal(new Point(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
-        rprc.addPlaneWithNormal(new Point(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
-        rprc.addPlaneWithNormal(new Point(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
+        PolytopeCone rprc = new PolytopeCone(new PointDense(dim));
+        rprc.addPlaneWithNormal(new PointDense(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
+        rprc.addPlaneWithNormal(new PointDense(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
+        rprc.addPlaneWithNormal(new PointDense(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
 
         proj = rprc.proj(p);
         bf = rprc.bruteForceProjection(p);
@@ -407,11 +411,11 @@ public class Main {
 
     public static void testPolytopeFesibilitySpecifi() {
         HalfSpace[] hs = new HalfSpace[3];
-        hs[0] = new HalfSpace(new Point(2), new Point(-1, 0));
-        hs[1] = new HalfSpace(new Point(0, 1), new Point(1, .1));
-        hs[2] = new HalfSpace(new Point(2), new Point(1, 1));
+        hs[0] = new HalfSpace(new PointDense(2), new PointDense(-1, 0));
+        hs[1] = new HalfSpace(new PointDense(0, 1), new PointDense(1, .1));
+        hs[2] = new HalfSpace(new PointDense(2), new PointDense(1, 1));
 
-        Point y = new Point(0, 1);
+        PointDense y = new PointDense(0, 1);
 
         System.out.println(new GradDescentFeasibility(new Polytope(hs)).fesibility(y));
 
@@ -419,10 +423,17 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        polytopeFeasabilityTest();
-        
+//        polytopeFeasabilityTest();
 
 //        GradDescentFeasibility.loadFromErrorFile();
+    
+        
+        
+         Matrix m = new Matrix(2);
+         
+    
+    
+    
     }
 
 }

@@ -1,7 +1,7 @@
 package Convex;
 
 import Convex.ConvexSet;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.stream.IntStream;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Sphere implements ConvexSet {
 
-    final private Point center;
+    final private PointDense center;
     final private double r;
 
     /**
@@ -35,7 +35,7 @@ public class Sphere implements ConvexSet {
      * @param r the radius of the sphere
      */
     public Sphere(int dim, double r) {
-        this(new Point(dim), r);
+        this(new PointDense(dim), r);
     }
 
     /**
@@ -44,7 +44,7 @@ public class Sphere implements ConvexSet {
      * @param center
      * @param r
      */
-    public Sphere(Point center, double r) {
+    public Sphere(PointDense center, double r) {
         this.center = center;
         this.r = r;
     }
@@ -56,7 +56,7 @@ public class Sphere implements ConvexSet {
      * @param r
      */
     public Sphere(double[] center, double r) {
-        this(new Point(center), r);
+        this(new PointDense(center), r);
     }
 
     /**
@@ -69,14 +69,14 @@ public class Sphere implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(Point p) {
+    public boolean hasElement(PointDense p) {
         return p.d(center) <= r;
     }
 
     @Override
-    public Point proj(Point p) {
-        if (hasElement(p)) return new Point(p);
-        Point cToP = p.minus(center);
+    public PointDense proj(PointDense p) {
+        if (hasElement(p)) return new PointDense(p);
+        PointDense cToP = p.minus(center);
         cToP = cToP.mult(1 / cToP.magnitude()).mult(r);
         return cToP.plus(center);
     }

@@ -5,14 +5,24 @@
             <url>src/main/Main.java</url>
             <bookmark id="1">
                 <name/>
-                <line>183</line>
+                <line>178</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/thesisProjectionIdeas/GradDescentFeasibility/AffineSpacePlaneBipartate.java</file>
+            <file>jar:file:/C:/Users/Kayak/Git/ThesisNeimand/Java%20Libraries/ejml-v0.39-libs/ejml-core-0.39-sources.jar!/org/ejml/data/DMatrixSparseCSC.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Matricies/Matrix.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/thesisProjectionIdeas/GradDescentFeasibility/GradDescentFeasibility.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Matricies/MatrixDense.java</file>
             <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/main/Main.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Linear/LinearSpace.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Matricies/SparseMatrix.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/RnSpace/points/Point.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Convex/Polytope.java</file>
+            <file>file:/C:/Users/Kayak/Git/ThesisNeimand/src/Matricies/SparsePoint.java</file>
         </group>
     </open-files>
 </project-private>

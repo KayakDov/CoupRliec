@@ -1,7 +1,7 @@
 package Convex;
 
 import listTools.Pair1T;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -12,28 +12,26 @@ import java.util.stream.Stream;
  */
 public class Cube extends Polytope {
 
-    private final Point a, b;
+    private final PointDense a, b;
 
-    public Cube(Point a, Point b) {
+    public Cube(PointDense a, PointDense b) {
                 
         checkInputQuality(a, b);
         this.a = a;
         this.b = b;
         
-        addAll(
-            IntStream.range(0, a.dim()).mapToObj(i -> 
-                    new HalfSpace(a, new Point(a.dim()).set(i, -1))
+        addAll(IntStream.range(0, a.dim()).mapToObj(i -> 
+                    new HalfSpace(a, new PointDense(a.dim()).set(i, -1))
             ).collect(Collectors.toList())
         );
         
-        addAll(
-            IntStream.range(0, b.dim()).mapToObj(i -> 
-                    new HalfSpace(b, new Point(b.dim()).set(i, 1)))
+        addAll(IntStream.range(0, b.dim()).mapToObj(i -> 
+                    new HalfSpace(b, new PointDense(b.dim()).set(i, 1)))
             .collect(Collectors.toList())
         );
     }
 
-    private void checkInputQuality(Point a, Point b) {
+    private void checkInputQuality(PointDense a, PointDense b) {
         if (IntStream.range(0, a.dim()).anyMatch(i -> a.get(i) > b.get(i)))
             throw new RuntimeException("this cuboid " + toString() + "is inside out.");
         if (a.dim() != b.dim())
@@ -41,16 +39,16 @@ public class Cube extends Polytope {
     }
 
     public Cube(Cube c) {
-        this.a = new Point(c.a);
-        this.b = new Point(c.b);
+        this.a = new PointDense(c.a);
+        this.b = new PointDense(c.b);
     }
 
 
-    public Point getA() {
-        return new Point(a);
+    public PointDense getA() {
+        return new PointDense(a);
     }
 
-    public Point getB() {
+    public PointDense getB() {
         return (b);
     }
 
@@ -74,7 +72,7 @@ public class Cube extends Polytope {
     }
 
     public double volume() {
-        Point dif = b.minus(a);
+        PointDense dif = b.minus(a);
         return IntStream.range(0, dim()).mapToDouble(i -> dif.get(i)).reduce((d1, d2) -> d1*d2).getAsDouble();
     }
 
@@ -87,20 +85,20 @@ public class Cube extends Polytope {
     public Pair1T<Cube> halves(int cutIndex) {
         double mid = (a.get(cutIndex) + b.get(cutIndex)) / 2;
         return new Pair1T<>(
-                new Cube(a, new Point(b).set(cutIndex, mid)),
-                new Cube(new Point(a).set(cutIndex, mid), b)
+                new Cube(a, new PointDense(b).set(cutIndex, mid)),
+                new Cube(new PointDense(a).set(cutIndex, mid), b)
         );
     }
 
 
-    public Point mid() {
+    public PointDense mid() {
         return a.plus(b).mult(.5);
     }
 
     public Cube intersection(Cube c) {
         return new Cube(
-                new Point(dim()).setAll(i -> Math.max(getA().get(i), c.getA().get(i))),
-                new Point(dim()).setAll(i -> Math.min(getB().get(i), c.getB().get(i))));
+                new PointDense(dim()).setAll(i -> Math.max(getA().get(i), c.getA().get(i))),
+                new PointDense(dim()).setAll(i -> Math.min(getB().get(i), c.getB().get(i))));
     }
 
     public Interval getInterval(int dim) {
@@ -108,14 +106,14 @@ public class Cube extends Polytope {
     }
 
     @Override
-    public boolean hasElement(Point p) {
+    public boolean hasElement(PointDense p) {
         return IntStream.range(0, dim()).allMatch(i -> inCube(p.get(i), i));
     }
 
     @Override
-    public Point proj(Point x) {
-        if (hasElement(x)) return new Point(x);
-        return new Point(x).setAll(i
+    public PointDense proj(PointDense x) {
+        if (hasElement(x)) return new PointDense(x);
+        return new PointDense(x).setAll(i
                 -> getInterval(i).onInterval(x.get(i)));
     }
 

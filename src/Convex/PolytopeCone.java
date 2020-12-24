@@ -1,7 +1,7 @@
 package Convex;
 
 import Convex.Linear.AffineSpace;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -16,39 +16,39 @@ import java.util.stream.Stream;
  */
 public class PolytopeCone extends Polytope {
 
-    private Point tip;
+    private PointDense tip;
 
-    public PolytopeCone(Point tip) {
+    public PolytopeCone(PointDense tip) {
         this.tip = tip;
     }
 
-    public Point getTip() {
+    public PointDense getTip() {
         return tip;
     }
 
-    public void setTip(Point tip) {
+    public void setTip(PointDense tip) {
         this.tip = tip;
     }
 
-    public void addPlaneWithNormal(Point normal) {
+    public void addPlaneWithNormal(PointDense normal) {
         add(new HalfSpace(tip, normal));
     }
 
-    public void addPlanesWithNormals(Stream<Point> normal) {
+    public void addPlanesWithNormals(Stream<PointDense> normal) {
         addAll(normal.map(n -> new HalfSpace(tip, n)).collect(Collectors.toList()));
     }
 
     public static PolytopeCone samplePolytopeCone() {
-        PolytopeCone sample = new PolytopeCone(new Point(3));
-        sample.addPlaneWithNormal(new Point(-1, 0, 0));
-        sample.addPlaneWithNormal(new Point(0, -1, 0));
-        sample.addPlaneWithNormal(new Point(0, 0, -1));
+        PolytopeCone sample = new PolytopeCone(new PointDense(3));
+        sample.addPlaneWithNormal(new PointDense(-1, 0, 0));
+        sample.addPlaneWithNormal(new PointDense(0, -1, 0));
+        sample.addPlaneWithNormal(new PointDense(0, 0, -1));
         return sample;
     }
 
 
 ///////////////////////////possible projection algortihm////////////////////////
-    private HalfSpace almostNearest(Point y) {
+    private HalfSpace almostNearest(PointDense y) {
         return stream().max(Comparator.comparing(hs -> hs.d(y))).get();
     }
 
@@ -63,7 +63,7 @@ public class PolytopeCone extends Polytope {
     }
 
     @Override
-    public Point proj(Point y) {
+    public PointDense proj(PointDense y) {
         HashSet<HalfSpace> projPath = new HashSet<>(size());
 
         HalfSpace candidate = almostNearest(y);

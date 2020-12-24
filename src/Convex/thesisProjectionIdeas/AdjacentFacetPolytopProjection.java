@@ -4,7 +4,7 @@ import Convex.Linear.AffineSpace;
 import Convex.HalfSpace;
 import Convex.Polytope;
 import Matricies.Matrix;
-import RnSpace.points.Point;
+import Matricies.PointDense;
 
 /**
  *
@@ -17,18 +17,18 @@ public class AdjacentFacetPolytopProjection extends Polytope {
      * @param y the point being projected
      * @return a polytope including the facet nearest the projection, and all of its neighbors.
      */
-    private Polytope facetsNearProj(Point y) {
+    private Polytope facetsNearProj(PointDense y) {
         HalfSpace nearest = closestTo(y);
         return new Polytope(stream().filter(hs -> adjacent(hs, nearest)));
     }
 
     @Override
-    public Point proj(final Point y) {
+    public PointDense proj(final PointDense y) {
         if(isMember(y)) return y;
 
         Polytope nearProj = facetsNearProj(y);
       
-        Point proj;
+        PointDense proj;
         AffineSpace as = AffineSpace.allSpace(0);
         
         while (!hasElement(proj = as.proj(y))) {
