@@ -5,7 +5,7 @@ import Convex.Linear.LinearSpace;
 import Convex.Polytope;
 import listTools.Pair1T;
 import Matricies.Matrix;
-import Matricies.ReducedRowEchelon;
+import Matricies.ReducedRowEchelonDense;
 import Matricies.PointDense;
 import java.util.Arrays;
 import java.util.List;
@@ -109,7 +109,7 @@ public class AffineSpace implements ConvexSet {
         if (nullMatrix().isSquare() && nullMatrix().hasFullRank())
             return p = nullMatrix().solve(b);
         
-        ReducedRowEchelon rre = new ReducedRowEchelon(nullMatrix());
+        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullMatrix());
         
         Matrix append = Matrix.fromRows(rre.getFreeVariables().map(i -> new PointDense(rre.cols).set(i, 1)));
 

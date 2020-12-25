@@ -2,7 +2,7 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Matricies.Matrix;
-import Matricies.ReducedRowEchelon;
+import Matricies.ReducedRowEchelonDense;
 import Matricies.PointDense;
 import java.util.Arrays;
 
@@ -134,7 +134,7 @@ public class LinearSpace implements ConvexSet {
      */
     public Matrix colSpaceMatrix() {
  
-        ReducedRowEchelon rre = new ReducedRowEchelon(matrix());
+        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
 
         Matrix IMinus = Matrix.identityMatrix(Math.max(rre.rows, rre.cols)).minus(rre.squareMatrixFromAbove());
 

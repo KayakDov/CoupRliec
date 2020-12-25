@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import listTools.Pair1T;
 import org.ejml.data.DMatrix;
+import org.ejml.data.DMatrixRMaj;
 
 /**
  *
@@ -56,14 +57,12 @@ public interface Matrix {
      */
     public Matrix colConcat(Matrix cols);
 
-    public List<Point> colList();
-
     /**
      * A stream of the columns of this matrix.
      *
      * @return
      */
-    public Stream<Point> colStream();
+    public Stream<? extends Point> colStream();
 
     /**
      * The determinant
@@ -130,7 +129,7 @@ public interface Matrix {
      */
     public Matrix plus(Matrix m);
 
-    public ReducedRowEchelon reducedRowEchelon();
+    public ReducedRowEchelonDense reducedRowEchelon();
 
     public Point row(int n);
     
@@ -155,21 +154,21 @@ public interface Matrix {
      * @param row
      * @return a new matrix with the rows from both of the previous matrices
      */
-    public Matrix rowConcat(PointDense row);
+    public Matrix rowConcat(Point row);
 
     /**
      * a list of the rows of this array
      *
      * @return
      */
-    public List<PointDense> rowList();
+    public List<? extends Point> rowList();
 
     /**
      * A stream of the rows of this matrix.
      *
      * @return
      */
-    public Stream<PointDense> rowStream();
+    public Stream<? extends Point> rowStream();
 
     /**
      * sets A_i,j = d

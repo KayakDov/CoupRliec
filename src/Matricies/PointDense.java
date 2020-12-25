@@ -5,6 +5,7 @@ import Convex.Linear.Plane;
 import Matricies.Matrix;
 import static java.lang.Math.abs;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -14,6 +15,8 @@ import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparse;
+import org.ejml.data.DMatrixSparseTriplet;
 
 /**
  *
@@ -97,7 +100,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
     }
 
     @Override
-    public PointDense addToMe(PointDense p) {
+    public PointDense addToMe(Point p) {
         return setAll(i -> get(i) + p.get(i));
     }
 
@@ -107,7 +110,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense minus(PointDense p) {
+    public PointDense minus(Point p) {
         return plus(p.mult(-1));
     }
 
@@ -118,12 +121,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return The distance from this point to the given point.
      */
     @Override
-    public double d(PointDense mp) {
+    public double d(Point mp) {
         return Math.sqrt(distSq(mp));
     }
 
     @Override
-    public double distSq(PointDense mp) {
+    public double distSq(Point mp) {
         return minus(mp).dot(minus(mp));
     }
 
@@ -162,7 +165,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public double dot(PointDense p) {
+    public double dot(Point p) {
         return IntStream.range(0, Math.min(dim(), p.dim())).
                 mapToDouble(i -> p.get(i) * get(i)).sum();
     }
@@ -173,14 +176,23 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param p
      * @return
      */
-    @Override
     public double dot(double[] p) {
         return dot(new PointDense(p));
     }
 
     @Override
-    public Matrix outerProduct(PointDense p) {
-        return new Matrix(dim(), p.dim()).setAll((i, j) -> get(i) * p.get(j));
+    public MatrixDense outerProduct(Point p) {
+        return new MatrixDense(dim(), p.dim()).setAll((i, j) -> get(i) * p.get(j));
+    }
+    
+    public MatrixSparse outerProduct(PointSparse p) {
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(dim(), p.dim(), p.ejmlSparse.getNonZeroLength()*dim());
+        Iterator<DMatrixSparse.CoordinateRealValue> iter = p.ejmlSparse.createCoordinateIterator();
+        while(iter.hasNext()){
+            DMatrixSparse.CoordinateRealValue crv = iter.next();
+            IntStream.range(0, dim()).forEach(i -> trip.set(i, crv.row, crv.value));
+        }
+        return new MatrixSparse(trip);
     }
 
     /**

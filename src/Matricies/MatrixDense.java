@@ -5,22 +5,17 @@ import static java.lang.Math.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.SingularOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.ops.ConvertDMatrixStruct;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 
 public class MatrixDense implements Matrix {
@@ -65,15 +60,15 @@ public class MatrixDense implements Matrix {
     }
 
     public MatrixDense(MatrixSparse sm) {
-        this(sm.rows, sm.cols);
+        this(sm.rows(), sm.cols());
         array = new double[sm.ejmlSparse.getNumElements()];
         Arrays.setAll(array, i -> sm.ejmlSparse.get(rowIndex(i), colIndex(i)));
     }
 
     @Override
-    public PointDense solve(PointDense b) {
+    public PointDense solve(Point b) {
         DMatrixRMaj solve = new DMatrixRMaj(cols, 1);
-        CommonOps_DDRM.solve(ejmlMatrix(), b.ejmlMatrix(), solve);
+        CommonOps_DDRM.solve(ejmlMatrix(), b.asDense().ejmlMatrix(), solve);
         return new PointDense(solve.data);
 
     }
@@ -152,14 +147,18 @@ public class MatrixDense implements Matrix {
      */
     @Override
     public MatrixDense mult(Matrix A) {
-        
-        if (cols != A.rows()) return null;
+        if (A.isDense()) return mult(A.asDense());
+        else return mult(A.asSparse());
+    }
+
+    public MatrixDense mult(MatrixDense A) {
         DMatrixRMaj mult = new DMatrixRMaj(rows, A.cols());
-        
-        if(!A.isSparse()) CommonOps_DDRM.mult(ejmlMatrix(), A.asDense().ejmlMatrix(), mult);
-        else CommonOps_DSCC.mult(ejmlMatrix(), A.asSparse().ejmlMatrix(), mult);
-        
+        CommonOps_DDRM.mult(ejmlMatrix(), A.ejmlMatrix(), mult);
         return new MatrixDense(mult);
+    }
+
+    public MatrixDense mult(MatrixSparse A) {
+        return A.mult(this);
     }
 
     /**
@@ -449,16 +448,6 @@ public class MatrixDense implements Matrix {
         this.cols = cols;
     }
 
-    /**
-     * if this is a symmetric matrix, this will create the instance to reflect
-     * that. Do not call this on a matrix that is not symmetric.
-     *
-     * @return the same matrix, but wrapped in a symmetric instance..
-     */
-    public SymmetricMatrix symetric() {
-        int n = Math.min(rows, cols);
-        return new SymmetricMatrix(array, n);
-    }
 
     /**
      * the identity matrix
@@ -674,7 +663,7 @@ public class MatrixDense implements Matrix {
      * @return a new matrix with the rows from both of the previous matrices
      */
     @Override
-    public Matrix rowConcat(PointDense row) {
+    public Matrix rowConcat(Point row) {
         return rowConcat(row.T());
     }
 
@@ -689,8 +678,12 @@ public class MatrixDense implements Matrix {
     public MatrixDense colConcat(Matrix cols) {
         MatrixDense concat = new MatrixDense(Math.max(this.rows, cols.rows()), this.cols
                 + cols.cols());
-        return concat.setCols(i -> i < this.cols ? col(i) : cols.col(i
-                - this.cols));
+        
+        MatrixDense colsDense = cols.asDense();
+        
+        return concat.setCols(i -> i < this.cols ? 
+                col(i) : 
+                colsDense.col(i - this.cols));
     }
 
     /**
@@ -711,14 +704,10 @@ public class MatrixDense implements Matrix {
     }
 
     @Override
-    public ReducedRowEchelon reducedRowEchelon() {
-        return new ReducedRowEchelon(this);
+    public ReducedRowEchelonDense reducedRowEchelon() {
+        return new ReducedRowEchelonDense(this);
     }
 
-    @Override
-    public List<PointDense> colList() {
-        return colStream().collect(Collectors.toList());
-    }
 
     /**
      * A matrix where each column is a random point.
@@ -769,15 +758,14 @@ public class MatrixDense implements Matrix {
     @Override
     public MatrixSparse asSparse() {
         long size = Arrays.stream(array).filter(x -> x != 0).count();
-        DMatrixSparseTriplet dmst = new DMatrixSparseTriplet(rows, cols, (int)size);
+        DMatrixSparseTriplet dmst = new DMatrixSparseTriplet(rows, cols, (int) size);
         IntStream.range(0, cols).forEach(col -> IntStream.range(0, rows).forEach(row -> dmst.set(row, col, get(row, col))));
-        
+        return new MatrixSparse(dmst);
     }
 
     @Override
     public boolean isSparse() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 
 }

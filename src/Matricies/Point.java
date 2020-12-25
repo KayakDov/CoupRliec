@@ -31,7 +31,7 @@ public interface Point extends Matrix{
      */
     boolean above(Plane plane);
 
-    PointDense addToMe(PointDense p);
+    Point addToMe(Point p);
 
     /**
      *
@@ -60,7 +60,7 @@ public interface Point extends Matrix{
      * @param p the point to concatenate with this point
      * @return a new point
      */
-    PointDense concat(PointDense p);
+    Point concat(Point p);
 
     /**
      * concatenates a single value onto this point.
@@ -68,7 +68,7 @@ public interface Point extends Matrix{
      * @param d
      * @return
      */
-    PointDense concat(double d);
+    Point concat(double d);
 
     /**
      * The cross product of this vector and another. Make sure both are 3
@@ -77,7 +77,7 @@ public interface Point extends Matrix{
      * @param p the other point
      * @return the cross product of the two points
      */
-    PointDense cross(PointDense p);
+    Point cross(Point p);
 
     /**
      * distance function Lp2
@@ -85,7 +85,7 @@ public interface Point extends Matrix{
      * @param mp The point distant from this one.
      * @return The distance from this point to the given point.
      */
-    double d(PointDense mp);
+    double d(Point mp);
 
     /**
      * this point exists in n dimensional space
@@ -99,9 +99,9 @@ public interface Point extends Matrix{
      *
      * @return
      */
-    PointDense dir();
+    Point dir();
 
-    double distSq(PointDense mp);
+    double distSq(Point mp);
 
     /**
      * the dot product between this point and p inner product Will truncate the
@@ -110,17 +110,9 @@ public interface Point extends Matrix{
      * @param p
      * @return
      */
-    double dot(PointDense p);
+    double dot(Point p);
 
-    /**
-     * the dot product between this point and p
-     *
-     * @param p
-     * @return
-     */
-    double dot(double[] p);
-
-    PointDense dot(Matrix m);
+    Point dot(Matrix m);
 
     /**
      * does this point have the same x,y as p
@@ -128,7 +120,7 @@ public interface Point extends Matrix{
      * @param p
      * @return
      */
-    boolean equals(PointDense p);
+    boolean equals(Point p);
 
     boolean equals(Object obj);
 
@@ -139,7 +131,7 @@ public interface Point extends Matrix{
      * @param acc the distance aloud to p
      * @return
      */
-    boolean equals(PointDense p, double acc);
+    boolean equals(Point p, double acc);
 
     /**
      * returns p_i which will be 0 if this point doesn't have i dimensions
@@ -157,7 +149,7 @@ public interface Point extends Matrix{
      * @param p the unit vector this one is projected onto
      * @return the result of shadowing this vector onto start unit vector
      */
-    PointDense inDir(PointDense p);
+    Point inDir(Point p);
 
     /**
      *
@@ -172,7 +164,7 @@ public interface Point extends Matrix{
      */
     double magnitude();
 
-    PointDense map(DoubleFunction<Double> f);
+    Point map(DoubleFunction<Double> f);
 
     <T> List mapToList(Function<Double, T> f);
 
@@ -181,7 +173,7 @@ public interface Point extends Matrix{
      * @param p
      * @return
      */
-    PointDense minus(PointDense p);
+    Point minus(Point p);
 
     /**
      * scalar multiplication
@@ -189,13 +181,13 @@ public interface Point extends Matrix{
      * @param k
      * @return
      */
-    PointDense mult(double k);
+    Point mult(double k);
 
     Matrix mult(Matrix matrix);
 
-    PointDense multMe(double k);
+    Point multMe(double k);
 
-    Matrix outerProduct(PointDense p);
+    Matrix outerProduct(Point p);
 
     /**
      * the sum of this point and another
@@ -203,7 +195,7 @@ public interface Point extends Matrix{
      * @param p the other point
      * @return the sum of the two points
      */
-    PointDense plus(PointDense p);
+    Point plus(Point p);
 
     /**
      * The projection of this point onto a convex set.
@@ -211,7 +203,7 @@ public interface Point extends Matrix{
      * @param cs the convex set
      * @return the projection of this point on the convex set
      */
-    PointDense proj(ConvexSet cs);
+    Point proj(ConvexSet cs);
 
     /**
      * Is one of these vectors start multiple of the other.
@@ -220,7 +212,7 @@ public interface Point extends Matrix{
      * @param epsilon
      * @return
      */
-    boolean sameDirection(PointDense p, double epsilon);
+    boolean sameDirection(Point p, double epsilon);
 
     /**
      * Sets the value of the point
@@ -229,7 +221,7 @@ public interface Point extends Matrix{
      * @param y the new value at that index
      * @return this point
      */
-    PointDense set(int i, double y);
+    Point set(int i, double y);
 
     /**
      * Sets the values of this point to those in the array.
@@ -237,7 +229,7 @@ public interface Point extends Matrix{
      * @param x an array of scalars
      * @return this point
      */
-    PointDense set(double[] x);
+    Point set(double[] x);
 
     /**
      * sets this point equal to the given point
@@ -245,9 +237,9 @@ public interface Point extends Matrix{
      * @param x
      * @return
      */
-    PointDense set(PointDense x);
+    Point set(Point x);
 
-    PointDense setAll(IntToDoubleFunction f);
+    Point setAll(IntToDoubleFunction f);
 
     /**
      * sets the values of this point to a sub array.
@@ -256,7 +248,7 @@ public interface Point extends Matrix{
      * @param srcStartPos the starting index of the MyPoint in the array
      * @return start this point
      */
-    PointDense setFromSubArray(double[] x, int srcStartPos);
+    Point setFromSubArray(double[] x, int srcStartPos);
 
     DoubleStream stream();
     
