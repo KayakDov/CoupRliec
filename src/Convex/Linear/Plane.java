@@ -6,6 +6,7 @@ import Convex.Linear.LinearSpace;
 import Convex.Polytope;
 import Convex.Sphere;
 import Matricies.Matrix;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
@@ -117,7 +118,7 @@ public class Plane extends AffineSpace {
      * @param x Is this point above the plane.
      * @return true if the point is above the plane.
      */
-    public boolean below(PointDense x) {
+    public boolean below(Point x) {
         return normal().dot(x.minus(p)) > 0;
     }
 
@@ -170,7 +171,7 @@ public class Plane extends AffineSpace {
      * @param x the point that may be below the plane.
      * @return true if the point is below the plane.
      */
-    public boolean above(PointDense x) {
+    public boolean above(Point x) {
         return nullMatrix().mult(x).get(0) <= b.get(0);
     }
 

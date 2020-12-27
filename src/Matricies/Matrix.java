@@ -11,7 +11,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import listTools.Pair1T;
 import org.ejml.data.DMatrix;
-import org.ejml.data.DMatrixRMaj;
 
 /**
  *
@@ -102,7 +101,7 @@ public interface Matrix {
      * @param p the vector
      * @return the new vector, a result of multiplying the matrix by a vector.
      */
-    public PointDense mult(PointDense p);
+    public Point mult(Point p);
 
     /**
      * Multiplies to the two matrices. Launches a thread for each column in
@@ -129,7 +128,7 @@ public interface Matrix {
      */
     public Matrix plus(Matrix m);
 
-    public ReducedRowEchelonDense reducedRowEchelon();
+    public ReducedRowEchelon reducedRowEchelon();
 
     public Point row(int n);
     

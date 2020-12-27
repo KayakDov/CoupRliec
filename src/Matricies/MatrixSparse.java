@@ -6,9 +6,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseCSC;
@@ -439,7 +441,6 @@ public class MatrixSparse implements Matrix {
         return IntStream.range(0, cols()).mapToObj(i -> col(i));
     }
 
-
     public boolean isZero(double epsilon) {
         Iterator<DMatrixSparse.CoordinateRealValue> iter = ejmlSparse.createCoordinateIterator();
 
@@ -461,7 +462,6 @@ public class MatrixSparse implements Matrix {
 
     }
 
-
     public MatrixSparse rowConcat(Matrix rows) {
         MatrixSparse rowsSparse = rows.asSparse();
 
@@ -469,7 +469,6 @@ public class MatrixSparse implements Matrix {
         CommonOps_DSCC.concatRows(ejmlSparse, rowsSparse.ejmlSparse, rowConcat);
         return new MatrixSparse(rowConcat);
     }
-    
 
     /**
      * Creates a new matrix whose rows are appended to this one
@@ -496,17 +495,14 @@ public class MatrixSparse implements Matrix {
         return new MatrixSparse(colConcat);
     }
 
-
     @Override
     public ReducedRowEchelonDense reducedRowEchelon() {
-        return  new ReducedRowEchelonSparse(this);
+        return new ReducedRowEchelonSparse(this);
     }
 
     public MatrixSparse(DMatrixSparseTriplet trip) {
         setFromTrip(trip);
     }
-
-    
 
     public boolean hasFullRank() {
         return rank() == rows();
@@ -514,7 +510,7 @@ public class MatrixSparse implements Matrix {
 
     @Override
     public MatrixDense asDense() {
-        return new MatrixDense(rows(), cols()).setAll((i, j) -> get(i,j));
+        return new MatrixDense(rows(), cols()).setAll((i, j) -> get(i, j));
     }
 
     @Override
@@ -524,13 +520,24 @@ public class MatrixSparse implements Matrix {
 
     @Override
     public Matrix plus(Matrix m) {
-        if(m.isDense()) return plus(m.asDense());
+        if (m.isDense()) return plus(m.asDense());
         else return plus(m.asSparse());
     }
 
     @Override
     public List<Point> rowList() {
         return rowStream().collect(Collectors.toList());
+    }
+
+    /**
+     * A stream of the non zeroe elements and their coordinates
+     * @return 
+     */
+    public Stream<DMatrixSparse.CoordinateRealValue> nonZeroes() {
+        Iterator<DMatrixSparse.CoordinateRealValue> iter = ejmlSparse.createCoordinateIterator();
+
+        Iterable<DMatrixSparse.CoordinateRealValue> iterable = () -> iter;
+        return StreamSupport.stream(iterable.spliterator(), false);
     }
 
 }

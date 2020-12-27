@@ -10,19 +10,23 @@ import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
-import java.util.stream.Collectors;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.SingularOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
-import org.ejml.sparse.csc.CommonOps_DSCC;
 
 public class MatrixDense implements Matrix {
 
     protected double[] array;
     public final int rows, cols;
 
+    protected double epsilon = 1e-9;
+
+    public void setEpsilon(double epsilon) {
+        this.epsilon = epsilon;
+    }
+    
     public double[][] twoDArray() {
         double twoDArray[][] = new double[rows][cols];
         IntStream.range(0, rows).forEach(i -> Arrays.setAll(twoDArray[i], j -> get(i, j)));
@@ -400,7 +404,7 @@ public class MatrixDense implements Matrix {
         return this;
     }
 
-    protected Matrix map(DoubleFunction<Double> f) {
+    protected Matrix mapToDense(DoubleFunction<Double> f) {
         return new MatrixDense(rows, cols).setAll((i, j) -> f.apply(get(i, j)));
     }
 
