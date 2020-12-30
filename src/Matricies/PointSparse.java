@@ -7,12 +7,17 @@ package Matricies;
 
 import Convex.ConvexSet;
 import Convex.Linear.Plane;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import org.ejml.data.DMatrixSparseCSC;
+import org.ejml.data.DMatrixSparseTriplet;
+import org.ejml.sparse.csc.CommonOps_DSCC;
 
 /**
  *
@@ -24,9 +29,15 @@ public class PointSparse extends MatrixSparse implements Point{
         super(1, dim);
     }
 
+    public PointSparse(Point p) {
+        super(p.asSparse());
+    }
+    
+    
+
     @Override
-    public DMatrixSparseCSC ejmlMatrix() {
-        return super.ejmlMatrix(); //To change body of generated methods, choose Tools | Templates.
+    public DMatrixSparseCSC ejmlDense() {
+        return super.ejmlDense(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -62,48 +73,75 @@ public class PointSparse extends MatrixSparse implements Point{
 
     @Override
     public Point concat(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(p.isDense()) return concat(p.asDense());
+        else return concat(p.asSparse());
+    }
+    
+    public PointSparse(DMatrixSparseTriplet trip){
+        super(trip);
+    }
+    
+    public PointSparse(DMatrixSparseCSC csc){
+        super(csc);
+    }
+    
+    public PointSparse concat(PointDense pd){
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows() + pd.rows, 1, ejmlSparse.getNonZeroLength() + pd.dim());
+        nonZeroes().forEach(coord -> trip.set(coord.row, 0, coord.value));
+        IntStream.range(0, pd.dim()).forEach(i -> trip.set(i + dim(), 0, pd.get(i)));
+        return new PointSparse(trip);
+    }
+    
+    public PointSparse concat(PointSparse ps){
+        DMatrixSparseCSC concat = new DMatrixSparseCSC(dim(), ps.dim(), ejmlSparse.getNonZeroLength() + ps.ejmlSparse.getNonZeroLength());
+        CommonOps_DSCC.concatRows(ejmlSparse, ps.ejmlSparse, concat);
+        return new PointSparse(concat);
     }
 
     @Override
     public Point concat(double d) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        return concat(PointDense.oneD(d).asSparse());
     }
 
     @Override
     public double d(Point mp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Math.sqrt(distSq(mp));
     }
 
     @Override
     public int dim() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ejmlSparse.numRows;
     }
 
     @Override
-    public Point dir() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public PointSparse dir() {
+        return mult(1/magnitude());
     }
 
     @Override
     public double distSq(Point mp) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Point minus = minus(mp);
+        return minus.dot(minus);
     }
 
     @Override
     public double dot(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return nonZeroes().mapToDouble(coord -> coord.value * get(coord.row)).sum();
     }
 
     @Override
-    public Point dot(Matrix m) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public PointSparse dot(Matrix m) {
+       PointSparse ps = new PointSparse(m.cols());
+        ps.ejmlSparse = mult(m).ejmlSparse;
+        return ps;
     }
 
     @Override
     public boolean equals(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return super.equals(p);
     }
+    
 
     @Override
     public boolean equals(Point p, double acc) {
@@ -112,93 +150,129 @@ public class PointSparse extends MatrixSparse implements Point{
 
     @Override
     public double get(int i) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ejmlSparse.get(i, 0);
     }
 
     @Override
     public boolean isReal() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return nonZeroes().allMatch(coord -> Double.isFinite(get(coord.row)));
     }
 
     @Override
     public double magnitude() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return d(this);
     }
 
 
     @Override
     public <T> List mapToList(Function<Double, T> f) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<T> list = new ArrayList<>(dim());
+        IntStream.range(0, dim()).forEach(i -> list.set(i, f.apply(get(i))));
+        return list;
     }
 
     @Override
-    public PointSparse minus(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Point minus(Point p) {
+        if(p.isDense()) return minus(p.asDense());
+        else return minus(p.asSparse());
+    }
+    public PointSparse minus(PointSparse p){
+        return new PointSparse(super.minus(p).ejmlSparse);
+    }
+    public PointDense minus(PointDense p){
+        return new PointDense(super.minus(p).array);
     }
 
     @Override
     public PointSparse mult(double k) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new PointSparse(super.mult(k).ejmlSparse);
     }
 
     @Override
     public PointSparse multMe(double k) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        nonZeroes().forEach(coord -> set(coord.row, coord.value*k));
+        return this;
     }
 
     @Override
-    public MatrixSparse outerProduct(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Point plus(Point p) {
+        if(p.isDense()) return plus(p.asDense());
+        else return plus(p.asSparse());
+    }
+    
+    public PointSparse plus(PointSparse p){
+        return new PointSparse(super.plus(p).ejmlSparse);
+    }
+    public PointDense plus(PointDense p){
+        return new PointDense(super.plus(p).array);
     }
 
     @Override
-    public PointSparse plus(Point p) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Point proj(ConvexSet cs) {
+        return cs.proj(this);
     }
 
-    @Override
-    public PointDense proj(ConvexSet cs) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    /**
+     * Don't call this for repeated use.  It has to rebuild the entire matrix.
+     * @param i
+     * @param y
+     * @return 
+     */
     @Override
     public PointSparse set(int i, double y) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        set(i, 0, y);
+        return this;
     }
 
     @Override
     public PointSparse set(double[] x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int numNonZeroes = (int)Arrays.stream(x).filter(s -> s != 0).count();
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(x.length, 1, numNonZeroes);
+        IntStream.range(0, x.length).forEach(i->trip.set(i, 0, x[i]));
+        setFromTrip(trip);
+        return this;
     }
 
     @Override
     public PointSparse set(Point x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ejmlSparse = new DMatrixSparseCSC(x.asSparse().ejmlSparse);
+        return this;
     }
 
     @Override
     public PointSparse setAll(IntToDoubleFunction f) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         setAll((i, j) -> f.applyAsDouble(i));
+         return this;
     }
 
-    @Override
-    public PointSparse setFromSubArray(double[] x, int srcStartPos) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public DoubleStream stream() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return IntStream.range(0, dim()).mapToDouble(i -> get(i));
     }
 
     @Override
     public PointSparse mapToSparse(DoubleFunction<Double> f) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows(), cols(), ejmlSparse.getNonZeroLength());
+        IntStream.range(0, dim()).forEach(i -> trip.set(i, 0, f.apply(get(i))));
+        return new PointSparse(trip);
     }
 
     @Override
     public PointDense mapToDense(DoubleFunction<Double> f) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        PointDense m = new PointDense(dim());
+        IntStream.range(0, dim()).forEach(i -> m.set(i, f.apply(get(i))));
+        return m;
+    }
+
+    @Override
+    public PointDense asDense() {
+        return mapToDense(i -> i);
+    }
+
+    @Override
+    public PointSparse asSparse() {
+        return this;
     }
     
     

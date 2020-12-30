@@ -7,9 +7,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
+import java.util.function.Predicate;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -72,7 +74,7 @@ public class MatrixDense implements Matrix {
     @Override
     public PointDense solve(Point b) {
         DMatrixRMaj solve = new DMatrixRMaj(cols, 1);
-        CommonOps_DDRM.solve(ejmlMatrix(), b.asDense().ejmlMatrix(), solve);
+        CommonOps_DDRM.solve(ejmlDense(), b.asDense().ejmlDense(), solve);
         return new PointDense(solve.data);
 
     }
@@ -138,7 +140,11 @@ public class MatrixDense implements Matrix {
      * @return the new vector, a result of multiplying the matrix by a vector.
      */
     @Override
-    public PointDense mult(PointDense p) {
+    public PointDense mult(Point p) {
+        if(cols() != p.dim()) 
+            throw new RuntimeException("Mulitplication dimension mismatch.  "
+                    + "This matrix has " + cols() + " cols, but the point has " + p.dim() + " rows.");
+        
         return new PointDense(rows).setAll(i -> row(i).dot(p));
     }
 
@@ -151,19 +157,16 @@ public class MatrixDense implements Matrix {
      */
     @Override
     public MatrixDense mult(Matrix A) {
-        if (A.isDense()) return mult(A.asDense());
-        else return mult(A.asSparse());
-    }
-
-    public MatrixDense mult(MatrixDense A) {
+        
+//        System.out.println(ejmlDense());
+//        System.out.println(A.ejmlDense());
+//        
         DMatrixRMaj mult = new DMatrixRMaj(rows, A.cols());
-        CommonOps_DDRM.mult(ejmlMatrix(), A.ejmlMatrix(), mult);
+        CommonOps_DDRM.mult(ejmlDense(), A.asDense().ejmlDense(), mult);
         return new MatrixDense(mult);
     }
 
-    public MatrixDense mult(MatrixSparse A) {
-        return A.mult(this);
-    }
+
 
     /**
      * multiplies the matrix by a constant.
@@ -176,7 +179,7 @@ public class MatrixDense implements Matrix {
         return new MatrixDense(rows, cols).setAll(i -> array[i] * k);
     }
 
-    public DMatrixRMaj ejmlMatrix() {
+    public DMatrixRMaj ejmlDense() {
         return new DMatrixRMaj(rows, cols, true, array);
     }
 
@@ -188,7 +191,7 @@ public class MatrixDense implements Matrix {
     @Override
     public double det() {
         if (cols == 1) return array[0];
-        return CommonOps_DDRM.det(ejmlMatrix());
+        return CommonOps_DDRM.det(ejmlDense());
     }
 
     /**
@@ -231,7 +234,7 @@ public class MatrixDense implements Matrix {
      * @return the new matrix to the nth power.
      */
     public Matrix pow(int n) {
-        if (n == 0) return identityMatrix(rows);
+        if (n == 0) return identity(rows);
         if (n % 2 == 0) return (mult(this)).pow(n / 2);
         return mult(pow(n - 1));
     }
@@ -253,7 +256,7 @@ public class MatrixDense implements Matrix {
      * @param p
      * @return
      */
-    public MatrixDense plus(PointDense p) {
+    public MatrixDense plus(Point p) {
         return new MatrixDense(rows, cols).setRows(i -> row(i).plus(p));
     }
 
@@ -287,7 +290,7 @@ public class MatrixDense implements Matrix {
      * @param p
      * @return
      */
-    public MatrixDense minus(PointDense p) {
+    public MatrixDense minus(Point p) {
         return new MatrixDense(rows, cols).setRows(i -> row(i).minus(p));
     }
 
@@ -333,6 +336,10 @@ public class MatrixDense implements Matrix {
         IntStream.range(0, rows).forEach(i -> set(i, n, v.get(i)));
         return this;
     }
+    public Matrix setCol(int n, PointSparse v) {
+        v.nonZeroes().forEach(coord -> set(coord.row, n, coord.value));
+        return this;
+    }
 
     /**
      * Sets the nth column to v
@@ -343,6 +350,10 @@ public class MatrixDense implements Matrix {
      */
     public MatrixDense setRow(int n, PointDense v) {
         return setRow(n, v.array);
+    }
+    public MatrixDense setRow(int n, PointSparse v) {
+        v.nonZeroes().forEach(coord -> set(n, coord.row, coord.value));
+        return this;
     }
 
     public MatrixDense setRow(int i, double[] x) {
@@ -363,7 +374,7 @@ public class MatrixDense implements Matrix {
     @Override
     public MatrixDense inverse() {
         DMatrixRMaj inverse = new DMatrixRMaj(rows, cols);
-        CommonOps_DDRM.invert(ejmlMatrix(), inverse);
+        CommonOps_DDRM.invert(ejmlDense(), inverse);
         return new MatrixDense(inverse);
     }
 
@@ -387,17 +398,6 @@ public class MatrixDense implements Matrix {
                 mapToDouble(i -> get(i, i)).sum();
     }
 
-    /**
-     * sets all the elements of the matrix, in parallel, to f(i, j)
-     *
-     * @param f a unction of the row and column
-     * @return
-     */
-    @Override
-    public MatrixDense setAll(Z2ToR f) {
-        mySetAll(f);
-        return this;
-    }
 
     protected MatrixDense setAll(IntToDoubleFunction f) {
         Arrays.parallelSetAll(array, i -> f.applyAsDouble(i));
@@ -409,13 +409,15 @@ public class MatrixDense implements Matrix {
     }
 
     /**
-     * this is a version of set all that can't be overridden by children
-     * classes.
+     * sets all the elements of the matrix, in parallel, to f(i, j)
      *
-     * @param f
+     * @param f a unction of the row and column
+     * @return
      */
-    private final void mySetAll(Z2ToR f) {
+    @Override
+    public MatrixDense setAll(Z2ToR f) {
         Arrays.parallelSetAll(array, a -> f.apply(rowIndex(a), colIndex(a)));
+        return this;
     }
 
     /**
@@ -427,7 +429,7 @@ public class MatrixDense implements Matrix {
      */
     public MatrixDense setSome(BiFunction<Integer, Integer, Boolean> filter, Z2ToR f) {
         Z2ToR filteredF = (i, j) -> filter.apply(i, j) ? f.apply(i, j) : get(i, j);
-        mySetAll(filteredF);
+        setAll(filteredF);
         return this;
     }
 
@@ -459,7 +461,7 @@ public class MatrixDense implements Matrix {
      * @param n an nxn identity matrix
      * @return
      */
-    public static MatrixDense identityMatrix(int n) {
+    public static MatrixDense identity(int n) {
         MatrixDense id = new MatrixDense(n);
         for (int i = 0; i < n; i++) id.set(i, i, 1);
         return id;
@@ -493,7 +495,7 @@ public class MatrixDense implements Matrix {
         org.ejml.interfaces.decomposition.QRDecomposition<DMatrixRMaj> qrd
                 = DecompositionFactory_DDRM.qr();
 
-        qrd.decompose(ejmlMatrix());
+        qrd.decompose(ejmlDense());
 
         return new Pair1T<>(new MatrixDense(qrd.getQ(null, true)), new MatrixDense(qrd.getR(null, true)));
     }
@@ -504,10 +506,15 @@ public class MatrixDense implements Matrix {
      * @param rows
      * @return
      */
-    public static MatrixDense fromRows(PointDense[] rows) {
+    public static MatrixDense fromRows(Point[] rows) {
         if (rows.length == 0)
             throw new RuntimeException("You're tyring to create a matrix from an empty array.");
-        return new MatrixDense(rows.length, rows[0].dim()).setAll((i, j) -> rows[i].get(j));
+        if(rows[0].isDense()) return new MatrixDense(rows.length, rows[0].dim()).setAll((i, j) -> rows[i].get(j));
+        else{
+            MatrixDense m = new MatrixDense(rows.length, rows[0].dim());
+            IntStream.range(0, m.rows).forEach(i -> m.setRow(i, rows[i].asSparse()));
+            return m;
+        }
     }
 
     /**
@@ -530,7 +537,7 @@ public class MatrixDense implements Matrix {
         return MatrixDense.fromRows(pointStream.toArray(PointDense[]::new));
     }
 
-    public static Matrix fromCols(Stream<PointDense> pointStream) {
+    public static MatrixDense fromCols(Stream<PointDense> pointStream) {
         return MatrixDense.fromCols(pointStream.toArray(PointDense[]::new));
     }
 
@@ -540,7 +547,7 @@ public class MatrixDense implements Matrix {
      * @param cols an array of columns
      * @return
      */
-    public static MatrixDense fromCols(PointDense[] cols) {
+    public static MatrixDense fromCols(Point[] cols) {
         return new MatrixDense(cols[0].dim(), cols.length).setAll((i, j) -> cols[j].get(i));
     }
 
@@ -577,8 +584,9 @@ public class MatrixDense implements Matrix {
      * @param f
      * @return
      */
-    public MatrixDense setCols(IntFunction<PointDense> f) {
-        IntStream.range(0, cols).forEach(i -> setCol(i, f.apply(i)));//TODO::paralel 
+    
+    public MatrixDense setCols(IntFunction<Point> f) {
+        IntStream.range(0, cols).forEach(i -> setCol(i, f.apply(i).asDense()));//TODO::paralel 
         return this;
     }
 
@@ -618,15 +626,6 @@ public class MatrixDense implements Matrix {
     }
 
     /**
-     * The average of the rows.
-     *
-     * @return
-     */
-    public PointDense rowAvg() {
-        return new PointDense(cols).setAll(i -> col(i).avg());
-    }
-
-    /**
      * is this matrix equal to zero.
      *
      * @param epsilon
@@ -639,7 +638,7 @@ public class MatrixDense implements Matrix {
 
     public long rank() {
         if (rows == 0 || cols == 0) return 0;
-        return SingularOps_DDRM.rank(ejmlMatrix());
+        return SingularOps_DDRM.rank(ejmlDense());
     }
 
     /**
@@ -769,7 +768,51 @@ public class MatrixDense implements Matrix {
 
     @Override
     public boolean isSparse() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 
+    @Override
+    public boolean equals(Matrix obj) {
+        if(obj.isSparse())
+            return obj.asSparse().nonZeroes()
+                    .allMatch(coord -> Math.abs(coord.value - get(coord.row)) < epsilon);
+        return Arrays.equals(obj.asDense().array, array);
+    }
+
+    @Override
+    public int numNonZeroes() {
+        return (int)Matrix.z2Stream(rows, cols).filter(p -> get(p.l,p.r) != 0).count();
+        
+    }
+
+    @Override
+    public PointDense[] rowsArray() {
+        return rowStream().toArray(PointDense[]::new);
+    }
+
+    @Override
+    public MatrixDense sameType() {
+        return new MatrixDense(rows, cols);
+    }
+
+    
+    @Override
+    public MatrixDense square() {
+        
+        return new MatrixDense(Math.max(rows, cols)).setIf((i, j) -> i < rows && j < cols, (i,j) -> get(i, j));
+    }
+
+    @Override
+    public MatrixDense setIf(Z2Predicate filter, Z2ToR f) {
+        Matrix.z2Stream(rows, cols).filter(filter::test).forEach(f::apply);
+        return this;
+    }
+
+    @Override
+    public MatrixDense setIf(Predicate<Double> filter, Z2ToR f) {
+        Matrix.z2Stream(rows, cols).filter(p -> filter.test(get(p.l,p.r))).forEach(p -> set(p.l, p.r, f.apply(p)));
+        return this;
+    }
+
+ 
 }

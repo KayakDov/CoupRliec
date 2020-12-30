@@ -165,8 +165,6 @@ public interface Point extends Matrix{
 
     public Point multMe(double k);
 
-    public Matrix outerProduct(Point p);
-
     /**
      * the sum of this point and another
      *
@@ -217,11 +215,20 @@ public interface Point extends Matrix{
      * @param srcStartPos the starting index of the MyPoint in the array
      * @return start this point
      */
-    public Point setFromSubArray(double[] x, int srcStartPos);
-
+    
     public DoubleStream stream();
     
     public PointDense asDense();
     public PointSparse asSparse();
+    
+    public default double x(){
+        return get(0);
+    }
+    public default double y(){
+        return get(1);
+    }
+    public default double z(){
+        return get(2);
+    }
     
 }

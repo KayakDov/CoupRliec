@@ -7,6 +7,9 @@ package Matricies;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import listTools.Pair1T;
@@ -127,6 +130,10 @@ public interface Matrix {
      * @return
      */
     public Matrix plus(Matrix m);
+    
+    public default Matrix minus(Matrix m){
+        return plus(m.mult(-1));
+    }
 
     public ReducedRowEchelon reducedRowEchelon();
 
@@ -169,6 +176,7 @@ public interface Matrix {
      */
     public Stream<? extends Point> rowStream();
 
+    public Point[] rowsArray();
     /**
      * sets A_i,j = d
      *
@@ -186,6 +194,11 @@ public interface Matrix {
             return apply(pair.l, pair.r);
         }
         
+    }
+    public interface Z2Predicate extends BiPredicate<Integer, Integer>{
+        public default boolean test(Pair1T<Integer> pair){
+            return test(pair.l, pair.r);
+        }
     }
 
     /**
@@ -218,10 +231,82 @@ public interface Matrix {
         return k % cols();
     }
     
-    public DMatrix ejmlMatrix();
+    public DMatrix ejmlDense();
     public boolean isSparse();
     public default boolean isDense(){
         return !isSparse();
     }
 
+    public boolean equals(Matrix obj);
+    
+    public int numNonZeroes();
+    
+    public default boolean shouldBeSparse(){
+        return numNonZeroes() <= 2*Math.min(rows(), cols());
+    }
+
+    /**
+     * returns a matrix with the same rows and columns and sparse/dense type as this one.
+     * @return 
+     */
+    public Matrix sameType();
+    public static Matrix sameType(Matrix mat, int rows, int cols){
+        if(mat.isDense()) return new MatrixDense(rows, cols);
+        else return new MatrixSparse(rows, cols);
+    }
+    
+    public Matrix setCols(IntFunction<Point> f);
+    
+    public static Matrix fromRows(Point[] rows){
+        if(rows[0].isDense()) return MatrixDense.fromRows(rows);
+        else return MatrixSparse.fromRows(rows);
+    }
+    public static Matrix fromRows(Stream<Point> rows){
+        
+        return fromRows((Point[])rows.toArray());
+    }
+    
+    public static Matrix fromCols(Point[] cols){
+        if(cols[0].isDense()) return MatrixDense.fromCols(cols);
+        else return MatrixSparse.fromCols(cols);
+    }
+    
+    public static Matrix identity(int n, boolean isSparse){
+        if(!isSparse) return MatrixDense.identity(n);
+        else return MatrixSparse.identity(n);
+    }
+    
+    
+    /**
+     * returns the smallest square matrix that contains this matrix, with each element in this
+     * matrix having the same indecies in the new square matrix.
+     * @return 
+     */
+    public Matrix square();
+
+    /**
+     * Is the given index in this matrix?
+     * @param row 
+     * @param col 
+     * @return 
+     */
+    public default boolean has(int row, int col){
+        return row >= 0 && col >= 0 && row <= rows() && col <= rows();
+    }
+    
+    /**
+     * Sets points if their indecies meet the given criteria
+     * @param filter
+     * @param f
+     * @return 
+     */
+    public Matrix setIf(Z2Predicate filter, Z2ToR f);
+    
+    /**
+     * resets points with values that meet a given criteria
+     * @param filter
+     * @param f
+     * @return 
+     */
+    public Matrix setIf(Predicate<Double> filter, Z2ToR f);
 }

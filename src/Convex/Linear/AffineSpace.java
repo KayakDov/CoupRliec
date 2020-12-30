@@ -6,7 +6,9 @@ import Convex.Polytope;
 import listTools.Pair1T;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
+import Matricies.Point;
 import Matricies.PointDense;
+import Matricies.PointSparse;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,13 +22,12 @@ import java.util.stream.Stream;
 public class AffineSpace implements ConvexSet {
 
     protected LinearSpace linearSpace;
-    public PointDense b;
+    public Point b;
 
-    public PointDense getB() {
+    public Point getB() {
         return b;
     }
 
-    
     /**
      * A small number
      */
@@ -48,12 +49,12 @@ public class AffineSpace implements ConvexSet {
      * @param normals
      * @param b
      */
-    public AffineSpace(PointDense[] normals, PointDense b) {
+    public AffineSpace(Point[] normals, Point b) {
         linearSpace = new LinearSpace(normals);
         this.b = b;
     }
-    
-    public Matrix nullMatrix(){
+
+    public Matrix nullMatrix() {
         return linearSpace.matrix();
     }
 
@@ -63,57 +64,57 @@ public class AffineSpace implements ConvexSet {
      * @param ls a linear space parallel to this affine space
      * @param onSpace a point in the affine space
      */
-    public AffineSpace(LinearSpace ls, PointDense onSpace) {
+    public AffineSpace(LinearSpace ls, Point onSpace) {
         linearSpace = ls;
-        if(!ls.isAllSpace())this.b = nullMatrix().mult(onSpace);
-        
+        if (!ls.isAllSpace()) this.b = nullMatrix().mult(onSpace);
+
         p = onSpace;
     }
 
     @Override
-    public boolean hasElement(PointDense x) {
+    public boolean hasElement(Point x) {
         return nullMatrix().mult(x).equals(b);
     }
 
     @Override
-    public boolean hasElement(PointDense x, double epsilon) {
+    public boolean hasElement(Point x, double epsilon) {
 
         return nullMatrix().mult(x).equals(b, epsilon);
     }
 
-    protected PointDense p = null;
+    protected Point p = null;
 
-    public boolean hasAPoint(){
-        return p!= null;
+    public boolean hasAPoint() {
+        return p != null;
     }
-    
+
     /**
-     * This method is unprotected.  It is on the caller to make sure that the
+     * This method is unprotected. It is on the caller to make sure that the
      * given point is in the affine space.
-     * @param p 
+     *
+     * @param p
      */
-    public void setP(PointDense p) {
+    public void setP(Point p) {
         this.p = p;
     }
-    
 
     /**
      * A point in the affine space
      *
      * @return
      */
-    public PointDense p() {
+    public Point p() {
 
         if (p != null) return p;
-                
-        if (nullMatrix().isSquare() && nullMatrix().hasFullRank())
-            return p = nullMatrix().solve(b);
-        
+
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullMatrix());
-        
+
+        if (nullMatrix().isSquare() && rre.hasFullRank())
+            return p = nullMatrix().solve(b);
+
         Matrix append = Matrix.fromRows(rre.getFreeVariables().map(i -> new PointDense(rre.cols).set(i, 1)));
 
-        PointDense b2 = new PointDense(nullMatrix().rows + append.rows).setFromSubArray(b, 0);
+        Point b2 = b.concat(new PointSparse(append.rows()));
 
         try {
 
@@ -132,7 +133,7 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     @Override
-    public PointDense proj(PointDense x) {
+    public Point proj(Point x) {
         if (isAllSpace()) return x;
         return p().plus(linearSpace().proj(x.minus(p())));  //An older method
     }
@@ -144,9 +145,9 @@ public class AffineSpace implements ConvexSet {
      * @return the intersection of the two spaces.
      */
     public AffineSpace intersection(AffineSpace as) {
-        if(isAllSpace()) return as;
-        if(as.isAllSpace()) return this;
-        
+        if (isAllSpace()) return as;
+        if (as.isAllSpace()) return this;
+
         return new AffineSpace(linearSpace.intersection(as.linearSpace), b.concat(as.b));
 
     }
@@ -168,14 +169,13 @@ public class AffineSpace implements ConvexSet {
         return intersection(space.toArray(AffineSpace[]::new));
     }
 
-
     public LinearSpace linearSpace() {
         return linearSpace;
     }
 
     @Override
     public String toString() {
-        return linearSpace().toString() + (p != null ? "\nwith point " + p : "\nb = " + b )+ "\ndim = " + subSpaceDim();
+        return linearSpace().toString() + (p != null ? "\nwith point " + p : "\nb = " + b) + "\ndim = " + subSpaceDim();
     }
 
     private long subSpaceDim = -2;
@@ -187,7 +187,7 @@ public class AffineSpace implements ConvexSet {
      */
     public long subSpaceDim() {
         if (subSpaceDim != -2) return subSpaceDim;
-        if(nullMatrix().rows == 0) return subSpaceDim = dim();
+        if (nullMatrix().rows() == 0) return subSpaceDim = dim();
         return subSpaceDim = linearSpace().subSpaceDim();
     }
 
@@ -199,7 +199,7 @@ public class AffineSpace implements ConvexSet {
      * @return an affine space orthoganal to this one that goes through the
      * given point.
      */
-    public AffineSpace orthogonalComplement(PointDense x) {
+    public AffineSpace orthogonalComplement(Point x) {
         return new AffineSpace(linearSpace().OrhtogonalComplement(), x);
     }
 
@@ -210,7 +210,7 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     public static AffineSpace allSpace(int dim) {
-        return new AffineSpace(LinearSpace.allSpace(0), PointDense.Origin(dim));
+        return new AffineSpace(LinearSpace.allSpace(0), new PointSparse(dim));
     }
 
     /**
@@ -232,8 +232,8 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     public int dim() {
-        if(nullMatrix().rows == 0 && p != null) return p.dim();
-        return nullMatrix().cols;
+        if (nullMatrix().rows() == 0 && p != null) return p.dim();
+        return nullMatrix().cols();
     }
 
     public boolean hasFullDimensionality() {
@@ -260,28 +260,14 @@ public class AffineSpace implements ConvexSet {
         }
     }
 
-    /**
-     * Creates the smallest affine space smallestContainingSubSpace the given
-     * points.
-     *
-     * @param rowMatrix each row is one of the points in the affine space
-     * @return a new affine space smallestContainingSubSpace the given points.
-     */
-    public static AffineSpace smallestContainingSubSpace(Matrix rowMatrix, double epsilon) {
-        PointDense displacement = rowMatrix.row(0);
-
-        Matrix displaced = new Matrix(rowMatrix.rows - 1, rowMatrix.cols).setRows(i -> rowMatrix.row(i + 1).minus(displacement));
-
-        return new AffineSpace(LinearSpace.colSpace(displaced.independentRows(epsilon).T()), displacement);
-    }
 
     /**
      * A point not in this space.
      *
      * @return
      */
-    public PointDense notInSpace() {
-        PointDense out = orthogonalComplement(p())
+    public Point notInSpace() {
+        Point out = orthogonalComplement(p())
                 .linearSpace()
                 .colSpaceMatrix()
                 .colStream()
@@ -318,7 +304,7 @@ public class AffineSpace implements ConvexSet {
      * @param b
      * @return a line going through the two given points
      */
-    public static AffineSpace twoPointsLine(PointDense a, PointDense b) {
+    public static AffineSpace twoPointsLine(Point a, Point b) {
         return PointSlopeLine(a, b.minus(a));
     }
 
@@ -329,17 +315,17 @@ public class AffineSpace implements ConvexSet {
      * @param grad the given slope
      * @return a line
      */
-    public static AffineSpace PointSlopeLine(PointDense a, PointDense grad) {
+    public static AffineSpace PointSlopeLine(Point a, Point grad) {
 
         return new AffineSpace(LinearSpace.colSpace(grad), a);
     }
-    
-    
+
     /**
      * Are all points in space in this affine space?
-     * @return 
+     *
+     * @return
      */
-    public boolean isAllSpace(){
+    public boolean isAllSpace() {
         return linearSpace.isAllSpace();
     }
 }

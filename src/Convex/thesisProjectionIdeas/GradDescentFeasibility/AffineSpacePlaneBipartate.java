@@ -4,6 +4,7 @@ import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
 import Convex.PolytopeCone;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public class AffineSpacePlaneBipartate {
         planeNodes = new HashMap<>(dim);
     }
 
-    public void addPlane(Plane plane, PointDense y) {
+    public void addPlane(Plane plane, Point y) {
         PlaneNode planeNode = new PlaneNode(plane);
         List<ASNode> asNodesToBeAdded = new ArrayList<>(affineSpaceNodes.values());
 
@@ -139,7 +140,7 @@ public class AffineSpacePlaneBipartate {
     }
 
     public Stream<AffineSpace> affineSpaces() {
-        return affineSpaceNodes().parallel().map(asn -> asn.affineSpace);
+        return affineSpaceNodes().map(asn -> asn.affineSpace);//TODO: this should be parralel
     }
 
     public int numAffineSpaces() {

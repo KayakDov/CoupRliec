@@ -2,8 +2,7 @@
 package Convex;
 
 import Convex.Linear.Plane;
-import Matricies.Matrix;
-import Matricies.PointDense;
+import Matricies.Point;
 
 /**
  *
@@ -18,29 +17,13 @@ public class HalfSpace implements ConvexSet{
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public HalfSpace(PointDense p, PointDense normal) {
+    public HalfSpace(Point p, Point normal) {
         this(new Plane(p, normal));
     }
 
     
-    /**
-     * creates a plane from a set of points.
-     *
-     * @param rowMatrix each row is a point on the boundary of this plane
-     */
-    public HalfSpace(Matrix rowMatrix) {
-        this(new Plane(rowMatrix));
-    }
-    /**
-     * creates a plane from a set of points.
-     *
-     * @param rowMatrix each row is a point on the boundary of this plane
-     */
-    public HalfSpace(Matrix rowMatrix, PointDense x) {
-        this(new Plane(rowMatrix, x));
-    }
     
-    public HalfSpace(PointDense normal, double b){
+    public HalfSpace(Point normal, double b){
         border = new Plane(normal, b);
     }
     
@@ -54,13 +37,13 @@ public class HalfSpace implements ConvexSet{
     
 
     @Override
-    public PointDense proj(PointDense x) {
+    public Point proj(Point x) {
         if(border.below(x))return border.proj(x); 
-        else return new PointDense(x);
+        else return x;
     }
     
     @Override
-    public boolean hasElement(PointDense x){
+    public boolean hasElement(Point x){
         return border.above(x) || border.hasElement(x);
     }
     
@@ -69,7 +52,7 @@ public class HalfSpace implements ConvexSet{
      * @param x
      * @return 
      */
-    public boolean interiorHasElement(PointDense x){
+    public boolean interiorHasElement(Point x){
         return border.above(x);
     }
     
@@ -78,13 +61,13 @@ public class HalfSpace implements ConvexSet{
      * @param x
      * @return 
      */
-    public boolean interiorHasElement(PointDense x, double epsilon){
+    public boolean interiorHasElement(Point x, double epsilon){
         return border.above(x, epsilon);
     }
     
     
     @Override
-    public boolean hasElement(PointDense x, double epsilon){
+    public boolean hasElement(Point x, double epsilon){
         return border.above(x) || border.hasElement(x, epsilon);
     }
     
@@ -101,7 +84,7 @@ public class HalfSpace implements ConvexSet{
     * a vector normal to the boundary of this half space
     * @return 
     */
-    public PointDense normal(){
+    public Point normal(){
         return border.normal();
     }
     
@@ -111,7 +94,7 @@ public class HalfSpace implements ConvexSet{
      * @param epsilon
      * @return 
      */
-    public boolean onSurface(PointDense x, double epsilon){
+    public boolean onSurface(Point x, double epsilon){
         return border.onPlane(x, epsilon);
     }
     
@@ -119,8 +102,8 @@ public class HalfSpace implements ConvexSet{
      * A point on the boundary of this halfspace
      * @return 
      */
-    public PointDense surfacePoint(){
-        return new PointDense(border.p());
+    public Point surfacePoint(){
+        return border.p();
     }
     
     public int dim(){
@@ -146,7 +129,7 @@ public class HalfSpace implements ConvexSet{
     }
 
     @Override
-    public double d(PointDense x) {
+    public double d(Point x) {
         if(border.above(x)) return 0;
         return border.d(x);
     }

@@ -4,6 +4,7 @@ import Convex.Linear.AffineSpace;
 import Convex.HalfSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
@@ -14,7 +15,7 @@ import java.util.NoSuchElementException;
  */
 public class LocalPolyhedralCone extends Polytope {
 
-    private PointDense gradInBounds;
+    private Point gradInBounds;
     private Partition part;
     private AffineSpace travelThrough;
 
@@ -38,11 +39,11 @@ public class LocalPolyhedralCone extends Polytope {
      *
      * @return
      */
-    public PointDense grad() {
+    public Point grad() {
         return gradInBounds;
     }
 
-    public void add(HalfSpace hs, PointDense y) {
+    public void add(HalfSpace hs, Point y) {
         aspb.addPlane(hs.boundary(), y);
         super.add(hs); 
     }
@@ -56,17 +57,17 @@ public class LocalPolyhedralCone extends Polytope {
      * @param add the half space being added
      * @param y the value for y.
      */
-    public void addHalfSpace(HalfSpace add, PointDense y) {
+    public void addHalfSpace(HalfSpace add, Point y) {
 
         aspb.removeExcept(travelThrough, this);
                 
-        PointDense preProj = y.minus(part.getGradient());
+        Point preProj = y.minus(part.getGradient());
 
         add(add, y);
         
         travelThrough = hasProj(preProj, 1);
               
-        PointDense proj = travelThrough.proj(preProj);
+        Point proj = travelThrough.proj(preProj);
         if (proj.equals(y)) {
             throw new EmptyPolytopeException();
         }
@@ -87,7 +88,7 @@ public class LocalPolyhedralCone extends Polytope {
      * @param epsilonMult
      * @return
      */
-    private AffineSpace hasProj(PointDense preProj, int epsilonMult) {
+    private AffineSpace hasProj(Point preProj, int epsilonMult) {
         
         if(hasElement(preProj)) return AffineSpace.allSpace(dim());
 
@@ -96,7 +97,7 @@ public class LocalPolyhedralCone extends Polytope {
             return aspb.affineSpaces()
                     .min(Comparator.comparing(as -> {
                         
-                        PointDense proj = as.proj(preProj);  //TODO:  I should be able to compute the projection for an n lined matrix if I've already computed the projection for an n-1 line matrix
+                        Point proj = as.proj(preProj);  //TODO:  I should be able to compute the projection for an n lined matrix if I've already computed the projection for an n-1 line matrix
                         
                         
                         if (!hasElement(proj, epsilon))

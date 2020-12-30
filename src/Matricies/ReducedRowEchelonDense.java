@@ -1,11 +1,8 @@
 package Matricies;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 
@@ -27,41 +24,24 @@ public class ReducedRowEchelonDense extends MatrixDense implements ReducedRowEch
      */
     public ReducedRowEchelonDense(Matrix m) {
         
-        super(CommonOps_DDRM.rref(m.ejmlDenseMatrix(), -1, null));
+        super(CommonOps_DDRM.rref(m.asDense().ejmlDense(), -1, null));
         
         this.freeVariables = new HashSet<>(cols);
         
-        for(int i = 0, j = 0; j < cols; j++)
-            if(i < rows && get(i, j) == 1) i++;
-            else freeVariables.add(j);
+        setFreeVariables();
         
-        
-       
     }
+    
+    public ReducedRowEchelonDense(MatrixSparse m) {
+        this(m.asDense());
+    }
+    
     private HashSet<Integer> freeVariables;
 
-    public boolean noFreeVariable() {
-        return freeVariables.isEmpty();
+    @Override
+    public HashSet<Integer> freeVariables(){
+        return freeVariables;
     }
-
-    public boolean isFreeVariabls(int i) {
-        return freeVariables.contains(i);
-    }
-
-    public Stream<Integer> getFreeVariables() {
-        return freeVariables.stream();
-    }
-
-    public Stream<Integer> getBasicVariables() {
-        return IntStream.range(0, cols).filter(i -> !freeVariables.contains(i)).mapToObj(i -> i);
-    }
-
-    public int numFreeVariables() {
-        return freeVariables.size();
-    }
-
-    public long rank() {
-        return cols - freeVariables.size();
-    }
+    
 
 }

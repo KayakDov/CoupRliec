@@ -1,111 +1,25 @@
 package main;
 
 import Convex.Linear.AffineSpace;
-import Convex.Hull;
 import Convex.Polytope;
-import Matricies.Matrix;
 import Matricies.PointDense;
-import Matricies.SymmetricMatrix;
-import Convex.Cube;
 import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
-import Convex.PolytopeCone;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
-import Convex.thesisProjectionIdeas.RecursiveProjPolytopeCone;
-import listTools.Pair1T;
+import Matricies.Matrix;
+import Matricies.MatrixDense;
+import Matricies.Point;
 import java.io.IOException;
-import static java.lang.Math.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import listTools.Choose;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
 
 public class Main {
-
-    public static void testMatrixMult() {
-        Matrix m1 = new Matrix(new double[][]{{0, 2}, {1, 1}});
-        Matrix m2 = new Matrix(new double[][]{{1, 5}, {-1, 1}});
-        System.out.println(m1);
-        System.out.println(m2);
-        System.out.println(m1.mult(m2));
-    }
-
-    public static void testSomeMatrixFunctions() {
-        Matrix matrix = new Matrix(2, 2).setAll((n, m) -> pow(n + 2, m + 1));
-        System.out.println(matrix);
-
-        System.out.println(matrix.inverse());
-        System.out.println(matrix.mult(matrix.inverse()));
-//        System.out.println(matrix.solve(new MyPoint(10, 21)));
-
-//        System.out.println(matrix.trace());
-//        System.out.println(matrix.minor(0, 1));
-//        System.out.println(matrix.mult(10));
-//        Matrix m2 = new Matrix(4, 2).setAll((i, j) -> i+j);
-//        System.out.println(m2);
-//        System.out.println(matrix.mult(m2));
-    }
-
-    private static void testMatrixInverse() {
-        Matrix m = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 7}});
-        Matrix inverse = m.inverse();
-        System.out.println(m + "*\n" + inverse + " = " + m.mult(inverse));
-    }
-
-    public static void testSymmetricPossitiveDeffinite() {
-        SymmetricMatrix sm = new SymmetricMatrix(new double[]{2, -1, 0,
-            -1, 2, -1,
-            0, -1, 2}, 3);
-        System.out.println(sm.positiveDefinite());//should be true
-
-        sm = new SymmetricMatrix(new double[]{1, 2, 3,
-            2, 2, -1,
-            3, -1, 2}, 3);
-        System.out.println(sm.positiveDefinite());//should print false
-    }
-
-    public static void testQRDecomposition() {
-        Matrix m = new Matrix(new double[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 7}});
-        System.out.println(m);
-        Pair1T<Matrix> pq = m.QRDecomposition();
-        System.out.println(pq.l);
-        System.out.println(pq.r);
-        System.out.println(pq.l.mult(pq.r));
-
-    }
-
-    public static void testCuboidHalvs() {
-        Cube c = new Cube(new PointDense(0, 0), new PointDense(1, 2));
-        System.out.println(c.halves(0));
-    }
-
-    public static void testMatrixRemoveColRow() {
-        Matrix m = new Matrix(3).setAll((i, j) -> i + j + 0.0);
-        System.out.println(m);
-        System.out.println(m.removeCol(1));
-        System.out.println(m.removeRow(0));
-    }
 
     public static void testPlanes() {
         Plane p = new Plane(new PointDense(0, 0), new PointDense(1, 0));
         System.out.println(p.below(new PointDense(5, 3)));
-    }
-
-    public static void testCrossProdcut() {
-        PointDense p1 = new PointDense(1, 0, 0);
-        Point p2 = new PointDense(0, 0, 1);
-        PointDense[] p = new PointDense[]{p1, p2};
-        System.out.println(p1.cross(p2));
-        System.out.println(PointDense.cross(p));
-
-    }
-
-    public static void testPlane() {
-        PointDense p1 = new PointDense(0, 0, 0);
-        Point Point p2 = new PointDense(0, 1, 0), p3 = new PointDense(1, 0, 0), p3 = new Point(1, 0, 0);
-        System.out.println(new Plane(new PointDense[]{p1, p2, p3}));
     }
 
     public static void testPolytope() {
@@ -141,28 +55,6 @@ public class Main {
         });
     }
 
-    public static void testPolytopeVertices() {
-
-        Cube c = new Cube(new PointDense(1, 1, 1), new PointDense(2, 2, 2));
-        System.out.println(c.getVertices());
-    }
-
-    public static void testPlaneNormalAvg() {
-        Matrix m = new Matrix(3, 3);
-        m.setRow(0, new PointDense(0, 0, 0));
-        m.setRow(1, new PointDense(1, 0, -.001));
-        m.setRow(0, new PointDense(0, 1, 0));
-        m.setRow(0, new PointDense(1, 1, .001));
-        System.out.println(new Plane(m));
-    }
-
-    public static void testMatrixSetRow() {
-        Matrix m = new Matrix(3).setAll((i, j) -> i + j + 1.0);
-        System.out.println(m);
-        m.setRow(2, new PointDense(9, 9, 9));
-        System.out.println(m);
-    }
-
     public static void testLinearSpace() {
 //
 //        Matrix m = new Matrix(2, 4);
@@ -177,19 +69,6 @@ public class Main {
         LinearSpace line = LinearSpace.colSpace(new PointDense(1, 0, 0));
         System.out.println(line);
         System.out.println(line.hasElement(new PointDense(-1, 1, 0)));
-    }
-
-    public static void testAffineSpace() {
-        Matrix m = new Matrix(3);
-        m.setCol(0, new PointDense(0, 0, 1));
-        m.setCol(1, new PointDense(1, 0, 0));
-        LinearSpace ls = LinearSpace.colSpace(m);
-
-        System.out.println(ls.nullSpaceMatrix());
-
-        AffineSpace as = new AffineSpace(ls, new PointDense(7, 8, -3));
-
-        System.out.println(as.proj(new PointDense(20, -17, 5)));
     }
 
     public static void testAffineSpaceIntersection() {
@@ -208,49 +87,6 @@ public class Main {
 
         System.out.println(as4.hasElement(new PointDense(0, 7, 1)));
         System.out.println(as4.proj(new PointDense(-3, 5, 6)));
-    }
-
-    public static void testMyPolytopeProjection() {
-
-        int dim = 3;
-
-        Polytope standardPoly = new Hull(
-                //                Matrix.randomColPoints(4, new Point(dim), 5)
-                new Matrix(3, 4)
-                        .setCol(0, new PointDense(0, 0, 0))
-                        .setCol(1, new PointDense(0, 0, 1))
-                        .setCol(2, new PointDense(0, 1, 0))
-                        .setCol(3, new PointDense(1, 0, 0))
-        //                        .setCol(4, new Point(3, .5))
-        );
-
-        GradDescentFeasibility mp = new GradDescentFeasibility(standardPoly);
-
-        System.out.println(standardPoly);
-
-//        Point testPoint = new Point(0, 0);
-//        
-//        System.out.println("fast projection " + mp.proj(testPoint));
-//        
-//        System.out.println("brute force " + mp.bruteForceProjection(testPoint));
-        for (int i = 0; i < 100; i++) {
-
-            PointDense y = PointDense.uniformRand(PointDense.Origin(dim), 100);
-
-            PointDense myProj = mp.proj(y);
-
-            if (!standardPoly.bruteForceProjection(y).equals(myProj, .000001)) {
-
-                System.out.println("i = " + i);
-                System.out.println("y = " + y);
-                System.out.println("yk.bruteForceProjection(y) = "
-                        + standardPoly.bruteForceProjection(y));
-                System.out.println("mp.proj(y) = " + myProj);
-                return;
-            }
-
-        }
-        System.out.println("true");
     }
 
     public static void testAdjacentFacesOfAPolytope() {
@@ -276,39 +112,10 @@ public class Main {
         System.out.println(p.adjacent(north, east));
     }
 
-    public static void testMatrixIndependentRows() {
-
-        Matrix m = new Matrix(3, 3);
-        m.setRow(0, new PointDense(1, 1, 1));
-        m.setRow(1, new PointDense(3, -4, 7));
-        m.setRow(2, new PointDense(2, -5, 6));
-        System.out.println(m);
-        System.out.println(m.independentRows(.0000001));
-    }
-
-    public static void testConvexCombination() {
-
-        Matrix points = new Matrix(3, 4)
-                .setCol(0, new PointDense(0, 0, 0))
-                .setCol(1, new PointDense(0, 1, 0))
-                .setCol(2, new PointDense(1, 0, 0))
-                .setCol(3, new PointDense(0, 0, 1));
-
-//        Matrix points = Matrix.randomColPoints(3, new Point(5,5,5), 3);
-        PointDense test = new PointDense(.1, .1, 0);
-
-        Hull.ConvexCombination cc = new Hull.ConvexCombination(points);
-
-        System.out.println("feasibility answer is " + cc.hasElement(test));
-
-        System.out.println(new Hull(points));
-
-    }
-
     public static void polytopeFeasabilityTest() {
 
-        int dim = 174;
-        int numFaces = 40;
+        int dim = 5;
+        int numFaces = 10000;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 10; i++) {
@@ -316,96 +123,10 @@ public class Main {
             GradDescentFeasibility poly = new GradDescentFeasibility(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
-            PointDense feas = poly.fesibility(PointDense.uniformRand(new PointDense(dim), 10));
+            Point feas = poly.fesibility(PointDense.uniformRand(new PointDense(dim), 10));
 
-//            System.out.println(feas);
+            System.out.println(feas);
         }
-
-    }
-
-    public static void testAffineSpaceContaining() {
-
-        Matrix points = new Matrix(2, 3)
-                .setRow(0, new PointDense(1, 0, 0))
-                .setRow(1, new PointDense(0, 1, 0));
-
-        System.out.println(points);
-
-        AffineSpace as = AffineSpace.smallestContainingSubSpace(points, 1e-6);
-
-        System.out.println(as.hasElement(new PointDense(3, 4, 5)));
-
-        System.out.println(as.hasElement(points.row(1), 1e-4));
-
-        System.out.println(as);
-
-    }
-
-    public static void testRecursivePolytopeCone() {
-
-//        -0.4021674579995177*(x-0.0) + 0.3981497463145742*(y-0.0) + 0.824462318869605*(z-0.0)<= 0
-//-0.5365748474367106*(x-0.0) + 0.5676777837620238*(y-0.0) + 0.624363169094164*(z-0.0)<= 0
-//0.5279418008343463*(x-0.0) + -0.48336838058840675*(y-0.0) + 0.6983068548848197*(z-0.0)<= 0
-        int dim = 3;
-        PointDense p = new PointDense(dim).setAll(i -> 10);
-
-        boolean equal = true;
-        PointDense proj = null;
-        Point bf = null;
-
-        RecursiveProjPolytopeCone rprc = new RecursiveProjPolytopeCone(new PointDense(dim));
-        rprc.addPlaneWithNormal(new PointDense(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
-        rprc.addPlaneWithNormal(new PointDense(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
-        rprc.addPlaneWithNormal(new PointDense(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
-
-        proj = rprc.proj(p);
-        bf = rprc.bruteForceProjection(p);
-
-//        while (equal) {
-//            System.out.println("\nstart:\n");
-//            rprc = new RecursiveProjPolytopeCone(PolytopeCone.randomPolytopeCone(3, dim));
-//            proj = rprc.proj(p);
-//            bf = rprc.bruteForceProjection(p);
-//            equal = proj.equals(bf, 1e-5);
-//        }
-        System.out.println(proj);
-        System.out.println(bf);
-        System.out.println(proj.equals(bf, 1e-5));
-        System.out.println(rprc);
-
-    }
-
-    public static void testPolytopeConeProj() {
-
-//        -0.4021674579995177*(x-0.0) + 0.3981497463145742*(y-0.0) + 0.824462318869605*(z-0.0)<= 0
-//-0.5365748474367106*(x-0.0) + 0.5676777837620238*(y-0.0) + 0.624363169094164*(z-0.0)<= 0
-//0.5279418008343463*(x-0.0) + -0.48336838058840675*(y-0.0) + 0.6983068548848197*(z-0.0)<= 0
-        int dim = 3;
-        PointDense p = new PointDense(dim).setAll(i -> 10);
-
-        boolean equal = true;
-        PointDense proj = null;
-        Point bf = null;
-
-        PolytopeCone rprc = new PolytopeCone(new PointDense(dim));
-        rprc.addPlaneWithNormal(new PointDense(-0.4021674579995177, 0.3981497463145742, 0.824462318869605));
-        rprc.addPlaneWithNormal(new PointDense(-0.5365748474367106, 0.5676777837620238, 0.624363169094164));
-        rprc.addPlaneWithNormal(new PointDense(0.5279418008343463, -0.48336838058840675, 0.6983068548848197));
-
-        proj = rprc.proj(p);
-        bf = rprc.bruteForceProjection(p);
-
-//        while (equal) {
-//            System.out.println("\nstart:\n");
-//            rprc = new RecursiveProjPolytopeCone(PolytopeCone.randomPolytopeCone(3, dim));
-//            proj = rprc.proj(p);
-//            bf = rprc.bruteForceProjection(p);
-//            equal = proj.equals(bf, 1e-5);
-//        }
-        System.out.println(proj);
-        System.out.println(bf);
-        System.out.println(proj.equals(bf, 1e-5));
-        System.out.println(rprc);
 
     }
 
@@ -425,15 +146,30 @@ public class Main {
 
 //        polytopeFeasabilityTest();
 
+//            System.out.println(Memory.remaining());
 //        GradDescentFeasibility.loadFromErrorFile();
-    
+        MatrixDense mp1 = new PointDense(1, 2, 3).T();
+        
+        System.out.println(mp1.cols);
         
         
-         Matrix m = new Matrix(2);
-         
-    
-    
-    
+        
+        PointDense p2 = new PointDense(4, 5, 6);
+        
+        System.out.println(p2.rows());
+        
+        
+        
+        MatrixDense mp2 = new MatrixDense(p2);
+        System.out.println(mp1);
+        
+        
+        System.out.println(mp2.ejmlDense());
+        
+        
+        
+        System.out.println(mp1.T().mult(mp2));
+
     }
 
 }

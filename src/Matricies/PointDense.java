@@ -36,6 +36,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         System.arraycopy(x, 0, array, 0, x.length);
     }
 
+    public PointDense(Point x) {
+        this(x.asDense());
+    }
+    
+    
+
     /**
      * Creates an empty point in n dimensional space. This point needs to be
      * assigned values.
@@ -187,10 +193,6 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         return dot(new PointDense(p));
     }
 
-    @Override
-    public MatrixDense outerProduct(Point p) {
-        return new MatrixDense(dim(), p.dim()).setAll((i, j) -> get(i) * p.get(j));
-    }
     
     public MatrixSparse outerProduct(PointSparse p) {
         
@@ -219,14 +221,6 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         return new MatrixDense(this).T().mult(matrix);
     }
     
-    /**
-     * dot product
-     * @param p
-     * @return 
-     */
-    public double mult(Point p){
-        return dot(p);
-    }
 
     @Override
     public PointDense multMe(double k) {
@@ -449,29 +443,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         return new PointDense(new double[]{x});
     }
 
-    /**
-     * sets the values of this point to a sub array.
-     *
-     * @param x the array
-     * @param srcStartPos the starting index of the MyPoint in the array
-     * @return start this point
-     */
-    @Override
-    public PointDense setFromSubArray(double[] x, int srcStartPos) {
-        System.arraycopy(x, srcStartPos, array, 0, Math.min(dim(), x.length));
-        return this;
-    }
 
-    /**
-     * sets the values of this point to a sub array.
-     *
-     * @param x the array
-     * @param start the starting index of the x VALUES in this point
-     * @return start this point
-     */
-    public PointDense setFromSubArray(PointDense x, int start) {
-        return setFromSubArray(x.array, start);
-    }
 
     public static Random rand = new Random(1);
 
@@ -603,9 +575,10 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return the projection of this point on the convex set
      */
     @Override
-    public PointDense proj(ConvexSet cs) {
+    public Point proj(ConvexSet cs) {
         return cs.proj(this);
     }
+    
 
     /**
      * Is this point above the plane

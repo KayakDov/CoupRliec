@@ -1,7 +1,8 @@
 
 package Convex;
 
-import Matricies.PointDense;
+import Matricies.Point;
+import Matricies.Point;
 
 /**
  *
@@ -16,7 +17,7 @@ public interface ConvexSet extends Indicator{
      * @param x the element being checked.
      * @return 
      */
-    public default boolean hasElement(PointDense x){
+    public default boolean hasElement(Point x){
         return proj(x).equals(x);
     }
     
@@ -26,7 +27,7 @@ public interface ConvexSet extends Indicator{
      * @param epsilon
      * @return 
      */
-    public default boolean hasElement(PointDense x, double epsilon){
+    public default boolean hasElement(Point x, double epsilon){
         if(hasElement(x)) return true;
         return proj(x).equals(x, epsilon);
     }
@@ -36,14 +37,14 @@ public interface ConvexSet extends Indicator{
      * @param p
      * @return 
      */
-    public PointDense proj(PointDense p);
+    public Point proj(Point p);
     
     /**
      * The shortest distance from the point to this set.
      * @param x
      * @return 
      */
-    public default double d(PointDense x) {
+    public default double d(Point x) {
         if(hasElement(x)) return 0;
         return x.d(proj(x));
     }
@@ -53,13 +54,13 @@ public interface ConvexSet extends Indicator{
      * @param x
      * @return 
      */
-    public default double distSq(PointDense x){
+    public default double distSq(Point x){
         if(hasElement(x)) return 0;
         return x.distSq(proj(x));
     }
 
     @Override
-    public default boolean isMember(PointDense x) {
+    public default boolean isMember(Point x) {
         return hasElement(x);
     }
     

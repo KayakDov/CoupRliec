@@ -1,14 +1,10 @@
 package Convex.Linear;
 
 import Convex.HalfSpace;
-import Convex.Linear.AffineSpace;
-import Convex.Linear.LinearSpace;
 import Convex.Polytope;
-import Convex.Sphere;
 import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointDense;
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import listTools.Choose;
 
@@ -23,7 +19,7 @@ public class Plane extends AffineSpace {
      *
      * @return
      */
-    public PointDense normal() {
+    public Point normal() {
         return nullMatrix().row(0);
     }
 
@@ -33,8 +29,8 @@ public class Plane extends AffineSpace {
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public Plane(PointDense p, PointDense normal) {
-        super(new LinearSpace(new PointDense[]{normal}), p);
+    public Plane(Point p, Point normal) {
+        super(new LinearSpace(new Point[]{normal}), p);
 
     }
 
@@ -47,69 +43,15 @@ public class Plane extends AffineSpace {
         this(p.p(), p.normal());
     }
 
-    /**
-     * creates a plane from a set of points.
-     *
-     * @param x
-     */
-    public Plane(PointDense[] x) {
-        this(Matrix.fromRows(x));
-    }
 
-    /**
-     * creates a plane from a set of points.
-     *
-     * @param rowMatrix each row is a point on the surface of this plane
-     * @param x a point on the plane
-     */
-    public Plane(Matrix rowMatrix, PointDense x) {
-        this(null, null);
-        p = x;
-
-        if (rowMatrix.rows < rowMatrix.cols)
-            throw new RuntimeException("Not enough points to form a " + (rowMatrix.cols - 1) + " dimensional hyperpalne.");
-        if (rowMatrix.isSquare()) {
-            linearSpace = new LinearSpace((rowMatrix).T().rowArray());
-        } else {
-            linearSpace = new LinearSpace(new Choose<>(rowMatrix.rowList(), rowMatrix.cols).chooseStream()
-                    .map(pointSet -> normal(new Matrix(rowMatrix.cols)
-                    .setRows(i -> pointSet.get(i))))
-                    .reduce((p1, p2) -> p1.plus(p2)).get().T().rowArray());
-        }
-        b = PointDense.oneD(normal().dot(x));
-    }
-
-    /**
-     * The constructor
-     *
-     * @param rowMatrix a list of points, at least as many as there are
-     * dimensions.
-     */
-    public Plane(Matrix rowMatrix) {
-        this(rowMatrix, rowMatrix.row(0));
-    }
-
-    /**
-     * Gives the normal vector to the points in the matrix. This vector will not
-     * have until length 1. the number of rows in the matrix should equal the
-     * number of columns
-     *
-     * @param rowMatrix nullMatrix of points in a plane
-     * @return the vector normal to the plane
-     */
-    public static PointDense normal(Matrix rowMatrix) {
-        Matrix xRelative = new Matrix(rowMatrix.rows - 1, rowMatrix.cols);
-        xRelative.setRows(i -> rowMatrix.row(i + 1).minus(rowMatrix.row(0)));
-        return xRelative.crossProduct();
-    }
 
     /**
      * returns a point on the plane.
      *
      * @return
      */
-    public PointDense getP() {
-        return new PointDense(p);
+    public Point getP() {
+        return p;
     }
 
     /**
@@ -129,7 +71,7 @@ public class Plane extends AffineSpace {
      * @param epsilon
      * @return
      */
-    public boolean above(PointDense p, double epsilon) {
+    public boolean above(Point p, double epsilon) {
         return !Plane.this.below(p) && !onPlane(p, epsilon);
     }
 
@@ -140,7 +82,7 @@ public class Plane extends AffineSpace {
      * @param epsilon
      * @return
      */
-    public boolean below(PointDense p, double epsilon) {
+    public boolean below(Point p, double epsilon) {
         return !Plane.this.above(p) && !onPlane(p, epsilon);
     }
 
@@ -151,7 +93,7 @@ public class Plane extends AffineSpace {
      * @param epsilon margin of error for double
      * @return true if the point is on the plane.
      */
-    public boolean onPlane(PointDense x, double epsilon) {
+    public boolean onPlane(Point x, double epsilon) {
         return Math.abs(x.minus(p).dot(normal().dir())) <= epsilon;
     }
 
@@ -161,8 +103,8 @@ public class Plane extends AffineSpace {
      * @param normal a point normal to the plane
      * @param b the inner product of a point on the plane, and the normal vector
      */
-    public Plane(PointDense normal, double b) {
-        super(new PointDense[]{normal}, PointDense.oneD(b));
+    public Plane(Point normal, double b) {
+        super(new Point[]{normal}, PointDense.oneD(b));
     }
 
     /**
@@ -192,7 +134,8 @@ public class Plane extends AffineSpace {
      * @return true if the two planes are equal.
      */
     public boolean equals(Plane plane, double epsilon) {
-        return onPlane(plane.p, epsilon) && normal().sameDirection(plane.normal(), epsilon);
+        return onPlane(plane.p, epsilon) && 
+                normal().dir().equals(plane.normal().dir());
     }
 
     /**
@@ -202,7 +145,7 @@ public class Plane extends AffineSpace {
      * @return a new point on this plane
      */
     @Override
-    public PointDense proj(PointDense x) {
+    public Point proj(Point x) {
         return x.minus(normal().dir().mult((x.minus(p)).dot(normal().dir())));
     }
 
@@ -224,7 +167,7 @@ public class Plane extends AffineSpace {
      * @return the distance to the point
      */
     @Override
-    public double d(PointDense x) {
+    public double d(Point x) {
         return Math.abs((x.minus(p)).dot(normal().dir()));
     }
 
@@ -250,12 +193,12 @@ public class Plane extends AffineSpace {
     private double epsilon = 1e-10;
     
     @Override
-    public boolean hasElement(PointDense p) {
+    public boolean hasElement(Point p) {
         return hasElement(p, epsilon);
     }
 
     @Override
-    public boolean hasElement(PointDense p, double epsilon) {
+    public boolean hasElement(Point p, double epsilon) {
         return Math.abs(nullMatrix().mult(p).get(0) - b.get(0)) <= dim()*epsilon;
     }
 
@@ -281,7 +224,7 @@ public class Plane extends AffineSpace {
      * @return the point of intersection of this plane and a line, 
      * or an unreal point if there is no intersection. 
      */
-    public PointDense lineIntersection(AffineSpace line) {
+    public Point lineIntersection(AffineSpace line) {
         try {
             return (nullMatrix().rowConcat(line.nullMatrix())).solve(b.concat(line.b));
         } catch (NoSuchElementException | ArithmeticException nsee) {
@@ -297,7 +240,7 @@ public class Plane extends AffineSpace {
      * @return the point of intersection of this plane and a line, 
      * or an unreal point if there is no intersection. 
      */
-    public PointDense lineIntersection(PointDense grad, PointDense onLine) {
+    public Point lineIntersection(Point grad, Point onLine) {
         double t = (b.get(0) - normal().dot(onLine))/(normal().dot(grad));
         return grad.mult(t).plus(onLine);
     }

@@ -2,6 +2,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
 import Convex.Polytope;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -62,7 +63,7 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public double sumDist(PointDense y) {
+    public double sumDist(Point y) {
         return stream().parallel().mapToDouble(hs -> hs.d(y)).sum();
     }
 
@@ -73,13 +74,13 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public PointDense gradSumDist(PointDense y) {
+    public Point gradSumDist(PointDense y) {
 
         return gradSumDist(y, stream().parallel().filter(hs -> !hs.hasElement(y)));
 
     }
 
-    public PointDense gradSumDist(PointDense y, Stream<HalfSpace> containing) {
+    public Point gradSumDist(PointDense y, Stream<HalfSpace> containing) {
         return containing.map(hs -> hs.normal().dir())
                 .reduce((a, b) -> a.plus(b)).get();
     }
@@ -95,7 +96,7 @@ public class GradDescentFeasibility extends Polytope {
      * @param grad the direction to look for an intersection in.
      * @return the nearest point where the ray from y hits a plane
      */
-    private HalfSpace targetPlane(PointDense y, PointDense grad, Partition part) {
+    private HalfSpace targetPlane(Point y, Point grad, Partition part) {
 
         HalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
 
@@ -116,7 +117,7 @@ public class GradDescentFeasibility extends Polytope {
 
     }
 
-    private void rollThroughSpaces(PointDense rollToPoint, Partition part) {
+    private void rollThroughSpaces(Point rollToPoint, Partition part) {
 
         part.passThroughSpaces(
                 part.excluding()
@@ -131,14 +132,14 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public PointDense fesibility(PointDense y) {
+    public Point fesibility(Point y) {
 
         Partition part = new Partition(y, this);
         if (part.pointIsFeasible()) return y;
 
         LocalPolyhedralCone cone = new LocalPolyhedralCone(part);
 
-        PointDense start = y;      //TODO remove
+        Point start = y;      //TODO remove
 
         for (int i = 0; i <= size(); i++) {
 
@@ -189,14 +190,14 @@ public class GradDescentFeasibility extends Polytope {
      *
      * @return
      */
-    public PointDense fesibility() {
+    public Point fesibility() {
         return fesibility(new PointDense(dim()));
 
     }
 
     public class FailedDescentException extends RuntimeException {
 
-        public FailedDescentException(String message, PointDense start, PointDense y, Partition part) {
+        public FailedDescentException(String message, Point start, Point y, Partition part) {
             super(message + "\nThe starting point was: "
                     + start
                     + "\nThe distance to the polytope is " + sumDist(y)

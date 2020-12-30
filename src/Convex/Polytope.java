@@ -2,8 +2,8 @@ package Convex;
 
 import Convex.Linear.Plane;
 import Convex.Linear.AffineSpace;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
 import Matricies.Matrix;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +12,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -83,8 +80,8 @@ public class Polytope implements ConvexSet {
         halfSpaceSet.removeIf(pred);
         reInit();
     }
-    
-    public void removeAll(Collection<HalfSpace> colec){
+
+    public void removeAll(Collection<HalfSpace> colec) {
         halfSpaces.removeAll(colec);
         halfSpaceSet.removeAll(colec);
         reInit();
@@ -93,10 +90,10 @@ public class Polytope implements ConvexSet {
      * All the vertices of the polytope. be sure to call with getVertices().
      */
     protected Matrix vertices;
+
     /**
      * The vertices of each halfspace.
      */
-    protected HashMap<HalfSpace, Matrix> faceVerticies;
 
     /**
      * A matrix of all the normal vectors
@@ -115,7 +112,9 @@ public class Polytope implements ConvexSet {
      * @return
      */
     public PointDense b() {
-        return new PointDense(size()).setAll(i -> halfSpaces.get(i).normal().dot(halfSpaces.get(i).surfacePoint()));
+        return new PointDense(size())
+                .setAll(i
+                        -> halfSpaces.get(i).boundary().b.get(0));
     }
 
     /**
@@ -143,10 +142,10 @@ public class Polytope implements ConvexSet {
      * @param normals a matrix of the normal vectors of the half spaces
      * @param b the right side of the defning inequality
      */
-    public Polytope(Matrix normals, PointDense b) {
+    public Polytope(Matrix normals, Point b) {
         this();
         halfSpaces.addAll(
-                IntStream.range(0, normals.rows).mapToObj(i -> new HalfSpace(
+                IntStream.range(0, normals.rows()).mapToObj(i -> new HalfSpace(
                 normals.row(i), b.get(i)))
                         .collect(Collectors.toList()));
         halfSpaceSet.addAll(halfSpaces);
@@ -156,26 +155,17 @@ public class Polytope implements ConvexSet {
         this(new ArrayList<HalfSpace>());
     }
 
-    protected Polytope setVertices() {
-        vertices = verticies();
-        faceVerticies = new HashMap<>(size());
-        stream().forEach(face -> faceVerticies.put(face, Matrix.fromRows(
-                vertices.rowStream().filter(point
-                        -> face.onSurface(point, epsilon)))));
-        return this;
-    }
-
     /**
      * removes all the halfSpaces not smallestContainingSubSpace x on their
      * surface
      *
      * @param x
      */
-    public void removeFacesNotContaining(PointDense x) {
+    public void removeFacesNotContaining(Point x) {
         removeIf(face -> !face.onSurface(x, epsilon));
     }
 
-    public void removeFacesNotFacing(PointDense y) {
+    public void removeFacesNotFacing(Point y) {
         removeIf(f -> f.hasElement(y));
     }
 
@@ -205,95 +195,18 @@ public class Polytope implements ConvexSet {
      */
     public Polytope(HalfSpace[] faces) {
         this(Arrays.asList(faces));
-        this.faceVerticies = new HashMap<>();
     }
 
     @Override
-    public boolean hasElement(PointDense p) {//TODO: make this paralel
+    public boolean hasElement(Point p) {//TODO: make this paralel
         return stream().allMatch((HalfSpace hs) -> hs.hasElement(p, epsilon));
     }
 
-    private PointDense lastProjectionSource = null, lastProjection = null;
+    private Point lastProjectionSource = null, lastProjection = null;
 
     public boolean hasHalfSpaces() {
         return halfSpaces.isEmpty();
     }
-
-    /**
-     * dykstras proj algorithm onto polytopes see
-     * https://drive.google.com/drive/u/0/folders/1kqfDQvhd1FT-xaq89WlmYQn8MNV55BWs
-     *
-     * @AUTHOR="Deutsch, F. and Hundal, H.", @TITLE="The rate of convergence of
-     * Dykstra's cyclic projections algorithm: The polyhedral case.", @JOURNAL=
-     * "Numerical Functional Analysis and Optimization", @VOLUME="15", @number =
-     * "5-6", @PAGES="537-565", @YEAR="1994"
-     *
-     * @param y
-     * @return
-     */
-//    @Override
-//    public Point proj(Point y) {
-//
-//        if (!hasHalfSpaces()) {
-//            return y;
-//        }
-//        if (lastProjectionSource != null
-//                && lastProjectionSource.equals(y)) {
-//            return new Point(lastProjection);
-//        }
-//
-//        return new DykstraSeq().cauchyLimit(y, epsilon);
-//
-//    }
-//
-    /**
-     * Dykstra's algorithm as represented by the sequence
-     */
-//    class DykstraSeq implements Sequence {
-//
-//        private LinkedList<Point> e = new LinkedList<>();
-//
-//        private LinkedList<Point> prevX = new LinkedList<>();
-//
-//        DykstraSeq() {
-//            for (int i = 0; i < size(); i++) {
-//                e.add(new Point(dim()));
-//            }
-//
-//            for (int i = 0; i < 2 * size(); i++) {
-//                prevX.add(new Point(dim()));
-//            }
-//        }
-//
-//        private boolean end(Point x, double epsilon) {
-//            return prevX.stream().allMatch(prev -> prev.d(x) < epsilon);
-//        }
-//
-//        @Override
-//        public Point cauchyLimit(Point start, double end) {
-//            Point x = iteration(start, 1);
-//
-//            for (int i = 2; !end(x, epsilon); i++) {
-//                x = iteration(x, i);
-//            }
-//
-//            return x;
-//        }
-//
-//        void e(Point prevX, Point x) {
-//            e.add(prevX.plus(e.removeFirst()).minus(x));
-//        }
-//
-//        @Override
-//        public Point iteration(Point prevX, int n) {
-//            HalfSpace faceN = halfSpaces.get(n % size());
-//            Point x = faceN.proj(prevX.plus(e.getFirst()));
-//            e(prevX, x);
-//            this.prevX.add(x);
-//            this.prevX.remove();
-//            return x;
-//        }
-//    }
 
     public double epsilon = 1e-9;//1e-9;
 
@@ -316,9 +229,6 @@ public class Polytope implements ConvexSet {
         if (vertices != null) {
             vertices.rowStream().forEach(point -> sb.append(point).append("\n"));
             sb.append("\n");
-        }
-        if (faceVerticies != null) {
-            faceVerticies.forEach((K, V) -> sb.append(K).append("\n").append(V).append("\n"));
         }
 
         return sb.toString();
@@ -362,7 +272,7 @@ public class Polytope implements ConvexSet {
         return Matrix.fromRows(vertexStream());
     }
 
-    private Stream<PointDense> vertexStream() {
+    private Stream<Point> vertexStream() {
         return new Choose<>(halfSpaces, dim()).chooseStream()
                 .filter(hsSet -> new Polytope(hsSet).normalMatix().det() != 0)
                 .map(hsSet -> AffineSpace.intersection(hsSet.stream().map(hs -> hs.boundary())).p())
@@ -381,7 +291,7 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(PointDense x, double epsilon) {
+    public boolean hasElement(Point x, double epsilon) {
         return stream().allMatch(halfSpace -> halfSpace.hasElement(x, epsilon));
     }
 
@@ -434,7 +344,7 @@ public class Polytope implements ConvexSet {
      * @param x the point we're looking for the closest plane to.
      * @return the closest plane.
      */
-    public HalfSpace closestTo(PointDense x) {
+    public HalfSpace closestTo(Point x) {
         return stream().parallel().max(Comparator.comparing(plane -> plane.d(x))).get();
     }
 
@@ -444,7 +354,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public PointDense feasibilityPoint() throws NoSuchElementException {
+    public Point feasibilityPoint() throws NoSuchElementException {
 
 //        return new GradDescentFeasibility();
         return bruteForceFeasibility();
@@ -470,7 +380,7 @@ public class Polytope implements ConvexSet {
      * @param y the point being projected.
      * @return the projection of y onto this convex polytope.
      */
-    public PointDense bruteForceProjection(PointDense y) {
+    public Point bruteForceProjection(Point y) {
 
         if (hasElement(y, epsilon)) {
             return y;
@@ -504,7 +414,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public PointDense bruteForceFeasibility() {
+    public Point bruteForceFeasibility() {
 
         return affineSubSpaces().map(as -> as.p()).filter(p -> hasElement(p)).findAny().get();
     }
@@ -549,33 +459,12 @@ public class Polytope implements ConvexSet {
      * @param x a point on the surface of the polytope.
      * @return all the faces smallestContainingSubSpace x on their surface.
      */
-    private Polytope facesContaining(PointDense x) {
+    private Polytope facesContaining(Point x) {
         return new Polytope(stream().filter(hs -> hs.boundary().hasElement(x)));
     }
 
     public boolean equals(Polytope poly) {
         return new HashSet<>(halfSpaces).equals(new HashSet<>(poly.halfSpaces));
-    }
-
-
-
-    /**
-     * @param numFaces The number of faces of the polytope
-     * @param radius the nearest point on the polytope to the origan, with a
-     * normal facing out.
-     * @param dim the number of dimensions of the polytope
-     * @return a random polytope containing a ball centered at the origan.
-     */
-    public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
-        return new Polytope(
-                IntStream.range(0, numFaces).mapToObj(i -> {
-                    
-                    PointDense normal = PointDense.uniformRand(new PointDense(dim), 1);
-                    normal = normal.mult(1/normal.magnitude());
-                    
-                    return new HalfSpace(normal, normal);
-                })
-        );
     }
 
     /**
@@ -593,9 +482,20 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public PointDense proj(PointDense p) {
+    public Point proj(Point p) {
         return bruteForceProjection(p);
     }
 
-    
+    public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
+
+        Polytope poly = new Polytope();
+        IntStream.range(0, numFaces).forEach(i -> {
+            PointDense random = PointDense.uniformRand(new PointDense(dim), radius);
+            random.multMe(radius/random.magnitude());
+            poly.add(new HalfSpace(random, random));
+        });
+
+        return poly;
+    }
+
 }

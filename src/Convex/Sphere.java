@@ -1,6 +1,7 @@
 package Convex;
 
 import Convex.ConvexSet;
+import Matricies.Point;
 import Matricies.PointDense;
 import java.util.stream.IntStream;
 import static java.lang.Math.sin;
@@ -16,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class Sphere implements ConvexSet {
 
-    final private PointDense center;
+    final private Point center;
     final private double r;
 
     /**
@@ -44,7 +45,7 @@ public class Sphere implements ConvexSet {
      * @param center
      * @param r
      */
-    public Sphere(PointDense center, double r) {
+    public Sphere(Point center, double r) {
         this.center = center;
         this.r = r;
     }
@@ -69,14 +70,14 @@ public class Sphere implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(PointDense p) {
+    public boolean hasElement(Point p) {
         return p.d(center) <= r;
     }
 
     @Override
-    public PointDense proj(PointDense p) {
-        if (hasElement(p)) return new PointDense(p);
-        PointDense cToP = p.minus(center);
+    public Point proj(Point p) {
+        if (hasElement(p)) return p;
+        Point cToP = p.minus(center);
         cToP = cToP.mult(1 / cToP.magnitude()).mult(r);
         return cToP.plus(center);
     }

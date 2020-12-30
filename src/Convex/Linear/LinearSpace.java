@@ -2,8 +2,14 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Matricies.Matrix;
+import Matricies.MatrixDense;
+import Matricies.MatrixSparse;
+import Matricies.Point;
 import Matricies.ReducedRowEchelonDense;
+import Matricies.Point;
 import Matricies.PointDense;
+import Matricies.PointSparse;
+import MySystem.Memory;
 import java.util.Arrays;
 
 /**
@@ -16,9 +22,9 @@ public class LinearSpace implements ConvexSet {
     
 //    private final Matrix nullSpace;
 
-    private PointDense[] normals;
+    private Point[] normals;
 
-    public LinearSpace(PointDense[] normals) {
+    public LinearSpace(Point[] normals) {
         this.normals = normals;
     }
     
@@ -53,21 +59,12 @@ public class LinearSpace implements ConvexSet {
      * @return a new linear space that is the null space of the provided matrix.
      */
     public static LinearSpace nullSpace(Matrix m) {
-        return new LinearSpace(m.rowArray());
+        return new LinearSpace(m.rowsArray());
     }
 
-    /**
-     * The plane that goes through each column of the given matrix and the
-     * origin. The matric
-     *
-     * @param colSpace
-     * @return
-     */
-    public static LinearSpace plane(Matrix colSpace) {
-        return new LinearSpace(colSpace.T().crossProduct().T().rowArray());
-    }
 
     /**
+     * TODO: is the null space generated from a sparse column space sparse?
      * A linear space factory method to create a column space
      *
      * @param basis the basis of the new linear space being created. Note, the
@@ -77,15 +74,20 @@ public class LinearSpace implements ConvexSet {
     public static LinearSpace colSpace(Matrix basis) {
         
         Matrix rcef = basis.T().reducedRowEchelon().T();
-        Matrix nullMatrix = new Matrix(basis.rows - basis.cols, basis.rows);
+        
+        boolean isDense = basis.isDense();
+        int rows = basis.rows() - basis.cols(), 
+                cols = basis.rows();
+        
+        Matrix nullMatrix = isDense? new MatrixDense(rows, cols): new MatrixSparse(rows, cols);
                 
         nullMatrix.setCols(i -> {
-            if(i < basis.cols)
-                return new PointDense(nullMatrix.rows).setAll(j -> rcef.get(j + basis.cols, i));
-            else return new PointDense(nullMatrix.rows).set(i - basis.cols, -1);
+            if(i < basis.cols())
+                return (isDense? new PointDense(rows): new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
+            else return (isDense?new PointDense(rows): new PointSparse(rows)).set(i - basis.cols(), -1);
                 
         });
-        return new LinearSpace(nullMatrix.rowArray());
+        return new LinearSpace(nullMatrix.rowsArray());
         
 //    An old way of doing it.    
 //        Matrix basisRows = basis.independentColumns(epsilon).T();        
@@ -121,36 +123,40 @@ public class LinearSpace implements ConvexSet {
      * @return 
      */
     protected Matrix matrix(){
-        return Matrix.fromRows(normals);
+        if(normals[0].isDense())return MatrixDense.fromRows(normals);
+        else return MatrixSparse.fromRows(normals);
     }
     public Matrix nullSpaceMatrix(){
         return Matrix.fromRows(normals);
     }
 
     /**
+     * TODO: Can this be sparse, I don't think so.
      * A new matrix whose column space defines this linear space
      *
      * @return
      */
-    public Matrix colSpaceMatrix() {
+    public MatrixDense colSpaceMatrix() {
  
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
 
-        Matrix IMinus = Matrix.identityMatrix(Math.max(rre.rows, rre.cols)).minus(rre.squareMatrixFromAbove());
+        MatrixDense IMinus = MatrixDense.identity(Math.max(rre.rows, rre.cols)).minus(rre.square());
 
         if (rre.noFreeVariable()) return new PointDense(rre.rows);
 
-        return Matrix.fromCols(rre.getFreeVariables().map(i -> IMinus.col(i)));
+        return MatrixDense.fromCols(
+                rre.getFreeVariables().map(i -> IMinus.col(i))
+        );
 
     }
 
     @Override
-    public boolean hasElement(PointDense x) {
+    public boolean hasElement(Point x) {
         return hasElement(x, epsilon);
     }
 
     @Override
-    public boolean hasElement(PointDense x, double epsilon) {
+    public boolean hasElement(Point x, double epsilon) {
         if (normals.length == 0) return true;
         return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
     }
@@ -158,17 +164,23 @@ public class LinearSpace implements ConvexSet {
     private Matrix projFunc = null;
 
     @Override
-    public PointDense proj(PointDense p) {
+    public Point proj(Point p) {
         if (isAllSpace()) return p;
         
         if (projFunc == null) {
             Matrix A = colSpaceMatrix();
-            if (!A.isZero(epsilon))
+            if (!A.isZero(epsilon)){//TODO: use the ejml suedo inverse function?
                 projFunc = A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
+            }
             else return new PointDense(p.dim());
         }
+        Point proj = projFunc.mult(p);
+
+        System.out.println("Convex.Linear.LinearSpace.proj()");
+        System.out.println(Memory.remainingPercent());
+        if(Memory.remainingPercent() < .25) projFunc = null;
         
-        return projFunc.mult(p);
+        return proj;
     }
 
     @Override
@@ -187,7 +199,7 @@ public class LinearSpace implements ConvexSet {
     }
 
     public static LinearSpace allSpace(int dim) {
-        return new LinearSpace(new PointDense[0]);
+        return new LinearSpace(new Point[0]);
     }
 
     /**
@@ -209,7 +221,7 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public LinearSpace intersection(LinearSpace ls) {
-        PointDense[] intersection = new PointDense[normals.length + ls.normals.length];
+        Point[] intersection = new Point[normals.length + ls.normals.length];
         System.arraycopy(normals, 0, intersection, 0, normals.length);
         System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
         return new LinearSpace(intersection);
