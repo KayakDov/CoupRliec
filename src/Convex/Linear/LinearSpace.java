@@ -174,13 +174,17 @@ public class LinearSpace implements ConvexSet {
         if (projFunc == null) {
             Matrix A = colSpaceMatrix();
             if (!A.isZero(epsilon)){//TODO: use the ejml suedo inverse function?
-                projFunc = A.pseudoInverse(); // A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
+                projFunc = A.mult(A.pseudoInverse()); //*/ A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
             }
             else return new PointD(p.dim());
         }
         Point proj = projFunc.mult(p);
 
-        if(Memory.remainingPercent() < .25) projFunc = null;
+//        System.out.println(Memory.remainingPercent());
+        if(Memory.remainingPercent() < .25) {
+            System.out.println("Affine Space has " + normals.length + " rows.  Exceeding memory bounds.  Processing is slowed.");
+            projFunc = null;
+        }
         
         return proj;
     }

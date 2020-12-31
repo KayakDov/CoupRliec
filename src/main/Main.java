@@ -7,23 +7,18 @@ import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
-import Matricies.Matrix;
-import Matricies.MatrixDense;
 import Matricies.Point;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import listTools.Choose;
 
 public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 3;
-        int numFaces = 3;
+        int dim = 100;
+        int numFaces = 1000;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 10; i++) {
             System.out.println("i = " + i);
             FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
@@ -76,22 +71,21 @@ public class Main {
         
         System.out.println("pp = " + pp);
         
-        AffineSpace as = pl1.intersection(pl2);
+        LinearSpace ls = new LinearSpace(new Point[]{p1,p2});
         
-        Point proj = as.proj(pp);
+        Point proj = ls.proj(pp);
         
-        System.out.println("col\n" + as.linearSpace().colSpaceMatrix());
+        System.out.println("col\n" + ls.colSpaceMatrix());
         
-        System.out.println(as.p());
-        System.out.println(as.hasElement(proj));
+        System.out.println(ls.hasElement(proj));
         System.out.println(proj);
 
     }
 
     public static void main(String[] args) throws IOException {
 
-        testProj();
-//        polytopeFeasabilityTest();
+//        testProj();
+        polytopeFeasabilityTest();
 //        testPolytopeFesibilitySpecifi();
 //            System.out.println(Memory.remaining());
 //    FeasibilityGradDescent.loadFromErrorFile();
