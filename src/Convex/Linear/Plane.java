@@ -4,7 +4,7 @@ import Convex.HalfSpace;
 import Convex.Polytope;
 import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.NoSuchElementException;
 import listTools.Choose;
 
@@ -104,7 +104,7 @@ public class Plane extends AffineSpace {
      * @param b the inner product of a point on the plane, and the normal vector
      */
     public Plane(Point normal, double b) {
-        super(new Point[]{normal}, PointDense.oneD(b));
+        super(new Point[]{normal}, PointD.oneD(b));
     }
 
     /**
@@ -228,7 +228,7 @@ public class Plane extends AffineSpace {
         try {
             return (nullMatrix().rowConcat(line.nullMatrix())).solve(b.concat(line.b));
         } catch (NoSuchElementException | ArithmeticException nsee) {
-            return new PointDense(new double[]{Double.NaN});
+            return new PointD(new double[]{Double.NaN});
         }
     }
     

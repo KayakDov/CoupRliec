@@ -2,11 +2,11 @@ package main;
 
 import Convex.Linear.AffineSpace;
 import Convex.Polytope;
-import Matricies.PointDense;
+import Matricies.PointD;
 import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.GradDescentFeasibility;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
 import Matricies.Matrix;
 import Matricies.MatrixDense;
 import Matricies.Point;
@@ -17,159 +17,84 @@ import listTools.Choose;
 
 public class Main {
 
-    public static void testPlanes() {
-        Plane p = new Plane(new PointDense(0, 0), new PointDense(1, 0));
-        System.out.println(p.below(new PointDense(5, 3)));
-    }
-
-    public static void testPolytope() {
-        Polytope p = new Polytope();
-        p.addFace(new HalfSpace(new PointDense(0, 1), new PointDense(0, 1)));
-        p.addFace(new HalfSpace(new PointDense(0, -1), new PointDense(0, -1)));
-        p.addFace(new HalfSpace(new PointDense(-1, 0), new PointDense(-1, 0)));
-        p.addFace(new HalfSpace(new PointDense(1, 0), new PointDense(1, 0)));
-
-        p.setEpsilon(1E-10);
-        System.out.println(p.proj(new PointDense(-2, -2)));
-        System.out.println(p.proj(new PointDense(-2, 2)));
-        System.out.println(p.proj(new PointDense(2, .5)));
-        System.out.println(p.proj(new PointDense(2, 2)));
-        System.out.println(p.proj(new PointDense(2000000, 4000000)));
-
-    }
-
-    public static void testChoose() {
-        int n = 4, k = 3;
-        System.out.println(n + " choose " + k + " = " + Choose.choose(n, k));
-
-        Character[] testSet = new Character[]{'a', 'b', 'c', 'd'};
-
-        ArrayList<Character> list = new ArrayList<>();
-        list.addAll(Arrays.asList(testSet));
-
-        Choose<Character> ch = new Choose<>(list, k);
-
-        ch.chooseStream().forEach(s -> {
-            s.forEach(System.out::print);
-            System.out.println("");
-        });
-    }
-
-    public static void testLinearSpace() {
-//
-//        Matrix m = new Matrix(2, 4);
-//        m.setRow(0, new Point(0, 1, 0, 0));
-//        m.setRow(1, new Point(1, 0, 0, 0));
-//        LinearSpace ls = LinearSpace.nullSpace(m);
-//
-//        System.out.println(ls.proj(new Point(1, -2, -3, -4)) + "\n");
-//        System.out.println(ls.colSpaceMatrix());
-//        System.out.println(ls.nullSpaceMatrix());
-
-        LinearSpace line = LinearSpace.colSpace(new PointDense(1, 0, 0));
-        System.out.println(line);
-        System.out.println(line.hasElement(new PointDense(-1, 1, 0)));
-    }
-
-    public static void testAffineSpaceIntersection() {
-
-        AffineSpace as1 = new AffineSpace(LinearSpace.nullSpace(new PointDense(0, 0, 1).T()), new PointDense(0, 0, 1));
-        AffineSpace as2 = new AffineSpace(LinearSpace.nullSpace(new PointDense(1, 0, 0).T()), new PointDense(0, 0, 1));
-        AffineSpace as3 = new AffineSpace(LinearSpace.nullSpace(new PointDense(0, 1, 0).T()), new PointDense(0, 4, 0));
-        //x = 0, z = 1, y is anything
-        AffineSpace[] spaces = new AffineSpace[]{as1, as2, as3};
-
-        AffineSpace as4 = AffineSpace.intersection(spaces);
-
-        System.out.println(as4.linearSpace().proj(new PointDense(0, 5, 1)));
-
-        System.out.println(as4);
-
-        System.out.println(as4.hasElement(new PointDense(0, 7, 1)));
-        System.out.println(as4.proj(new PointDense(-3, 5, 6)));
-    }
-
-    public static void testAdjacentFacesOfAPolytope() {
-
-        HalfSpace north = new HalfSpace(new PointDense(1, 1), new PointDense(0, 1)),
-                south = new HalfSpace(new PointDense(0, 0), new PointDense(0, -1)),
-                east = new HalfSpace(new PointDense(0, 0), new PointDense(-1, 0)),
-                west = new HalfSpace(new PointDense(1, 1), new PointDense(1, 0));
-
-        Polytope p = new Polytope(new HalfSpace[]{north, south, east, west});
-//        System.out.println(p);
-// 
-
-//        HalfSpace up = new HalfSpace(new Point(1, 1, 1), new Point(0, 0, 1)),
-//                down = new HalfSpace(new Point(0, 0, 0), new Point(0, 0, -1)),
-//                north = new HalfSpace(new Point(1, 1, 1), new Point(0, 1, 0)),
-//                south = new HalfSpace(new Point(0, 0, 0), new Point(0, -1, 0)),
-//                east = new HalfSpace(new Point(0, 0, 0), new Point(-1, 0, 0)),
-//                west = new HalfSpace(new Point(1, 1, 1), new Point(1, 0, 0));
-//
-//        Polytope p = new Polytope(new HalfSpace[]{up, down, north, south, east, west});
-//
-        System.out.println(p.adjacent(north, east));
-    }
-
     public static void polytopeFeasabilityTest() {
 
-        int dim = 5;
-        int numFaces = 10000;
+        int dim = 3;
+        int numFaces = 3;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10000; i++) {
             System.out.println("i = " + i);
-            GradDescentFeasibility poly = new GradDescentFeasibility(Polytope.randomNonEmpty(numFaces, 1, dim));
+            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
-            Point feas = poly.fesibility(PointDense.uniformRand(new PointDense(dim), 10));
+            Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 10));
 
-            System.out.println(feas);
+//            System.out.println(feas);
         }
 
     }
 
     public static void testPolytopeFesibilitySpecifi() {
         HalfSpace[] hs = new HalfSpace[3];
-        hs[0] = new HalfSpace(new PointDense(2), new PointDense(-1, 0));
-        hs[1] = new HalfSpace(new PointDense(0, 1), new PointDense(1, .1));
-        hs[2] = new HalfSpace(new PointDense(2), new PointDense(1, 1));
+        hs[0] = new HalfSpace(new PointD(2), new PointD(-1, 0));
+        hs[1] = new HalfSpace(new PointD(0, 1), new PointD(1, .1));
+        hs[2] = new HalfSpace(new PointD(2), new PointD(1, 1));
 
-        PointDense y = new PointDense(0, 1);
+        PointD y = new PointD(0, 1);
 
-        System.out.println(new GradDescentFeasibility(new Polytope(hs)).fesibility(y));
+        System.out.println(new FeasibilityGradDescent(new Polytope(hs)).fesibility(y));
+
+    }
+
+    public static void testProjIntersection() {
+
+        Plane plane1 = new Plane(new PointD(3, 1, 6), new PointD(0, 1, 0));
+
+        Plane plane2 = new Plane(new PointD(3, 1, 6), new PointD(0, 0, 1));
+
+        AffineSpace as = plane1.intersection(plane2);
+
+        PointD a = new PointD(5, 2, 9);
+
+        System.out.println(as.proj(a));
+    }
+
+    public static void testProj() {
+        PointD p1 = new PointD(-0.7809757720106206, -0.07239826327433142, 0.62035097727599);
+        PointD p2 = new PointD(-0.4531759977988629, 0.45538980614703306, 0.7663234561700254);
+
+        PointD inSpace = new PointD(3.0630593214837916, -3.307987161177735, 5.082094988792884);
+
+        Plane pl1 = new Plane(inSpace, p1);
+        Plane pl2 = new Plane(inSpace, p2);
+
+        System.out.println(pl1);
+        System.out.println(pl2);
+        
+        PointD pp = new PointD(2.2047195327221005, -3.0382123166886514, 5.51852864962741);
+        
+        System.out.println("pp = " + pp);
+        
+        AffineSpace as = pl1.intersection(pl2);
+        
+        Point proj = as.proj(pp);
+        
+        System.out.println("col\n" + as.linearSpace().colSpaceMatrix());
+        
+        System.out.println(as.p());
+        System.out.println(as.hasElement(proj));
+        System.out.println(proj);
 
     }
 
     public static void main(String[] args) throws IOException {
 
+        testProj();
 //        polytopeFeasabilityTest();
-
+//        testPolytopeFesibilitySpecifi();
 //            System.out.println(Memory.remaining());
-//        GradDescentFeasibility.loadFromErrorFile();
-        MatrixDense mp1 = new PointDense(1, 2, 3).T();
-        
-        System.out.println(mp1.cols);
-        
-        
-        
-        PointDense p2 = new PointDense(4, 5, 6);
-        
-        System.out.println(p2.rows());
-        
-        
-        
-        MatrixDense mp2 = new MatrixDense(p2);
-        System.out.println(mp1);
-        
-        
-        System.out.println(mp2.ejmlDense());
-        
-        
-        
-        System.out.println(mp1.T().mult(mp2));
-
+//    FeasibilityGradDescent.loadFromErrorFile();
     }
 
 }

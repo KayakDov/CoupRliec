@@ -2,7 +2,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -18,18 +18,18 @@ import java.util.stream.Stream;
  */
 public class Partition {
 
-    private GradDescentFeasibility poly;
+    private FeasibilityGradDescent poly;
     private ArrayList<HalfSpace> containing;
     private Set<HalfSpace> excluding;
     private HashSet<HalfSpace> visited;
 
-    private PointDense gradient;
+    private PointD gradient;
 
-    public Partition(Point y, GradDescentFeasibility poly) {
+    public Partition(Point y, FeasibilityGradDescent poly) {
         this.poly = poly;
         containing = new ArrayList<>(poly.size());
         excluding = new HashSet<>(poly.size());
-        gradient = new PointDense(poly.dim());
+        gradient = new PointD(poly.dim());
         visited = new HashSet<>(poly.size());
 
         Consumer<HalfSpace> sort = hs -> {
@@ -118,7 +118,7 @@ public class Partition {
         return excluding().filter(hs -> hs.normal().dot(grad) > epsilon);
     }
 
-    public Stream<HalfSpace> downHill(PointDense grad, double epsilon) {
+    public Stream<HalfSpace> downHill(PointD grad, double epsilon) {
         return Stream.concat(downhillContaining(grad, epsilon),
                 downhillExcluding(grad, epsilon));
     }
@@ -148,7 +148,7 @@ public class Partition {
     }
 
     
-    public PointDense getGradient() {
+    public PointD getGradient() {
         return gradient;
     }
     

@@ -22,6 +22,6 @@ public class Memory {
     }
     
     public static float remainingPercent(){
-        return remaining()/totalMemory;
+        return (float)remaining()/totalMemory;
     }
 }

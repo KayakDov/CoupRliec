@@ -5,7 +5,7 @@ import Convex.HalfSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 

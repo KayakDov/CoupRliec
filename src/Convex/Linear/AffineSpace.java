@@ -7,7 +7,7 @@ import listTools.Pair1T;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +66,7 @@ public class AffineSpace implements ConvexSet {
      */
     public AffineSpace(LinearSpace ls, Point onSpace) {
         linearSpace = ls;
-        if (!ls.isAllSpace()) this.b = nullMatrix().mult(onSpace);
+        if (!ls.isAllSpace()) b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
 
         p = onSpace;
     }
@@ -112,7 +112,10 @@ public class AffineSpace implements ConvexSet {
         if (nullMatrix().isSquare() && rre.hasFullRank())
             return p = nullMatrix().solve(b);
 
-        Matrix append = Matrix.fromRows(rre.getFreeVariables().map(i -> new PointDense(rre.cols).set(i, 1)));
+        boolean isSparse = linearSpace.getNormals()[0].isSparse();
+        Matrix append = Matrix.fromRows(
+                rre.getFreeVariables().map(i -> new PointD(rre.cols).set(i, 1)).toArray(PointD[]::new)
+        );
 
         Point b2 = b.concat(new PointSparse(append.rows()));
 
@@ -148,7 +151,7 @@ public class AffineSpace implements ConvexSet {
         if (isAllSpace()) return as;
         if (as.isAllSpace()) return this;
 
-        return new AffineSpace(linearSpace.intersection(as.linearSpace), b.concat(as.b));
+        return new AffineSpace(linearSpace.intersection(as.linearSpace).getNormals(), b.concat(as.b));
 
     }
 

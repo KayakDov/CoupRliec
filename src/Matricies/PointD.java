@@ -23,7 +23,7 @@ import org.ejml.dense.row.CommonOps_FDRM;
  *
  * @author dov
  */
-public class PointDense extends MatrixDense implements Point {//implements Comparable {
+public class PointD extends MatrixDense implements Point {//implements Comparable {
 
     /**
      * constructor
@@ -31,12 +31,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param x
      * @param y
      */
-    public PointDense(double[] x) {
+    public PointD(double[] x) {
         super(x.length, 1);
         System.arraycopy(x, 0, array, 0, x.length);
     }
 
-    public PointDense(Point x) {
+    public PointD(Point x) {
         this(x.asDense());
     }
     
@@ -48,12 +48,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      *
      * @param n
      */
-    public PointDense(int n) {
+    public PointD(int n) {
         super(n, 1);
     }
 
-    public static PointDense sparse(int dim, int numNonZeroes) {
-        PointDense m = new PointDense(dim);
+    public static PointD sparse(int dim, int numNonZeroes) {
+        PointD m = new PointD(dim);
         m.array = null;
         return m;
     }
@@ -81,7 +81,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      *
      * @param p
      */
-    public PointDense(PointDense p) {
+    public PointD(PointD p) {
         this(p.array.length);
         System.arraycopy(p.array, 0, array, 0, p.array.length);
     }
@@ -93,7 +93,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param mag start scalar the other point gets multiplied by to create this
      * point.
      */
-    public PointDense(PointDense p, double mag) {
+    public PointD(PointD p, double mag) {
         this(p.dim());
         setAll(i -> p.get(i) * mag);
     }
@@ -102,12 +102,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param dim the number of dimensions of the origin.
      * @return (0,0)
      */
-    public static PointDense Origin(int dim) {
-        return new PointDense(dim).setAll(i -> 0);
+    public static PointD Origin(int dim) {
+        return new PointD(dim).setAll(i -> 0);
     }
 
     @Override
-    public PointDense addToMe(Point p) {
+    public PointD addToMe(Point p) {
         return setAll(i -> get(i) + p.get(i));
     }
 
@@ -117,7 +117,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense minus(Point p) {
+    public PointD minus(Point p) {
         return plus(p.mult(-1));
     }
 
@@ -153,15 +153,15 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense dir() {
+    public PointD dir() {
         double m = magnitude();
         if (m == 0) return Origin(dim());
         return mapToDense(x -> x / m);
     }
 
     @Override
-    public PointDense mapToDense(DoubleFunction<Double> f) {
-        return new PointDense(dim()).setAll(i -> f.apply(array[i]));
+    public PointD mapToDense(DoubleFunction<Double> f) {
+        return new PointD(dim()).setAll(i -> f.apply(array[i]));
     }
 
     @Override
@@ -190,7 +190,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     public double dot(double[] p) {
-        return dot(new PointDense(p));
+        return dot(new PointD(p));
     }
 
     
@@ -212,7 +212,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense mult(double k) {
+    public PointD mult(double k) {
         return mapToDense(x -> x * k);
     }
 
@@ -223,7 +223,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
     
 
     @Override
-    public PointDense multMe(double k) {
+    public PointD multMe(double k) {
         return setAll(i -> get(i) * k);
     }
 
@@ -245,7 +245,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      *
      * @param fromString
      */
-    public PointDense(String fromString) {
+    public PointD(String fromString) {
         this((int) (fromString.chars().filter(c -> c == (int) (',')).count() + 1));
 
         fromString = fromString.replaceAll("\\(", "")
@@ -276,7 +276,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         else return equals(p.asSparse());
     }
     
-    public boolean equals(PointDense pd){
+    public boolean equals(PointD pd){
         return Arrays.equals(array, pd.array);
     }
     public boolean equals(PointSparse ps){
@@ -293,7 +293,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        final PointDense other = (PointDense) obj;
+        final PointD other = (PointD) obj;
         return Arrays.equals(this.array, other.array);
     }
 
@@ -350,7 +350,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return this point
      */
     @Override
-    public PointDense set(int i, double y) {
+    public PointD set(int i, double y) {
         array[i] = y;
         return this;
     }
@@ -375,13 +375,13 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
         return s;
     }
 
-    public PointDense(double x, double y) {
+    public PointD(double x, double y) {
         this(2);
         set(0, x);
         set(1, y);
     }
 
-    public PointDense(double x, double y, double z) {
+    public PointD(double x, double y, double z) {
         this(3);
         set(0, x);
         set(1, y);
@@ -408,16 +408,16 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return the sum of the two points
      */
     @Override
-    public PointDense plus(Point p) {
-        return new PointDense(dim()).setAll(i -> get(i) + p.get(i));
+    public PointD plus(Point p) {
+        return new PointD(dim()).setAll(i -> get(i) + p.get(i));
     }
 
     @Override
-    public PointDense dot(Matrix m) {
+    public PointD dot(Matrix m) {
         if (m.rows() != dim())
             throw new ArithmeticException("wrong number of rows in matrix to multiply by this point");
 
-        return new PointDense(m.cols()).setAll(i -> m.row(i).dot(this));
+        return new PointD(m.cols()).setAll(i -> m.row(i).dot(this));
     }
 
     /**
@@ -427,8 +427,8 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param dist the distance the new point is shifted.
      * @return start new point as described above.
      */
-    public PointDense shift(int dim, double dist) {
-        PointDense shift = new PointDense(this);
+    public PointD shift(int dim, double dist) {
+        PointD shift = new PointD(this);
         shift.set(dim, get(dim) + dist);
         return shift;
     }
@@ -439,8 +439,8 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param x the value of the point
      * @return start one dimensional point located at x
      */
-    public static PointDense oneD(double x) {
-        return new PointDense(new double[]{x});
+    public static PointD oneD(double x) {
+        return new PointD(new double[]{x});
     }
 
 
@@ -458,7 +458,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param rand the random number generator.
      * @return start random vertex in start sphere.
      */
-    public static PointDense uniformRand(PointDense center, double r) {
+    public static PointD uniformRand(PointD center, double r) {
         return center.mapToDense(t -> t + r * (2 * rand.nextDouble() - 1));
     }
 
@@ -473,8 +473,8 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param rand the random number generator
      * @return start new randomly distributed point.
      */
-    public static PointDense gaussianRand(int dim, PointDense mean, PointDense standardDeviation, Random rand) {
-        return new PointDense(dim).setAll(i -> rand.nextGaussian()
+    public static PointD gaussianRand(int dim, PointD mean, PointD standardDeviation, Random rand) {
+        return new PointD(dim).setAll(i -> rand.nextGaussian()
                 * standardDeviation.get(i) + mean.get(i));
     }
 
@@ -485,9 +485,9 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param scale
      * @return the new point
      */
-    public PointDense reflectThrough(PointDense center, double scale) {
+    public PointD reflectThrough(PointD center, double scale) {
 
-        return new PointDense(center.dim()).setAll(i -> center.get(i) + scale
+        return new PointD(center.dim()).setAll(i -> center.get(i) + scale
                 * (center.get(i) - get(i)));
 
     }
@@ -522,7 +522,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return this point
      */
     @Override
-    public PointDense set(double[] x) {
+    public PointD set(double[] x) {
         System.arraycopy(x, 0, array, 0, x.length);
         return this;
     }
@@ -534,7 +534,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense set(Point x) {
+    public PointD set(Point x) {
         return set(x.asDense().array);
     }
 
@@ -550,7 +550,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param p
      * @return
      */
-    public boolean lessThan(PointDense p) {
+    public boolean lessThan(PointD p) {
         return IntStream.range(0, dim()).allMatch(i -> get(i) < p.get(i));
     }
 
@@ -609,8 +609,8 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return a new point
      */
     @Override
-    public PointDense concat(Point p) {
-        PointDense concat = new PointDense(dim() + p.dim());
+    public PointD concat(Point p) {
+        PointD concat = new PointD(dim() + p.dim());
         System.arraycopy(array, 0, concat.array, 0, dim());
         
         if(p.isDense())System.arraycopy(p.asDense().array, 0, concat.array, dim(), p.dim());
@@ -628,12 +628,12 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @return
      */
     @Override
-    public PointDense concat(double d) {
-        return concat(PointDense.oneD(d));
+    public PointD concat(double d) {
+        return concat(PointD.oneD(d));
     }
 
     @Override
-    public PointDense setAll(IntToDoubleFunction f) {
+    public PointD setAll(IntToDoubleFunction f) {
         Arrays.setAll(array, f);
         return this;
     }
@@ -646,7 +646,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param z
      * @param t
      */
-    public PointDense(double x, double y, double z, double t) {
+    public PointD(double x, double y, double z, double t) {
         this(new double[]{x, y, z, t});
     }
 
@@ -656,8 +656,8 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
      * @param cut a list of rows to be cut
      * @return a new point without the rows cut.
      */
-    public PointDense removeRows(List<Integer> cut) {
-        PointDense removeRows = new PointDense(dim() - cut.size());
+    public PointD removeRows(List<Integer> cut) {
+        PointD removeRows = new PointD(dim() - cut.size());
         for (int to = 0, from = 0; from < dim(); from++)
             if (!cut.contains(from)) removeRows.set(to++, get(from));
         return removeRows;
@@ -669,7 +669,7 @@ public class PointDense extends MatrixDense implements Point {//implements Compa
     }
 
     @Override
-    public PointDense asDense() {
+    public PointD asDense() {
         return this;
     }
 

@@ -261,10 +261,10 @@ public interface Matrix {
         if(rows[0].isDense()) return MatrixDense.fromRows(rows);
         else return MatrixSparse.fromRows(rows);
     }
-    public static Matrix fromRows(Stream<Point> rows){
-        
-        return fromRows((Point[])rows.toArray());
-    }
+//    public static Matrix fromRows(Stream<Point> rows){
+//        
+//        return fromRows((Point[])rows.toArray());
+//    }
     
     public static Matrix fromCols(Point[] cols){
         if(cols[0].isDense()) return MatrixDense.fromCols(cols);
@@ -309,4 +309,6 @@ public interface Matrix {
      * @return 
      */
     public Matrix setIf(Predicate<Double> filter, Z2ToR f);
+    
+    public Matrix pseudoInverse();
 }

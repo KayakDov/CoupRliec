@@ -1,6 +1,6 @@
 package Convex;
 
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,33 +12,33 @@ import java.util.stream.Stream;
  */
 public class PolytopeCone extends Polytope {
 
-    private PointDense tip;
+    private PointD tip;
 
-    public PolytopeCone(PointDense tip) {
+    public PolytopeCone(PointD tip) {
         this.tip = tip;
     }
 
-    public PointDense getTip() {
+    public PointD getTip() {
         return tip;
     }
 
-    public void setTip(PointDense tip) {
+    public void setTip(PointD tip) {
         this.tip = tip;
     }
 
-    public void addPlaneWithNormal(PointDense normal) {
+    public void addPlaneWithNormal(PointD normal) {
         add(new HalfSpace(tip, normal));
     }
 
-    public void addPlanesWithNormals(Stream<PointDense> normal) {
+    public void addPlanesWithNormals(Stream<PointD> normal) {
         addAll(normal.map(n -> new HalfSpace(tip, n)).collect(Collectors.toList()));
     }
 
     public static PolytopeCone samplePolytopeCone() {
-        PolytopeCone sample = new PolytopeCone(new PointDense(3));
-        sample.addPlaneWithNormal(new PointDense(-1, 0, 0));
-        sample.addPlaneWithNormal(new PointDense(0, -1, 0));
-        sample.addPlaneWithNormal(new PointDense(0, 0, -1));
+        PolytopeCone sample = new PolytopeCone(new PointD(3));
+        sample.addPlaneWithNormal(new PointD(-1, 0, 0));
+        sample.addPlaneWithNormal(new PointD(0, -1, 0));
+        sample.addPlaneWithNormal(new PointD(0, 0, -1));
         return sample;
     }
 

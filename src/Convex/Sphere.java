@@ -2,7 +2,7 @@ package Convex;
 
 import Convex.ConvexSet;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.stream.IntStream;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
@@ -36,7 +36,7 @@ public class Sphere implements ConvexSet {
      * @param r the radius of the sphere
      */
     public Sphere(int dim, double r) {
-        this(new PointDense(dim), r);
+        this(new PointD(dim), r);
     }
 
     /**
@@ -57,7 +57,7 @@ public class Sphere implements ConvexSet {
      * @param r
      */
     public Sphere(double[] center, double r) {
-        this(new PointDense(center), r);
+        this(new PointD(center), r);
     }
 
     /**

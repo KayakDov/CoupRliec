@@ -142,7 +142,7 @@ public interface Point extends Matrix{
     public double magnitude();
 
     public PointSparse mapToSparse(DoubleFunction<Double> f);
-    public PointDense mapToDense(DoubleFunction<Double> f);
+    public PointD mapToDense(DoubleFunction<Double> f);
 
     public <T> List mapToList(Function<Double, T> f);
 
@@ -218,7 +218,7 @@ public interface Point extends Matrix{
     
     public DoubleStream stream();
     
-    public PointDense asDense();
+    public PointD asDense();
     public PointSparse asSparse();
     
     public default double x(){

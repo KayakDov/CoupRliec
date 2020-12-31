@@ -18,10 +18,13 @@ import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.interfaces.decomposition.QRDecomposition;
+import org.ejml.interfaces.linsol.LinearSolverSparse;
 import org.ejml.ops.ConvertDMatrixStruct;
 import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.DecompositionFactory_DSCC;
+import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
+import org.ejml.sparse.csc.linsol.chol.LinearSolverCholesky_DSCC;
 
 public class MatrixSparse implements Matrix {
 
@@ -142,9 +145,9 @@ public class MatrixSparse implements Matrix {
         return mult;
     }
 
-    public PointDense mult(PointDense p) {
+    public PointD mult(PointD p) {
 
-        PointDense mult = new PointDense(rows());
+        PointD mult = new PointD(rows());
         CommonOps_DSCC.mult(ejmlSparse, p.ejmlDense(), mult.ejmlDense());
 
         return mult;
@@ -631,5 +634,11 @@ public class MatrixSparse implements Matrix {
         Matrix.z2Stream(rows(), cols()).forEach(p ->  trip.set(p.l, p.r, filter.test(get(p.l, p.r))?f.apply(p):get(p.l, p.r)));
         setFromTrip(trip);
         return this;
+    }
+
+    @Override
+    public Matrix pseudoInverse() {
+         return asDense().pseudoInverse();  //TODO: there might be a better way to do this.
+        
     }
 }

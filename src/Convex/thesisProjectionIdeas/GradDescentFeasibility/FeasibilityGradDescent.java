@@ -3,7 +3,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 import Convex.HalfSpace;
 import Convex.Polytope;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,28 +23,28 @@ import java.util.stream.Stream;
  *
  * @author Dov Neimand
  */
-public class GradDescentFeasibility extends Polytope {
+public class FeasibilityGradDescent extends Polytope {
 
     /**
      * The constructor.
      */
-    public GradDescentFeasibility() {
+    public FeasibilityGradDescent() {
     }
 
     public static void loadFromErrorFile() throws IOException {
         Path errorFile = Path.of("error.txt");
-        PointDense start = new PointDense(Files.lines(errorFile).findFirst().get());
+        PointD start = new PointD(Files.lines(errorFile).findFirst().get());
 
         Polytope poly = new Polytope(
                 Files.lines(errorFile)
                         .filter(line -> line.startsWith("point"))
                         .map(line -> {
                             String[] pointStrings = line.replace("point ", "").split(" with normal ");
-                            return new HalfSpace(new PointDense(pointStrings[0]), new PointDense(pointStrings[1]));
+                            return new HalfSpace(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
                         })
             );
         
-        System.out.println(new GradDescentFeasibility(poly).fesibility(start));
+        System.out.println(new FeasibilityGradDescent(poly).fesibility(start));
     }
 
     /**
@@ -52,7 +52,7 @@ public class GradDescentFeasibility extends Polytope {
      *
      * @param p another polytope to be copied.
      */
-    public GradDescentFeasibility(Polytope p) {
+    public FeasibilityGradDescent(Polytope p) {
         super(p);
 
     }
@@ -74,13 +74,13 @@ public class GradDescentFeasibility extends Polytope {
      * @param y
      * @return
      */
-    public Point gradSumDist(PointDense y) {
+    public Point gradSumDist(PointD y) {
 
         return gradSumDist(y, stream().parallel().filter(hs -> !hs.hasElement(y)));
 
     }
 
-    public Point gradSumDist(PointDense y, Stream<HalfSpace> containing) {
+    public Point gradSumDist(PointD y, Stream<HalfSpace> containing) {
         return containing.map(hs -> hs.normal().dir())
                 .reduce((a, b) -> a.plus(b)).get();
     }
@@ -147,7 +147,7 @@ public class GradDescentFeasibility extends Polytope {
                 
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
-                PointDense oldY = new PointDense(y);//TODO: remove from final code
+                PointD oldY = new PointD(y);//TODO: remove from final code
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
@@ -191,7 +191,7 @@ public class GradDescentFeasibility extends Polytope {
      * @return
      */
     public Point fesibility() {
-        return fesibility(new PointDense(dim()));
+        return fesibility(new PointD(dim()));
 
     }
 
@@ -203,18 +203,19 @@ public class GradDescentFeasibility extends Polytope {
                     + "\nThe distance to the polytope is " + sumDist(y)
                     + "\n the gradient is " + part.getGradient()
                     + "\nThe polytope is :\n"
-                    + GradDescentFeasibility.this.toString()
+                    + FeasibilityGradDescent.this.toString()
                     + "\nwriting report to error.txt");
 
             try {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(new File("error.txt")));
-                bw.write(y.toString());
+                bw.write(start.toString());
                 bw.newLine();
-                bw.write(GradDescentFeasibility.this.toString());
+                bw.write(FeasibilityGradDescent.this.toString());
                 bw.close();
 
             } catch (IOException ex) {
-                Logger.getLogger(GradDescentFeasibility.class.getName()).log(Level.SEVERE, null, ex);
+                System.err.println("Faile to save report.");
+                Logger.getLogger(FeasibilityGradDescent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

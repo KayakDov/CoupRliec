@@ -7,7 +7,7 @@ import Matricies.MatrixSparse;
 import Matricies.Point;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import Matricies.PointSparse;
 import MySystem.Memory;
 import java.util.Arrays;
@@ -26,6 +26,10 @@ public class LinearSpace implements ConvexSet {
 
     public LinearSpace(Point[] normals) {
         this.normals = normals;
+    }
+
+    public Point[] getNormals() {
+        return normals;
     }
     
     
@@ -83,8 +87,8 @@ public class LinearSpace implements ConvexSet {
                 
         nullMatrix.setCols(i -> {
             if(i < basis.cols())
-                return (isDense? new PointDense(rows): new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
-            else return (isDense?new PointDense(rows): new PointSparse(rows)).set(i - basis.cols(), -1);
+                return (isDense? new PointD(rows): new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
+            else return (isDense?new PointD(rows): new PointSparse(rows)).set(i - basis.cols(), -1);
                 
         });
         return new LinearSpace(nullMatrix.rowsArray());
@@ -141,8 +145,8 @@ public class LinearSpace implements ConvexSet {
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
 
         MatrixDense IMinus = MatrixDense.identity(Math.max(rre.rows, rre.cols)).minus(rre.square());
-
-        if (rre.noFreeVariable()) return new PointDense(rre.rows);
+        
+        if (rre.noFreeVariable()) return new PointD(rre.rows);
 
         return MatrixDense.fromCols(
                 rre.getFreeVariables().map(i -> IMinus.col(i))
@@ -170,14 +174,12 @@ public class LinearSpace implements ConvexSet {
         if (projFunc == null) {
             Matrix A = colSpaceMatrix();
             if (!A.isZero(epsilon)){//TODO: use the ejml suedo inverse function?
-                projFunc = A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
+                projFunc = A.pseudoInverse(); // A.mult(A.T().mult(A).inverse()).mult(A.T());//TODO might be made faster with p - QRT^-1(Ap) where PQ are the decomposition of A see On the easibility of projection methods for convex feasibility problems with linear inequality constraints
             }
-            else return new PointDense(p.dim());
+            else return new PointD(p.dim());
         }
         Point proj = projFunc.mult(p);
 
-        System.out.println("Convex.Linear.LinearSpace.proj()");
-        System.out.println(Memory.remainingPercent());
         if(Memory.remainingPercent() < .25) projFunc = null;
         
         return proj;

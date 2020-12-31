@@ -5,7 +5,7 @@ import Convex.Linear.Plane;
 import Convex.Polytope;
 import Convex.PolytopeCone;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

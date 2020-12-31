@@ -4,7 +4,7 @@ import Convex.Linear.Plane;
 import Convex.Linear.AffineSpace;
 import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointDense;
+import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -91,18 +91,6 @@ public class Polytope implements ConvexSet {
      */
     protected Matrix vertices;
 
-    /**
-     * The vertices of each halfspace.
-     */
-
-    /**
-     * A matrix of all the normal vectors
-     *
-     * @return
-     */
-    public Matrix normalMatix() {
-        return Matrix.fromRows(stream().map(face -> face.normal()));
-    }
 
     /**
      * Every Point x in this polytope satisfies the equation Mx less than b
@@ -111,8 +99,8 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public PointDense b() {
-        return new PointDense(size())
+    public PointD b() {
+        return new PointD(size())
                 .setAll(i
                         -> halfSpaces.get(i).boundary().b.get(0));
     }
@@ -260,31 +248,6 @@ public class Polytope implements ConvexSet {
         return halfSpaces.get(0).dim();
     }
 
-    /**
-     * This should create a list of the verticies of this polytope. Not sure
-     * what will happen if two planes have parallel normal lines. Regardless,
-     * this needs to be tested. TODO::Test this function.
-     *
-     *
-     * @return
-     */
-    private Matrix verticies() {
-        return Matrix.fromRows(vertexStream());
-    }
-
-    private Stream<Point> vertexStream() {
-        return new Choose<>(halfSpaces, dim()).chooseStream()
-                .filter(hsSet -> new Polytope(hsSet).normalMatix().det() != 0)
-                .map(hsSet -> AffineSpace.intersection(hsSet.stream().map(hs -> hs.boundary())).p())
-                .filter(p -> isMember(p));
-    }
-
-    public Matrix getVertices() {
-        if (vertices == null) {
-            vertices = verticies();
-        }
-        return vertices;
-    }
 
     public Stream<HalfSpace> stream() {
         return halfSpaces.stream();
@@ -490,7 +453,7 @@ public class Polytope implements ConvexSet {
 
         Polytope poly = new Polytope();
         IntStream.range(0, numFaces).forEach(i -> {
-            PointDense random = PointDense.uniformRand(new PointDense(dim), radius);
+            PointD random = PointD.uniformRand(new PointD(dim), radius);
             random.multMe(radius/random.magnitude());
             poly.add(new HalfSpace(random, random));
         });

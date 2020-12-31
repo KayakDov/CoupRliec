@@ -52,7 +52,7 @@ public class PointSparse extends MatrixSparse implements Point{
         return this;
     }
     
-    public PointSparse addToMe(PointDense p) {
+    public PointSparse addToMe(PointD p) {
         return setAll(i -> get(i) + p.get(i));
     }
     
@@ -85,7 +85,7 @@ public class PointSparse extends MatrixSparse implements Point{
         super(csc);
     }
     
-    public PointSparse concat(PointDense pd){
+    public PointSparse concat(PointD pd){
         DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows() + pd.rows, 1, ejmlSparse.getNonZeroLength() + pd.dim());
         nonZeroes().forEach(coord -> trip.set(coord.row, 0, coord.value));
         IntStream.range(0, pd.dim()).forEach(i -> trip.set(i + dim(), 0, pd.get(i)));
@@ -101,7 +101,7 @@ public class PointSparse extends MatrixSparse implements Point{
     @Override
     public Point concat(double d) {
         
-        return concat(PointDense.oneD(d).asSparse());
+        return concat(PointD.oneD(d).asSparse());
     }
 
     @Override
@@ -179,8 +179,8 @@ public class PointSparse extends MatrixSparse implements Point{
     public PointSparse minus(PointSparse p){
         return new PointSparse(super.minus(p).ejmlSparse);
     }
-    public PointDense minus(PointDense p){
-        return new PointDense(super.minus(p).array);
+    public PointD minus(PointD p){
+        return new PointD(super.minus(p).array);
     }
 
     @Override
@@ -203,8 +203,8 @@ public class PointSparse extends MatrixSparse implements Point{
     public PointSparse plus(PointSparse p){
         return new PointSparse(super.plus(p).ejmlSparse);
     }
-    public PointDense plus(PointDense p){
-        return new PointDense(super.plus(p).array);
+    public PointD plus(PointD p){
+        return new PointD(super.plus(p).array);
     }
 
     @Override
@@ -259,14 +259,14 @@ public class PointSparse extends MatrixSparse implements Point{
     }
 
     @Override
-    public PointDense mapToDense(DoubleFunction<Double> f) {
-        PointDense m = new PointDense(dim());
+    public PointD mapToDense(DoubleFunction<Double> f) {
+        PointD m = new PointD(dim());
         IntStream.range(0, dim()).forEach(i -> m.set(i, f.apply(get(i))));
         return m;
     }
 
     @Override
-    public PointDense asDense() {
+    public PointD asDense() {
         return mapToDense(i -> i);
     }
 
