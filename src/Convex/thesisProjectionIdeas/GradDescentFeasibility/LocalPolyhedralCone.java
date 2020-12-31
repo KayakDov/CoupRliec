@@ -8,6 +8,7 @@ import Matricies.Point;
 import Matricies.PointD;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
+import listTools.Pair;
 
 /**
  *
@@ -32,7 +33,6 @@ public class LocalPolyhedralCone extends Polytope {
         aspb = new AffineSpacePlaneBipartate(part.getGradient().dim());
         travelThrough = AffineSpace.allSpace(part.getGradient().dim());
     }
-    
 
     /**
      * The gradient that y will take inside this polytope
@@ -45,11 +45,9 @@ public class LocalPolyhedralCone extends Polytope {
 
     public void add(HalfSpace hs, Point y) {
         aspb.addPlane(hs.boundary(), y);
-        super.add(hs); 
+        super.add(hs);
     }
 
-    
-    
     /**
      * Adds a newly encountered half space to this polytope, updates the
      * gradient, and removes and half spaces left behind.
@@ -60,20 +58,20 @@ public class LocalPolyhedralCone extends Polytope {
     public void addHalfSpace(HalfSpace add, Point y) {
 
         aspb.removeExcept(travelThrough, this);
-                
+
         Point preProj = y.minus(part.getGradient());
 
         add(add, y);
-        
+
         travelThrough = hasProj(preProj, 1);
-              
+
         Point proj = travelThrough.proj(preProj);
         if (proj.equals(y)) {
             throw new EmptyPolytopeException();
         }
 
         gradInBounds = y.minus(proj);
-        
+
     }
 
     /**
@@ -83,38 +81,47 @@ public class LocalPolyhedralCone extends Polytope {
      * have already been computed.
      *
      * preProj toProj
+     *
      * @param y
      * @param newAddition
      * @param epsilonMult
      * @return
      */
     private AffineSpace hasProj(Point preProj, int epsilonMult) {
-        
-        if(hasElement(preProj)) return AffineSpace.allSpace(dim());
 
-        
-        try {
-            return aspb.affineSpaces()
-                    .min(Comparator.comparing(as -> {
-                        
-                        Point proj = as.proj(preProj);  //TODO:  I should be able to compute the projection for an n lined matrix if I've already computed the projection for an n-1 line matrix
-                        
-                        
-                        if (!hasElement(proj, epsilon))
-                            return Double.POSITIVE_INFINITY;
-                        return proj.d(preProj);
-                    })).get();
+        if (hasElement(preProj)) return AffineSpace.allSpace(dim());
 
-        } catch (NoSuchElementException ex) {
-            System.err.println("projection error.  Setting epsilon to:" + epsilon * epsilonMult * 10);
-            return hasProj(preProj, epsilonMult * 10);
+        class ASProj extends Pair<AffineSpace, Point> {
+
+            public ASProj(AffineSpace as, Point preProj) {
+                super(as, as.proj(preProj));
+            }
+
+            public AffineSpace as() {
+                return l;
+            }
+
+            public Point proj() {
+                return r;
+            }
         }
+
+        for (int i = 1; i <= size(); i++) {
+            ASProj tryTravelThrough = aspb.affineSpaces(i)
+                    .map(as -> new ASProj(as, preProj))
+                    .filter(asProj -> hasElement(asProj.proj()))
+                    .min(Comparator.comparing(asp -> asp.proj().d(preProj)))
+                    .orElse(null);
+            if (tryTravelThrough != null) return tryTravelThrough.as();
+
+        }
+        System.err.println("projection error.  Setting epsilon to:" + epsilon
+                * epsilonMult * 10);
+        return hasProj(preProj, epsilonMult * 10);
     }
 
     public AffineSpace getTravelThrouge() {
         return travelThrough;
     }
 
-
-    
 }

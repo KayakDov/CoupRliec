@@ -139,8 +139,22 @@ public class AffineSpacePlaneBipartate {
         return affineSpaceNodes.values().stream();
     }
 
+    /**
+     * The number of planes that intersect to make this affine space.
+     * @param numPlanes 
+     * @return 
+     */
+    public Stream<AffineSpace> affineSpaces(int numPlanes) {
+        return affineSpaceNodes()
+                .parallel()
+                .map(asn -> asn.affineSpace)
+                .filter(as -> as.linearSpace().getNormals().length == numPlanes);//TODO: store the data so it doesn't need to be filtered.
+    }
+    
     public Stream<AffineSpace> affineSpaces() {
-        return affineSpaceNodes().parallel().map(asn -> asn.affineSpace);//TODO: this should be parralel
+        return affineSpaceNodes()
+                .parallel()
+                .map(asn -> asn.affineSpace);//TODO: this should be parralel
     }
 
     public int numAffineSpaces() {
