@@ -91,23 +91,12 @@ public class LocalPolyhedralCone extends Polytope {
 
         if (hasElement(preProj)) return AffineSpace.allSpace(dim());
 
-        class ASProj extends Pair<AffineSpace, Point> {
-
-            public ASProj(AffineSpace as, Point preProj) {
-                super(as, as.proj(preProj));
-            }
-
-            public AffineSpace as() {
-                return l;
-            }
-
-            public Point proj() {
-                return r;
-            }
-        }
-
         for (int i = 1; i <= size(); i++) {
             ASProj tryTravelThrough = aspb.affineSpaces(i)
+                    .filter(asn -> asn.planes.stream()
+                            .map(planeNode -> planeNode.plane)
+                            .anyMatch(plane -> plane.below(preProj, epsilon)))
+                    .map(as -> as.affineSpace)
                     .map(as -> new ASProj(as, preProj))
                     .filter(asProj -> hasElement(asProj.proj()))
                     .min(Comparator.comparing(asp -> asp.proj().d(preProj)))

@@ -24,10 +24,10 @@ public class AffineSpacePlaneBipartate {
 
     private final int dim;
 
-    private class PlaneNode {
+    public class PlaneNode {
 
-        private Plane plane;
-        private Set<ASNode> affineSpaces;
+        public Plane plane;
+        public Set<ASNode> affineSpaces;
 
         /**
          * creates a new plane node and starts it off with its own affines space
@@ -62,7 +62,7 @@ public class AffineSpacePlaneBipartate {
         }
     }
 
-    private class ASNode {
+    public class ASNode {
 
         public AffineSpace affineSpace;
         public List<PlaneNode> planes;
@@ -144,11 +144,10 @@ public class AffineSpacePlaneBipartate {
      * @param numPlanes 
      * @return 
      */
-    public Stream<AffineSpace> affineSpaces(int numPlanes) {
+    public Stream<ASNode> affineSpaces(int numPlanes) {
         return affineSpaceNodes()
                 .parallel()
-                .map(asn -> asn.affineSpace)
-                .filter(as -> as.linearSpace().getNormals().length == numPlanes);//TODO: store the data so it doesn't need to be filtered.
+                .filter(as -> as.affineSpace.linearSpace().getNormals().length == numPlanes);//TODO: store the data so it doesn't need to be filtered.
     }
     
     public Stream<AffineSpace> affineSpaces() {

@@ -181,8 +181,8 @@ public class LinearSpace implements ConvexSet {
         Point proj = projFunc.mult(p);
 
 //        System.out.println(Memory.remainingPercent());
-        if(Memory.remainingPercent() < .25) {
-            System.out.println("Affine Space has " + normals.length + " rows.  Exceeding memory bounds.  Processing is slowed.");
+        if(Memory.remainingPercent() < .5) {
+//            System.out.println("Affine Space has " + normals.length + " rows.  Exceeding memory bounds.  Processing is slowed.");
             projFunc = null;
         }
         
