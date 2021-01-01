@@ -26,4 +26,11 @@ class ASProj extends Pair<AffineSpace, Point> {
     public Point proj() {
         return r;
     }
+
+    @Override
+    public String toString() {
+        return "AffinesSpace:\n" + l +"Proj:\n" + r; 
+    }
+    
+    
 }

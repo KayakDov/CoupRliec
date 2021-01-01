@@ -70,12 +70,14 @@ public class AffineSpacePlaneBipartate {
         public ASNode(AffineSpace affineSpace, List<PlaneNode> planes) {
             this.affineSpace = affineSpace;
             setPlanes(planes);
+            affSpByNumPlanes.get(planes.size()).add(this);
         }
 
         public ASNode(PlaneNode pn) {
             planes = new ArrayList<>(dim);
             planes.add(pn);
             affineSpace = pn.plane;
+            affSpByNumPlanes.get(planes.size()).add(this);
         }
 
         private void setPlanes(List<PlaneNode> planes) {
@@ -88,7 +90,8 @@ public class AffineSpacePlaneBipartate {
         }
 
         public void prepareForRemoval(PlaneNode except) {
-            affineSpaceNodes.remove(this);
+            affineSpaceNodes.remove(affineSpace);
+            affSpByNumPlanes.get(planes.size()).remove(this);
             planes.forEach(planeNode -> {
                 if (planeNode != except) planeNode.affineSpaces.remove(this);
             });
@@ -97,18 +100,21 @@ public class AffineSpacePlaneBipartate {
 
     private HashMap<Plane, PlaneNode> planeNodes = null;
     private HashMap<AffineSpace, ASNode> affineSpaceNodes = null;
+    private ArrayList<HashSet<ASNode>> affSpByNumPlanes;
 
     public AffineSpacePlaneBipartate(int dim) {
         this.affineSpaceNodes = new HashMap<>(dim * dim);
         this.dim = dim;
         planeNodes = new HashMap<>(dim);
+        affSpByNumPlanes = new ArrayList<>(dim);
+        for (int i = 0; i < dim; i++)
+            affSpByNumPlanes.add(new HashSet<>(dim * dim));
     }
 
     public void addPlane(Plane plane, Point y) {
         PlaneNode planeNode = new PlaneNode(plane);
         List<ASNode> asNodesToBeAdded = new ArrayList<>(affineSpaceNodes.values());
 
-        
         for (ASNode asn : affineSpaceNodes.values()) {
             if (asn.planes.size() < dim) {
                 AffineSpace as = asn.affineSpace.intersection(plane);
@@ -118,13 +124,13 @@ public class AffineSpacePlaneBipartate {
             }
         }
         asNodesToBeAdded.forEach(asntba -> affineSpaceNodes.put(asntba.affineSpace, asntba));
-        
+
         ASNode planeASNode = new ASNode(planeNode);
         planeNode.affineSpaces.add(planeASNode);
         affineSpaceNodes.put(planeASNode.affineSpace, planeASNode);
-        
+
         planeNodes.put(plane, planeNode);
-        
+
         affineSpaceNodes()/*.filter(asn -> !asn.affineSpace.hasAPoint())*/.forEach(asn -> asn.affineSpace.setP(y));
 
 //        System.out.println(affineSpaceNodes.size());
@@ -141,15 +147,21 @@ public class AffineSpacePlaneBipartate {
 
     /**
      * The number of planes that intersect to make this affine space.
-     * @param numPlanes 
-     * @return 
+     *
+     * @param numPlanes
+     * @return
      */
     public Stream<ASNode> affineSpaces(int numPlanes) {
-        return affineSpaceNodes()
-                .parallel()
-                .filter(as -> as.affineSpace.linearSpace().getNormals().length == numPlanes);//TODO: store the data so it doesn't need to be filtered.
+
+        return affSpByNumPlanes.get(numPlanes).stream()
+                .parallel();
+//                .map(asn -> asn.affineSpace);
+//        return affineSpaceNodes()
+//                .parallel()
+//                .filter(as -> as.affineSpace.linearSpace().getNormals().length == numPlanes);
+
     }
-    
+
     public Stream<AffineSpace> affineSpaces() {
         return affineSpaceNodes()
                 .parallel()
@@ -177,6 +189,10 @@ public class AffineSpacePlaneBipartate {
         return toString.toString();
     }
 
+    public Stream<Plane> planes(AffineSpace as) {//TODO: this doesn't work.  FIx it.
+
+        return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane);
+    }
 
     /**
      * removes all the planes that don't contain this affine space.
@@ -194,19 +210,18 @@ public class AffineSpacePlaneBipartate {
             affineSpaceNodes.clear();
             return;
         }
-        
+
         //TODO: This section needs to be made faster!
-        
         List<Plane> planesToBePreserved = affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane).collect(Collectors.toList());
         List<Plane> planesToBeRemoved = planeNodes.keySet().stream().filter(plane -> !planesToBePreserved.contains(plane)).collect(Collectors.toList());
-        
+
         polytope.removeIf(hs -> planesToBeRemoved.stream().anyMatch(plane -> hs.boundary() == plane));
-        
+
         planesToBeRemoved.forEach(plane -> {
             planeNodes.get(plane).prepareForRemoval();
             planeNodes.remove(plane);
         });
-        
+
     }
 
     public void verifySpace(Polytope p) {
