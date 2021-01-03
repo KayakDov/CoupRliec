@@ -24,4 +24,10 @@ public class Memory {
     public static float remainingPercent(){
         return (float)remaining()/totalMemory;
     }
+    
+    
+    public static final float LOW_MEM = .05f;
+    public static boolean lowOnMemory(){
+        return remainingPercent() < LOW_MEM;
+    }
 }

@@ -55,10 +55,8 @@ public class AffineSpacePlaneBipartate {
          * After calling this you still need to call planeNodes.remove(plane);
          */
         public void prepareForRemoval() {
-            for (ASNode asn : affineSpaces) {
-                asn.prepareForRemoval(this);
-                affineSpaceNodes.remove(asn.affineSpace);
-            }
+            for (ASNode asn : affineSpaces) asn.prepareForRemoval(this);
+            
         }
     }
 
@@ -90,8 +88,8 @@ public class AffineSpacePlaneBipartate {
         }
 
         public void prepareForRemoval(PlaneNode except) {
-            affineSpaceNodes.remove(affineSpace);
-            affSpByNumPlanes.get(planes.size()).remove(this);
+            if(affineSpaceNodes.remove(affineSpace) == null) throw new RuntimeException("Failed to remove affine space.");
+            if(!affSpByNumPlanes.get(planes.size()).remove(this)) throw new RuntimeException("Failed to remove affine space.");
             planes.forEach(planeNode -> {
                 if (planeNode != except) planeNode.affineSpaces.remove(this);
             });
@@ -151,11 +149,11 @@ public class AffineSpacePlaneBipartate {
      * @param numPlanes
      * @return
      */
-    public Stream<ASNode> affineSpaces(int numPlanes) {
+    public Stream<AffineSpace> affineSpaces(int numPlanes) {
 
         return affSpByNumPlanes.get(numPlanes).stream()
-                .parallel();
-//                .map(asn -> asn.affineSpace);
+                .parallel()//;
+                .map(asn -> asn.affineSpace);
 //        return affineSpaceNodes()
 //                .parallel()
 //                .filter(as -> as.affineSpace.linearSpace().getNormals().length == numPlanes);
@@ -190,7 +188,6 @@ public class AffineSpacePlaneBipartate {
     }
 
     public Stream<Plane> planes(AffineSpace as) {//TODO: this doesn't work.  FIx it.
-
         return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane);
     }
 
@@ -203,11 +200,11 @@ public class AffineSpacePlaneBipartate {
      */
     public void removeExcept(AffineSpace as, Polytope polytope) {
 
-//        System.out.println("Convex.thesisProjectionIdeas.GradDescentFeasibility.AffineSpaceHandler.removeExcept()");
         if (as.isAllSpace()) {
             polytope.clearFaces();
             planeNodes.clear();
             affineSpaceNodes.clear();
+            affSpByNumPlanes.forEach(set -> set.clear());
             return;
         }
 
@@ -232,4 +229,5 @@ public class AffineSpacePlaneBipartate {
         if (planeNodes.keySet().stream().anyMatch(plane -> p.stream().allMatch(hs -> hs.boundary() != plane)))
             throw new RuntimeException("The affine space handler has a plane that the polytope does not.");
     }
+    
 }
