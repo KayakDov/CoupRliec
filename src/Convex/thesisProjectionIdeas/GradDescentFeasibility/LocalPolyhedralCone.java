@@ -63,14 +63,15 @@ public class LocalPolyhedralCone extends Polytope {
 
         add(add, y);
 
-        travelThrough = hasProj(preProj, 1);
+        ASProj asProj = hasProj(preProj, 1);
 
-        Point proj = travelThrough.proj(preProj);
-        if (proj.equals(y)) {
+        travelThrough = asProj.as();
+        
+        if (asProj.proj().equals(y)) {
             throw new EmptyPolytopeException();
         }
 
-        gradInBounds = y.minus(proj);
+        gradInBounds = y.minus(asProj.proj());
 
     }
 
@@ -87,27 +88,20 @@ public class LocalPolyhedralCone extends Polytope {
      * @param epsilonMult
      * @return
      */
-    private AffineSpace hasProj(Point preProj, int epsilonMult) {
+    private ASProj hasProj(Point preProj, int epsilonMult) {
 
-        if (hasElement(preProj)) return AffineSpace.allSpace(dim());
+        if (hasElement(preProj)) return new ASProj(AffineSpace.allSpace(dim()), preProj);
 
         for (int i = 1; i <= size(); i++) {
 
             ASProj tryTravelThrough = aspb.affineSpaces(i)
-                    .filter(as -> aspb.planes(as)//asn.planes.stream().map(pn -> pn.plane) //TODO: clean this up so I don't deal with nodes.
-                        .anyMatch(plane -> plane.below(preProj, epsilon)))
-//                    .map(asn -> asn.affineSpace)
+                    .filter(as -> aspb.planes(as).anyMatch(plane -> plane.below(preProj, epsilon)))
                     .map(as -> new ASProj(as, preProj))
                     .filter(asProj -> hasElement(asProj.proj()))
-                    .min(
-                            Comparator.comparing(
-                                    asp -> {
-                                        return asp.proj().d(preProj);
-                                    })
-                    )
+                    .min(Comparator.comparing(asp -> asp.proj().d(preProj)))
                     .orElse(null);
 
-            if (tryTravelThrough != null) return tryTravelThrough.as();
+            if (tryTravelThrough != null) return tryTravelThrough;
 
         }
         System.err.println("projection error.  Setting epsilon to:" + epsilon
