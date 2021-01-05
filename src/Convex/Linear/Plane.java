@@ -6,7 +6,6 @@ import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.NoSuchElementException;
-import listTools.Choose;
 
 /**
  *
@@ -61,7 +60,7 @@ public class Plane extends AffineSpace {
      * @return true if the point is above the plane.
      */
     public boolean below(Point x) {
-        return normal().dot(x.minus(p)) > 0;
+        return normal().dot(x) > b.get(0);
     }
 
     /**
@@ -83,7 +82,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean below(Point p, double epsilon) {
-        return !Plane.this.above(p) && !onPlane(p, epsilon);
+        return !above(p) && !onPlane(p, epsilon);
     }
 
     /**
@@ -94,7 +93,7 @@ public class Plane extends AffineSpace {
      * @return true if the point is on the plane.
      */
     public boolean onPlane(Point x, double epsilon) {
-        return Math.abs(x.minus(p).dot(normal().dir())) <= epsilon;
+        return Math.abs(x.dot(normal().dir()) - b.get(0)) <= epsilon;
     }
 
     /**

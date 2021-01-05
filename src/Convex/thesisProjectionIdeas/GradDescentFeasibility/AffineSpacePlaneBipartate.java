@@ -195,8 +195,8 @@ public class AffineSpacePlaneBipartate {
         return toString.toString();
     }
 
-    public Stream<Plane> planes(AffineSpace as) {//TODO: this doesn't work.  FIx it.
-        return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane);
+    public Stream<Plane> planes(AffineSpace as) {
+        return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane).parallel();
     }
 
     /**
@@ -247,8 +247,15 @@ public class AffineSpacePlaneBipartate {
      */
     public boolean projectionRule(AffineSpace as, Point preProj, double epsilon){//TODO: Make this faster.  I should not be creating new half spaces here.
 
-        if(as.b.dim() == 1) return as.linearSpace().getNormals()[0].dot(preProj.minus(as.p())) > -epsilon;
-        return hsProjections(as, preProj).allMatch(p -> !inASPoly(as, p, epsilon));
+         return planes(as).anyMatch(plane -> !plane.above(preProj, epsilon));
+        
+//         if(!fastTest) return false;
+//         
+//        if(as.b.dim() == 1) return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
+//        boolean slowTest =  hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
+//        
+//        if(!slowTest) System.out.println("Convex.thesisProjectionIdeas.GradDescentFeasibility.AffineSpacePlaneBipartate.projectionRule()");
+//        return slowTest;
                 
     }
     
@@ -259,8 +266,8 @@ public class AffineSpacePlaneBipartate {
      * @param epsilon
      * @return 
      */
-    private boolean inASPoly(AffineSpace as, Point p, double epsilon){
-        return planes(as).allMatch(plane -> !plane.below(p, epsilon));
+    private boolean outOfPoly(AffineSpace as, Point p, double epsilon){
+        return planes(as).anyMatch(plane -> !plane.above(p, epsilon));
     }
     /**
      * The projections onto all the planes that intersect to make the affine space

@@ -14,18 +14,18 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 30;
-        int numFaces = 100;
+        int dim = 12;
+        int numFaces = 1000;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("i = " + i);
             FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
 
-            System.out.println(feas);
+//            System.out.println(feas);
         }
 
     }

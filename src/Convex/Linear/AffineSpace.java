@@ -27,7 +27,7 @@ public class AffineSpace implements ConvexSet {
     public Point getB() {
         return b;
     }
-
+    
     /**
      * A small number
      */
