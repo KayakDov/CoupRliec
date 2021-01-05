@@ -26,7 +26,7 @@ public class Memory {
     }
     
     
-    public static final float LOW_MEM = .05f;
+    public static final float LOW_MEM = .1f;
     public static boolean lowOnMemory(){
         return remainingPercent() < LOW_MEM;
     }

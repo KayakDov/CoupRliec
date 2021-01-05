@@ -1,5 +1,6 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
+import Convex.HalfSpace;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -56,7 +58,7 @@ public class AffineSpacePlaneBipartate {
          */
         public void prepareForRemoval() {
             for (ASNode asn : affineSpaces) asn.prepareForRemoval(this);
-            
+
         }
     }
 
@@ -68,6 +70,8 @@ public class AffineSpacePlaneBipartate {
         public ASNode(AffineSpace affineSpace, List<PlaneNode> planes) {
             this.affineSpace = affineSpace;
             setPlanes(planes);
+            while (planes.size() >= affSpByNumPlanes.size())
+                affSpByNumPlanes.add(new HashSet<>());
             affSpByNumPlanes.get(planes.size()).add(this);
         }
 
@@ -88,8 +92,10 @@ public class AffineSpacePlaneBipartate {
         }
 
         public void prepareForRemoval(PlaneNode except) {
-            if(affineSpaceNodes.remove(affineSpace) == null) throw new RuntimeException("Failed to remove affine space.");
-            if(!affSpByNumPlanes.get(planes.size()).remove(this)) throw new RuntimeException("Failed to remove affine space.");
+            if (affineSpaceNodes.remove(affineSpace) == null)
+                throw new RuntimeException("Failed to remove affine space.");
+            if (!affSpByNumPlanes.get(planes.size()).remove(this))
+                throw new RuntimeException("Failed to remove affine space.");
             planes.forEach(planeNode -> {
                 if (planeNode != except) planeNode.affineSpaces.remove(this);
             });
@@ -100,6 +106,12 @@ public class AffineSpacePlaneBipartate {
     private HashMap<AffineSpace, ASNode> affineSpaceNodes = null;
     private ArrayList<HashSet<ASNode>> affSpByNumPlanes;
 
+    public ArrayList<HashSet<ASNode>> getAffSpByNumPlanes() {
+        return affSpByNumPlanes;
+    }
+
+    
+    
     public AffineSpacePlaneBipartate(int dim) {
         this.affineSpaceNodes = new HashMap<>(dim * dim);
         this.dim = dim;
@@ -154,10 +166,6 @@ public class AffineSpacePlaneBipartate {
         return affSpByNumPlanes.get(numPlanes).stream()
                 .parallel()//;
                 .map(asn -> asn.affineSpace);
-//        return affineSpaceNodes()
-//                .parallel()
-//                .filter(as -> as.affineSpace.linearSpace().getNormals().length == numPlanes);
-
     }
 
     public Stream<AffineSpace> affineSpaces() {
@@ -230,4 +238,38 @@ public class AffineSpacePlaneBipartate {
             throw new RuntimeException("The affine space handler has a plane that the polytope does not.");
     }
     
+    /**
+     * An affine space can only contain a projection 
+     * @param as
+     * @param preProj
+     * @param epsilon
+     * @return 
+     */
+    public boolean projectionRule(AffineSpace as, Point preProj, double epsilon){//TODO: Make this faster.  I should not be creating new half spaces here.
+
+        if(as.b.dim() == 1) return as.linearSpace().getNormals()[0].dot(preProj.minus(as.p())) > -epsilon;
+        return hsProjections(as, preProj).allMatch(p -> !inASPoly(as, p, epsilon));
+                
+    }
+    
+    /**
+     * Is the point p in the polytope made from the planes that intersect to form the affine space.
+     * @param as
+     * @param p
+     * @param epsilon
+     * @return 
+     */
+    private boolean inASPoly(AffineSpace as, Point p, double epsilon){
+        return planes(as).allMatch(plane -> !plane.below(p, epsilon));
+    }
+    /**
+     * The projections onto all the planes that intersect to make the affine space
+     * @param as
+     * @param preProj
+     * @return 
+     */
+    public Stream<Point> hsProjections(AffineSpace as, Point preProj){
+        return planes(as).map(plane -> plane.above(preProj)? preProj: plane.proj(preProj));
+    }
+
 }

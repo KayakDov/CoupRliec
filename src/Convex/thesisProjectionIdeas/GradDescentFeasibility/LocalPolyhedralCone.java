@@ -89,13 +89,14 @@ public class LocalPolyhedralCone extends Polytope {
      * @return
      */
     private ASProj hasProj(Point preProj, int epsilonMult) {
+        if(epsilonMult*epsilon >= 1) throw new RuntimeException("Something is wrong with the projection algortihm.");
 
         if (hasElement(preProj)) return new ASProj(AffineSpace.allSpace(dim()), preProj);
 
-        for (int i = 1; i <= size(); i++) {
+        for (int i = 1; i < aspb.getAffSpByNumPlanes().size(); i++) {
 
             ASProj tryTravelThrough = aspb.affineSpaces(i)
-                    .filter(as -> aspb.planes(as).anyMatch(plane -> plane.below(preProj, epsilon)))
+                    .filter(as -> aspb.projectionRule(as, preProj, epsilon))
                     .map(as -> new ASProj(as, preProj))
                     .filter(asProj -> hasElement(asProj.proj()))
                     .min(Comparator.comparing(asp -> asp.proj().d(preProj)))
@@ -103,6 +104,7 @@ public class LocalPolyhedralCone extends Polytope {
 
             if (tryTravelThrough != null) return tryTravelThrough;
 
+//            System.out.println("num of planes in affine space = " + i);
         }
         System.err.println("projection error.  Setting epsilon to:" + epsilon
                 * epsilonMult * 10);

@@ -72,7 +72,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean above(Point p, double epsilon) {
-        return !Plane.this.below(p) && !onPlane(p, epsilon);
+        return !below(p) && !onPlane(p, epsilon);
     }
 
     /**

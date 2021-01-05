@@ -14,18 +14,18 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 70;
+        int dim = 30;
         int numFaces = 100;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             System.out.println("i = " + i);
             FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
-            Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 10));
+            Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
 
-//            System.out.println(feas);
+            System.out.println(feas);
         }
 
     }
@@ -84,10 +84,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-//        testProj();
         polytopeFeasabilityTest();
-//        testPolytopeFesibilitySpecifi();
-//            System.out.println(Memory.remaining());
+
+
 //    FeasibilityGradDescent.loadFromErrorFile();
     }
 
