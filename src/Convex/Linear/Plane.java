@@ -71,7 +71,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean above(Point p, double epsilon) {
-        return !below(p) && !onPlane(p, epsilon);
+        return above(p) && !onPlane(p, epsilon);
     }
 
     /**
@@ -82,7 +82,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean below(Point p, double epsilon) {
-        return !above(p) && !onPlane(p, epsilon);
+        return below(p) && !onPlane(p, epsilon);
     }
 
     /**
@@ -113,7 +113,7 @@ public class Plane extends AffineSpace {
      * @return true if the point is below the plane.
      */
     public boolean above(Point x) {
-        return nullMatrix().mult(x).get(0) <= b.get(0);
+        return nullMatrix().mult(x).get(0) < b.get(0);
     }
 
     /**

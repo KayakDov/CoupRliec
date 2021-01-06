@@ -110,8 +110,6 @@ public class AffineSpacePlaneBipartate {
         return affSpByNumPlanes;
     }
 
-    
-    
     public AffineSpacePlaneBipartate(int dim) {
         this.affineSpaceNodes = new HashMap<>(dim * dim);
         this.dim = dim;
@@ -196,7 +194,7 @@ public class AffineSpacePlaneBipartate {
     }
 
     public Stream<Plane> planes(AffineSpace as) {
-        return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane).parallel();
+        return affineSpaceNodes.get(as).planes.stream().map(pn -> pn.plane);
     }
 
     /**
@@ -237,46 +235,53 @@ public class AffineSpacePlaneBipartate {
         if (planeNodes.keySet().stream().anyMatch(plane -> p.stream().allMatch(hs -> hs.boundary() != plane)))
             throw new RuntimeException("The affine space handler has a plane that the polytope does not.");
     }
-    
+
     /**
-     * An affine space can only contain a projection 
+     * An affine space can only contain a projection
+     *
      * @param as
      * @param preProj
      * @param epsilon
-     * @return 
+     * @return
      */
-    public boolean projectionRule(AffineSpace as, Point preProj, double epsilon){//TODO: Make this faster.  I should not be creating new half spaces here.
+    public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {//TODO: Make this faster.  I should not be creating new half spaces here.
 
-         return planes(as).anyMatch(plane -> !plane.above(preProj, epsilon));
-        
+//         boolean fastTest =  
+//        planes(as).anyMatch(plane -> !plane.above(preProj, epsilon));
+//
 //         if(!fastTest) return false;
-//         
-//        if(as.b.dim() == 1) return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
-//        boolean slowTest =  hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
-//        
+        if (as.b.dim() == 1)
+            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
+//        boolean slowTest = 
+        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
+
 //        if(!slowTest) System.out.println("Convex.thesisProjectionIdeas.GradDescentFeasibility.AffineSpacePlaneBipartate.projectionRule()");
 //        return slowTest;
-                
     }
-    
+
     /**
-     * Is the point p in the polytope made from the planes that intersect to form the affine space.
+     * Is the point p in the polytope made from the planes that intersect to
+     * form the affine space.
+     *
      * @param as
      * @param p
      * @param epsilon
-     * @return 
+     * @return
      */
-    private boolean outOfPoly(AffineSpace as, Point p, double epsilon){
-        return planes(as).anyMatch(plane -> !plane.above(p, epsilon));
+    private boolean outOfPoly(AffineSpace as, Point p, double epsilon) {
+        return planes(as).anyMatch(plane -> plane.below(p, epsilon));
     }
+
     /**
-     * The projections onto all the planes that intersect to make the affine space
+     * The projections onto all the planes that intersect to make the affine
+     * space
+     *
      * @param as
      * @param preProj
-     * @return 
+     * @return
      */
-    public Stream<Point> hsProjections(AffineSpace as, Point preProj){
-        return planes(as).map(plane -> plane.above(preProj)? preProj: plane.proj(preProj));
+    public Stream<Point> hsProjections(AffineSpace as, Point preProj) {
+        return planes(as).map(plane -> plane.above(preProj) ? preProj : plane.proj(preProj));
     }
 
 }
