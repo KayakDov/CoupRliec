@@ -10,9 +10,13 @@ import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -331,4 +335,24 @@ public class AffineSpace implements ConvexSet {
     public boolean isAllSpace() {
         return linearSpace.isAllSpace();
     }
+    
+    /**
+     * Will return a plane for which this affine space is a subset.
+     * If this affine space is the solution to Ax=b then this will give the solutions
+     * to row(A,i) dot x = b_i
+     * @param i
+     * @return 
+     */
+    public Plane subsetOfPlane(int i){
+        return new Plane(linearSpace.getNormals()[i], b.get(i));
+    }
+
+    @Override
+    public int hashCode() {
+        return linearSpace.hashCode() + b.hashCode();
+    }
+    
+    
+    
+    
 }

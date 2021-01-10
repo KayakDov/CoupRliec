@@ -243,6 +243,11 @@ public class Plane extends AffineSpace {
         double t = (b.get(0) - normal().dot(onLine))/(normal().dot(grad));
         return grad.mult(t).plus(onLine);
     }
+
+    @Override
+    public int hashCode() {
+        return linearSpace.getNormals().hashCode() + b.hashCode();
+    }
     
     
 }

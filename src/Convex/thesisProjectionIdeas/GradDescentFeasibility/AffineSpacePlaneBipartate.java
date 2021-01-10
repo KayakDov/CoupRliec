@@ -100,11 +100,38 @@ public class AffineSpacePlaneBipartate {
                 if (planeNode != except) planeNode.affineSpaces.remove(this);
             });
         }
+
+        public ArrayList<Point> failPoints = new ArrayList<>();
+
+        /**
+         * a list of all the affine space nodes that have n-1 planes in them and
+         * contain this affine space.
+         *
+         * @return
+         */
+        public List<ASNode> oneDown() {
+
+            return IntStream.range(0, planes.size()).mapToObj(i -> {
+
+                Point list2[] = new Point[planes.size() - 1];
+                Point b2 = new PointD(planes.get(i).plane.b.dim() - 1);
+                for (int j = 0, k = 0; j < planes.size(); j++, k++) {
+                    if (k == i) k++;
+                    b2.set(i, planes.get(k).plane.b.get(0));
+                    list2[i] = planes.get(k).plane.normal();
+                }
+                return new AffineSpace(list2, b2);
+            }).map(as -> affineSpaceNodes.get(as)).collect(Collectors.toList());
+        }
     }
 
     private HashMap<Plane, PlaneNode> planeNodes = null;
     private HashMap<AffineSpace, ASNode> affineSpaceNodes = null;
     private ArrayList<HashSet<ASNode>> affSpByNumPlanes;
+
+    public void clearFailPoints() {
+        affineSpaceNodes.values().forEach(asn -> asn.failPoints.clear());
+    }
 
     public ArrayList<HashSet<ASNode>> getAffSpByNumPlanes() {
         return affSpByNumPlanes;
@@ -162,7 +189,7 @@ public class AffineSpacePlaneBipartate {
     public Stream<AffineSpace> affineSpaces(int numPlanes) {
 
         return affSpByNumPlanes.get(numPlanes).stream()
-                .parallel()//;
+                .parallel()
                 .map(asn -> asn.affineSpace);
     }
 
@@ -244,21 +271,28 @@ public class AffineSpacePlaneBipartate {
      * @param epsilon
      * @return
      */
-    public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {//TODO: Make this faster.  I should not be creating new half spaces here.
+    public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
 
+        if (as.b.dim() == 1)
+            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
+
+        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));
+    }
+
+//        public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
+//
 //         boolean fastTest =  
 //        planes(as).anyMatch(plane -> !plane.above(preProj, epsilon));
 //
 //         if(!fastTest) return false;
-        if (as.b.dim() == 1)
-            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
+//        if (as.b.dim() == 1)
+//            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
 //        boolean slowTest = 
-        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
-
+//        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
+//
 //        if(!slowTest) System.out.println("Convex.thesisProjectionIdeas.GradDescentFeasibility.AffineSpacePlaneBipartate.projectionRule()");
 //        return slowTest;
-    }
-
+//    }
     /**
      * Is the point p in the polytope made from the planes that intersect to
      * form the affine space.

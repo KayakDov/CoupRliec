@@ -24,6 +24,13 @@ public class LinearSpace implements ConvexSet {
 
     private Point[] normals;
 
+    @Override
+    public int hashCode() {
+        return Arrays.stream(normals).mapToInt(p -> p.hashCode()).sum();
+    }
+    
+    
+
     public LinearSpace(Point[] normals) {
         this.normals = normals;
     }

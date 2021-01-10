@@ -93,6 +93,8 @@ public class LocalPolyhedralCone extends Polytope {
 
         if (hasElement(preProj)) return new ASProj(AffineSpace.allSpace(dim()), preProj);
 
+        aspb.clearFailPoints();
+        
         for (int i = 1; i < aspb.getAffSpByNumPlanes().size(); i++) {
 
             ASProj tryTravelThrough = aspb.affineSpaces(i)
