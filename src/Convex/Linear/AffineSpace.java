@@ -10,13 +10,10 @@ import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -350,6 +347,17 @@ public class AffineSpace implements ConvexSet {
     @Override
     public int hashCode() {
         return linearSpace.hashCode() + b.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final AffineSpace other = (AffineSpace) obj;
+        if (!Objects.equals(this.linearSpace, other.linearSpace)) return false;
+        if (!Objects.equals(this.b, other.b)) return false;
+        return true;
     }
     
     

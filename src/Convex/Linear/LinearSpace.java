@@ -28,6 +28,16 @@ public class LinearSpace implements ConvexSet {
     public int hashCode() {
         return Arrays.stream(normals).mapToInt(p -> p.hashCode()).sum();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        final LinearSpace other = (LinearSpace) obj;
+        if (!Arrays.deepEquals(this.normals, other.normals)) return false;
+        return true;
+    }
     
     
 
@@ -244,4 +254,8 @@ public class LinearSpace implements ConvexSet {
         System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
         return new LinearSpace(intersection);
     }
+
+    
+    
+    
 }

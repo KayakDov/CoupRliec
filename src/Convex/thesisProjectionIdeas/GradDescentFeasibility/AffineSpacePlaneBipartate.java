@@ -1,10 +1,8 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
-import Convex.HalfSpace;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
-import Convex.PolytopeCone;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.ArrayList;
@@ -12,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -104,8 +101,74 @@ public class AffineSpacePlaneBipartate {
         public ArrayList<Point> failPoints = new ArrayList<>();
 
         /**
+         * Checks to see if any of the points in the affine space that contains
+         * this are outside the outplane. If they are inside, then they are
+         * added to failPoints.
+         *
+         * @param oneDown
+         * @param outPlane
+         * @param epsilon
+         */
+        private void checkFailedPoints(ASNode oneDown, Plane outPlane, double epsilon) {
+            for (int j = 0; j < oneDown.failPoints.size(); j++) {
+                Point failPoint = oneDown.failPoints.get(j);
+                if (!outPlane.below(failPoint, epsilon))
+                    failPoints.add(failPoint);
+            }
+        }
+
+        /**
+         * Checks a affine space that contains this one to see if the projection
+         * onto that space is underneath outplane. If is is, then the point is
+         * add to failed points.
+         *
+         * @param oneDown
+         * @param outPlane
+         * @param epsilon
+         */
+        private void checkASWProj(ASNode oneDown, Plane outPlane, Point preProj, double epsilon) {
+
+            Point oneDownProj = oneDown.affineSpace.proj(preProj);
+            if (!outPlane.below(oneDownProj, epsilon))
+                failPoints.add(oneDownProj);
+
+        }
+
+        /**
+         * Is it possible that this affine space contains the projection onto
+         * the polytope.
+         *
+         * @param preProj
+         * @return
+         */
+        public boolean mightContainProj(Point preProj, double epsilon) {
+            if (planes.size() == 1) {
+                if (planes.get(0).plane.above(preProj)) {
+                    failPoints.add(preProj);
+                    return false;
+                }
+            } else{
+                failPoints.add(planes.get(0).plane.proj(preProj));
+                return true;
+            }
+
+            List<ASNode> oneDown = oneDown();
+            for (int i = 0; i < oneDown.size(); i++) {
+                Plane outPlane = planes.get(i).plane;
+                ASNode oneDownI = oneDown.get(i);
+
+                if(!oneDownI.failPoints.isEmpty()) checkFailedPoints(oneDownI, outPlane, epsilon);
+                else checkASWProj(oneDownI, outPlane, preProj, epsilon);
+            }
+
+            return failPoints.isEmpty();
+        }
+
+        /**
          * a list of all the affine space nodes that have n-1 planes in them and
-         * contain this affine space.
+         * contain this affine space. The index of the element in the list is
+         * the plane that affine space is a subset of that the list affine space
+         * is not.
          *
          * @return
          */
@@ -273,10 +336,12 @@ public class AffineSpacePlaneBipartate {
      */
     public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
 
-        if (as.b.dim() == 1)
-            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
-
-        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));
+        return affineSpaceNodes.get(as).mightContainProj(preProj, epsilon);
+        
+//        if (as.b.dim() == 1)
+//            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
+//
+//        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));
     }
 
 //        public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
