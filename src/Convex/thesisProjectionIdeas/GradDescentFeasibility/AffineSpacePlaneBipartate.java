@@ -118,23 +118,6 @@ public class AffineSpacePlaneBipartate {
         }
 
         /**
-         * Checks a affine space that contains this one to see if the projection
-         * onto that space is underneath outplane. If is is, then the point is
-         * add to failed points.
-         *
-         * @param oneDown
-         * @param outPlane
-         * @param epsilon
-         */
-        private void checkASWProj(ASNode oneDown, Plane outPlane, Point preProj, double epsilon) {
-
-            Point oneDownProj = oneDown.affineSpace.proj(preProj);
-            if (!outPlane.below(oneDownProj, epsilon))
-                failPoints.add(oneDownProj);
-
-        }
-
-        /**
          * Is it possible that this affine space contains the projection onto
          * the polytope.
          *
@@ -146,22 +129,26 @@ public class AffineSpacePlaneBipartate {
                 if (planes.get(0).plane.above(preProj)) {
                     failPoints.add(preProj);
                     return false;
+                } else {
+                    failPoints.add(planes.get(0).plane.proj(preProj));
+                    return true;
                 }
-            } else{
-                failPoints.add(planes.get(0).plane.proj(preProj));
-                return true;
             }
-
             List<ASNode> oneDown = oneDown();
             for (int i = 0; i < oneDown.size(); i++) {
-                Plane outPlane = planes.get(i).plane;
+                
+                Plane outPlaneI = planes.get(i).plane;
                 ASNode oneDownI = oneDown.get(i);
 
-                if(!oneDownI.failPoints.isEmpty()) checkFailedPoints(oneDownI, outPlane, epsilon);
-                else checkASWProj(oneDownI, outPlane, preProj, epsilon);
+                checkFailedPoints(oneDownI, outPlaneI, epsilon);
+                
             }
 
-            return failPoints.isEmpty();
+            boolean mightContainProj = failPoints.isEmpty();
+            
+            if(mightContainProj) failPoints.add(affineSpace.proj(preProj));
+            
+            return mightContainProj;
         }
 
         /**
@@ -174,14 +161,18 @@ public class AffineSpacePlaneBipartate {
          */
         public List<ASNode> oneDown() {
 
-            return IntStream.range(0, planes.size()).mapToObj(i -> {
+            return IntStream.range(0, planes.size()).mapToObj(outI -> {
 
                 Point list2[] = new Point[planes.size() - 1];
-                Point b2 = new PointD(planes.get(i).plane.b.dim() - 1);
-                for (int j = 0, k = 0; j < planes.size(); j++, k++) {
-                    if (k == i) k++;
-                    b2.set(i, planes.get(k).plane.b.get(0));
-                    list2[i] = planes.get(k).plane.normal();
+                Point b2 = new PointD(planes.size() - 1);
+
+                for (int toI = 0, fromI = 0; toI < planes.size() - 1; toI++, fromI++) {
+
+                    if (fromI == outI) fromI++;
+
+                    b2.set(toI, planes.get(fromI).plane.b.get(0));
+
+                    list2[toI] = planes.get(fromI).plane.normal();
                 }
                 return new AffineSpace(list2, b2);
             }).map(as -> affineSpaceNodes.get(as)).collect(Collectors.toList());
@@ -337,7 +328,7 @@ public class AffineSpacePlaneBipartate {
     public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
 
         return affineSpaceNodes.get(as).mightContainProj(preProj, epsilon);
-        
+
 //        if (as.b.dim() == 1)
 //            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
 //
