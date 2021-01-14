@@ -86,6 +86,13 @@ public class Main {
 
         polytopeFeasabilityTest();
 
+//        AffineSpace as = new AffineSpace(new Point[]{new PointD(1,0,0), new PointD(0,1,0)}, new PointD(2));
+//        
+//        System.out.println(as.hashCode());
+//        
+//        AffineSpace as2 = new AffineSpace(new Point[]{new PointD(0,0,0), new PointD(0,1,0)}, new PointD(2));
+//        
+//        System.out.println(as.equals(as2));
 
 //    FeasibilityGradDescent.loadFromErrorFile();
     }

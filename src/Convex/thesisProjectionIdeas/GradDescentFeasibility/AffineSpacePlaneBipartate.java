@@ -110,6 +110,7 @@ public class AffineSpacePlaneBipartate {
          * @param epsilon
          */
         private void checkFailedPoints(ASNode oneDown, Plane outPlane, double epsilon) {
+            
             for (int j = 0; j < oneDown.failPoints.size(); j++) {
                 Point failPoint = oneDown.failPoints.get(j);
                 if (!outPlane.below(failPoint, epsilon))
@@ -134,7 +135,11 @@ public class AffineSpacePlaneBipartate {
                     return true;
                 }
             }
+                       
+            
             List<ASNode> oneDown = oneDown();
+            
+            
             for (int i = 0; i < oneDown.size(); i++) {
                 
                 Plane outPlaneI = planes.get(i).plane;
@@ -175,7 +180,12 @@ public class AffineSpacePlaneBipartate {
                     list2[toI] = planes.get(fromI).plane.normal();
                 }
                 return new AffineSpace(list2, b2);
-            }).map(as -> affineSpaceNodes.get(as)).collect(Collectors.toList());
+            }).map(as -> {
+                ASNode asn = affineSpaceNodes.get(as);
+                if(asn == null) throw new NullPointerException("affine space not found in hashset. AS = \n" + as + " \nhashset = " + affineSpaceNodes);
+                return asn;
+            }
+            ).collect(Collectors.toList());//TODO:affinespace.get is not finding the nodes that it's supposed to find
         }
     }
 

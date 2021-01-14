@@ -2,7 +2,6 @@ package Convex.Linear;
 
 import Convex.HalfSpace;
 import Convex.Polytope;
-import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.NoSuchElementException;

@@ -346,7 +346,7 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public int hashCode() {
-        return linearSpace.hashCode() + b.hashCode();
+        return linearSpace.hashCode() + (int)b.stream().sum();
     }
 
     @Override
