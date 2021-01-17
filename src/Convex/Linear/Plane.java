@@ -153,8 +153,12 @@ public class Plane extends AffineSpace {
             return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
         if (dim() == 3)
             return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
-        return "point " + p + " with normal " + normal();
+        return toStringMultiDim();
 
+    }
+    
+    public String toStringMultiDim(){
+        return "point " + p + " with normal " + normal();
     }
 
     /**

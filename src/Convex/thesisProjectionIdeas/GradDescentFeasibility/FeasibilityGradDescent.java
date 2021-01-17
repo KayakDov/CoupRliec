@@ -173,7 +173,7 @@ public class FeasibilityGradDescent extends Polytope {
                     
                     return y;
                 }
-            } catch (NoSuchElementException nsee) {//TODO: remove once everything is working
+            } catch (Exception nsee) {//TODO: remove once everything is working
                 throw new FailedDescentException(nsee.getMessage(), start, y, part);
             }
 

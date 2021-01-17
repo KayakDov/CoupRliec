@@ -14,8 +14,8 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 10;
-        int numFaces = 1000;
+        int dim = 3;
+        int numFaces = 3;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 100; i++) {
@@ -84,17 +84,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        polytopeFeasabilityTest();
+//        polytopeFeasabilityTest();
 
-//        AffineSpace as = new AffineSpace(new Point[]{new PointD(1,0,0), new PointD(0,1,0)}, new PointD(2));
-//        
-//        System.out.println(as.hashCode());
-//        
-//        AffineSpace as2 = new AffineSpace(new Point[]{new PointD(0,0,0), new PointD(0,1,0)}, new PointD(2));
-//        
-//        System.out.println(as.equals(as2));
-
-//    FeasibilityGradDescent.loadFromErrorFile();
+    FeasibilityGradDescent.loadFromErrorFile();
     }
 
 }
