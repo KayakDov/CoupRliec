@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -28,7 +29,7 @@ public class AffineSpace implements ConvexSet {
     public Point getB() {
         return b;
     }
-    
+
     /**
      * A small number
      */
@@ -67,7 +68,8 @@ public class AffineSpace implements ConvexSet {
      */
     public AffineSpace(LinearSpace ls, Point onSpace) {
         linearSpace = ls;
-        if (!ls.isAllSpace()) b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
+        if (!ls.isAllSpace())
+            b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
 
         p = onSpace;
     }
@@ -179,7 +181,7 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public String toString() {
-        return linearSpace().toString() + (p != null ? "\nwith point " + p : "\nb = " + b) + "\ndim = " + subSpaceDim();
+        return linearSpace().toString() + (p != null ? "\nwith point " + p : "\nb = " + b);
     }
 
     private long subSpaceDim = -2;
@@ -264,7 +266,6 @@ public class AffineSpace implements ConvexSet {
         }
     }
 
-
     /**
      * A point not in this space.
      *
@@ -332,35 +333,58 @@ public class AffineSpace implements ConvexSet {
     public boolean isAllSpace() {
         return linearSpace.isAllSpace();
     }
-    
+
     /**
-     * Will return a plane for which this affine space is a subset.
-     * If this affine space is the solution to Ax=b then this will give the solutions
-     * to row(A,i) dot x = b_i
+     * Will return a plane for which this affine space is a subset. If this
+     * affine space is the solution to Ax=b then this will give the solutions to
+     * row(A,i) dot x = b_i
+     *
      * @param i
-     * @return 
+     * @return
      */
-    public Plane subsetOfPlane(int i){
+    public Plane subsetOfPlane(int i) {
         return new Plane(linearSpace.getNormals()[i], b.get(i));
     }
 
     @Override
     public int hashCode() {
-        return linearSpace.hashCode() + (int)b.stream().sum();
+        return linearSpace.hashCode() + b.stream().mapToInt(d -> Double.hashCode(d)).sum();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        final AffineSpace other = (AffineSpace) obj;
-        if (!Objects.equals(this.linearSpace, other.linearSpace)) return false;
-        if (!Objects.equals(this.b, other.b)) return false;
-        return true;
+    public boolean equals(AffineSpace obj) {
+        
+        return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
+    
     }
-    
-    
-    
-    
+
+    /**
+     * If this affine space is defined by the set of solutions to Ax=b, then
+     * this function returns the set of A'x = b, where A' is A with one row
+     * removed.
+     *
+     * @return
+     */
+    public Stream<AffineSpace> oneDown() {
+        
+        int numRows = linearSpace.getNormals().length;
+        
+        if(numRows == 1) throw new RuntimeException("oneDown may not be called on planes.");
+
+        return IntStream.range(0, numRows).mapToObj(removedI -> {
+
+            Point toNormals[] = new Point[numRows - 1];
+            Point b2 = new PointD(numRows - 1);
+
+            for (int toI = 0, fromI = 0; toI < numRows - 1; toI++, fromI++) {
+
+                if (fromI == removedI) fromI++;
+
+                b2.set(toI, b.get(fromI));
+
+                toNormals[toI] = linearSpace.getNormals()[fromI];
+            }
+            return new AffineSpace(toNormals, b2);
+        });
+    }
+
 }

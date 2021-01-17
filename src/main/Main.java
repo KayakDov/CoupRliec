@@ -66,17 +66,17 @@ public class Main {
 
         System.out.println(pl1);
         System.out.println(pl2);
-        
+
         PointD pp = new PointD(2.2047195327221005, -3.0382123166886514, 5.51852864962741);
-        
+
         System.out.println("pp = " + pp);
-        
-        LinearSpace ls = new LinearSpace(new Point[]{p1,p2});
-        
+
+        LinearSpace ls = new LinearSpace(new Point[]{p1, p2});
+
         Point proj = ls.proj(pp);
-        
+
         System.out.println("col\n" + ls.colSpaceMatrix());
-        
+
         System.out.println(ls.hasElement(proj));
         System.out.println(proj);
 
@@ -85,8 +85,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
 //        polytopeFeasabilityTest();
-
-    FeasibilityGradDescent.loadFromErrorFile();
+        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plan.tosting for dim 2 or 3.
     }
 
 }

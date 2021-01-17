@@ -11,6 +11,7 @@ import Matricies.PointD;
 import Matricies.PointSparse;
 import MySystem.Memory;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 /**
  * An object that describes a linear/vector space
@@ -29,14 +30,13 @@ public class LinearSpace implements ConvexSet {
         return Arrays.stream(normals).mapToInt(p -> p.hashCode()).sum();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        final LinearSpace other = (LinearSpace) obj;
-        if (!Arrays.deepEquals(this.normals, other.normals)) return false;
-        return true;
+    /**
+     * note, the normals of two affine spaces must be in the same order to be equals.
+     * @param obj
+     * @return 
+     */
+    public boolean equals(LinearSpace obj) {
+        return IntStream.range(0, normals.length).allMatch(i -> normals[i].equals(obj.normals[i]));
     }
     
     

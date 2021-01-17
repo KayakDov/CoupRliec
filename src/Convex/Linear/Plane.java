@@ -147,12 +147,16 @@ public class Plane extends AffineSpace {
         return x.minus(normal().dir().mult((x.minus(p)).dot(normal().dir())));
     }
 
+    public static boolean printEasyRead = true;
+    
     @Override
     public String toString() {
+        if(printEasyRead){
         if (dim() == 2)
             return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
         if (dim() == 3)
             return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
+    }
         return toStringMultiDim();
 
     }
@@ -246,11 +250,5 @@ public class Plane extends AffineSpace {
         double t = (b.get(0) - normal().dot(onLine))/(normal().dot(grad));
         return grad.mult(t).plus(onLine);
     }
-
-    @Override
-    public int hashCode() {
-        return linearSpace.getNormals().hashCode() + b.hashCode();
-    }
-    
     
 }

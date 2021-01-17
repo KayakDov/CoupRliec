@@ -272,11 +272,13 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public boolean equals(Point p) {
+        if(p == this) return true;
         if(p.isDense()) return equals(p.asDense());
         else return equals(p.asSparse());
     }
     
     public boolean equals(PointD pd){
+        if(this == pd) return true;
         return Arrays.equals(array, pd.array);
     }
     public boolean equals(PointSparse ps){

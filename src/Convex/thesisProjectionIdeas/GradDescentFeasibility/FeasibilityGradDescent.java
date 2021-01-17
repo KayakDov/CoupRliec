@@ -1,6 +1,7 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
+import Convex.Linear.Plane;
 import Convex.Polytope;
 import Matricies.Point;
 import Matricies.PointD;
@@ -206,6 +207,7 @@ public class FeasibilityGradDescent extends Polytope {
                     + "\nwriting report to error.txt");
 
             try {
+                Plane.printEasyRead = false;
                 BufferedWriter bw = new BufferedWriter(new FileWriter(new File("error.txt")));
                 bw.write(start.toString());
                 bw.newLine();
