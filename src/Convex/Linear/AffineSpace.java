@@ -351,6 +351,15 @@ public class AffineSpace implements ConvexSet {
         return linearSpace.hashCode() + b.stream().mapToInt(d -> Double.hashCode(d)).sum();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (!(obj instanceof AffineSpace)) return false;
+        final AffineSpace other = (AffineSpace) obj;
+        return other.linearSpace.equals(linearSpace) && other.b.equals(b);
+    }
+
     public boolean equals(AffineSpace obj) {
         
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);

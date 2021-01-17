@@ -14,8 +14,8 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 3;
-        int numFaces = 3;
+        int dim = 10;
+        int numFaces = 100;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 100; i++) {
@@ -84,8 +84,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-//        polytopeFeasabilityTest();
-        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plan.tosting for dim 2 or 3.
+        polytopeFeasabilityTest();
+//        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plan.tosting for dim 2 or 3.
     }
 
 }
