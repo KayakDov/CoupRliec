@@ -101,7 +101,7 @@ public class LocalPolyhedralCone extends Polytope {
                     .filter(as -> aspb.projectionRule(as, preProj, epsilon))
                     .map(as -> new ASProj(as, preProj))
                     .filter(asProj -> hasElement(asProj.proj()))
-                    .findAny()
+                    .min(Comparator.comparing(p -> p.proj().d(preProj)))
                     .orElse(null);
 
             if (tryTravelThrough != null) return tryTravelThrough;
