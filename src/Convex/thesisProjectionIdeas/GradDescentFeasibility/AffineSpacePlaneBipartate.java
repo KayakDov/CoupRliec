@@ -126,6 +126,12 @@ public class AffineSpacePlaneBipartate {
          * @return
          */
         public boolean mightContainProj(Point preProj, double epsilon) {
+            
+            if(affineSpace.hasProjFunc()){
+                failPoints.add(affineSpace.proj(preProj));
+                return true;
+            }
+                
             if (planes.size() == 1) {
                 if (planes.get(0).plane.above(preProj)) {
                     failPoints.add(preProj);

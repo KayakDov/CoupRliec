@@ -178,6 +178,10 @@ public class AffineSpace implements ConvexSet {
     public LinearSpace linearSpace() {
         return linearSpace;
     }
+    
+    public boolean hasProjFunc(){
+        return linearSpace.hasProjFunction();
+    }
 
     @Override
     public String toString() {

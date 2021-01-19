@@ -20,6 +20,9 @@ import java.util.stream.IntStream;
  */
 public class LinearSpace implements ConvexSet {
 
+    public boolean hasProjFunction(){
+        return projFunc != null;
+    }
     
 //    private final Matrix nullSpace;
 
