@@ -96,7 +96,7 @@ public class LocalPolyhedralCone extends Polytope {
         aspb.clearFailPoints();
         
         for (int i = 1; i < aspb.getAffSpByNumPlanes().size(); i++) {
-
+//            aspb.clearFailPoints(i - 2);
             ASProj tryTravelThrough = aspb.affineSpaces(i)
                     .filter(as -> aspb.projectionRule(as, preProj, epsilon))
                     .map(as -> new ASProj(as, preProj))
@@ -104,7 +104,11 @@ public class LocalPolyhedralCone extends Polytope {
                     .min(Comparator.comparing(p -> p.proj().d(preProj)))
                     .orElse(null);
 
-            if (tryTravelThrough != null) return tryTravelThrough;
+            if (tryTravelThrough != null) {
+//                aspb.clearFailPoints(i - 1);
+//                aspb.clearFailPoints(i);
+                return tryTravelThrough;
+            }
 
 //            System.out.println("num of planes in affine space = " + i);
         }

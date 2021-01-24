@@ -129,6 +129,7 @@ public class AffineSpacePlaneBipartate {
             
             if(affineSpace.hasProjFunc()){
                 failPoints.add(affineSpace.proj(preProj));
+//                System.out.println("recycling proj");
                 return true;
             }
                 
@@ -158,6 +159,9 @@ public class AffineSpacePlaneBipartate {
             boolean mightContainProj = failPoints.isEmpty();
             
             if(mightContainProj) failPoints.add(affineSpace.proj(preProj));
+            
+//            if(!mightContainProj) System.out.println("filtetred out");
+//            else System.out.println("in");
             
             return mightContainProj;
         }
@@ -200,6 +204,9 @@ public class AffineSpacePlaneBipartate {
 
     public void clearFailPoints() {
         affineSpaceNodes.values().forEach(asn -> asn.failPoints.clear());
+    }
+    public void clearFailPoints(int numPlanes){
+        if(numPlanes > 0) affSpByNumPlanes.get(numPlanes).stream().parallel().forEach(asn -> asn.failPoints.clear());
     }
 
     public ArrayList<HashSet<ASNode>> getAffSpByNumPlanes() {
