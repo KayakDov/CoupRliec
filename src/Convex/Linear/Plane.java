@@ -2,7 +2,6 @@ package Convex.Linear;
 
 import Convex.HalfSpace;
 import Convex.Polytope;
-import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.NoSuchElementException;
@@ -19,7 +18,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public Point normal() {
-        return linearSpace.getNormals()[0];
+        return linearSpace.normals[0];
     }
 
     /**
@@ -71,7 +70,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean above(Point p, double epsilon) {
-        return normal().dot(p) > b.get(0) + epsilon;
+        return normal().dot(p) < b.get(0) - epsilon;
     }
 
     /**
@@ -82,7 +81,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public boolean below(Point p, double epsilon) {
-        return below(p) && !onPlane(p, epsilon);
+        return normal().dot(p) > b.get(0) + epsilon;
     }
 
     

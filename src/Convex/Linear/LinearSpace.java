@@ -26,7 +26,7 @@ public class LinearSpace implements ConvexSet {
     
 //    private final Matrix nullSpace;
 
-    private Point[] normals;
+    public Point[] normals;
 
     @Override
     public int hashCode() {
