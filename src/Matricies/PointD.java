@@ -39,8 +39,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public PointD(Point x) {
         this(x.asDense());
     }
-    
-    
 
     /**
      * Creates an empty point in n dimensional space. This point needs to be
@@ -169,7 +167,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return mapToDense(f).asSparse();
     }
 
-    
     /**
      * the dot product between this point and p inner product Will truncate the
      * longer point if they're not equal in length.
@@ -179,8 +176,20 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public double dot(Point p) {
-        return IntStream.range(0, Math.min(dim(), p.dim())).
-                mapToDouble(i -> p.get(i) * get(i)).sum();
+        int dim = dim();
+        double sum = 0;
+        for (int i = 0; i < dim; i++)
+            sum += array[i] * p.get(i);
+        return sum;
+
+    }
+
+    public double dot(PointD p) {
+        int dim = dim();
+        double sum = 0;
+        for (int i = 0; i < dim; i++)
+            sum += array[i] * p.array[i];
+        return sum;
     }
 
     /**
@@ -193,12 +202,11 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return dot(new PointD(p));
     }
 
-    
     public MatrixSparse outerProduct(PointSparse p) {
-        
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(dim(), p.dim(), p.ejmlSparse.getNonZeroLength()*dim());
+
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(dim(), p.dim(), p.ejmlSparse.getNonZeroLength() * dim());
         Iterator<DMatrixSparse.CoordinateRealValue> iter = p.ejmlSparse.createCoordinateIterator();
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             DMatrixSparse.CoordinateRealValue crv = iter.next();
             IntStream.range(0, dim()).forEach(i -> trip.set(i, crv.row, crv.value));
         }
@@ -220,13 +228,11 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public MatrixDense mult(Matrix matrix) {
         return new MatrixDense(this).T().mult(matrix);
     }
-    
 
     @Override
     public PointD multMe(double k) {
         return setAll(i -> get(i) * k);
     }
-
 
     @Override
     public String toString() {
@@ -272,17 +278,18 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public boolean equals(Point p) {
-        if(p == this) return true;
-        if(p.isDense()) return equals(p.asDense());
+        if (p == this) return true;
+        if (p.isDense()) return equals(p.asDense());
         else return equals(p.asSparse());
     }
-    
-    public boolean equals(PointD pd){
-        if(this == pd) return true;
+
+    public boolean equals(PointD pd) {
+        if (this == pd) return true;
         return Arrays.equals(array, pd.array);
     }
-    public boolean equals(PointSparse ps){
-        return IntStream.range(0, dim()).allMatch( i -> Math.abs(ps.get(i) - get(i)) <= epsilon);
+
+    public boolean equals(PointSparse ps) {
+        return IntStream.range(0, dim()).allMatch(i -> Math.abs(ps.get(i) - get(i)) <= epsilon);
     }
 
     @Override
@@ -402,7 +409,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return get(2);
     }
 
-
     /**
      * the sum of this point and another
      *
@@ -444,8 +450,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public static PointD oneD(double x) {
         return new PointD(new double[]{x});
     }
-
-
 
     public static Random rand = new Random(1);
 
@@ -515,8 +519,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return Arrays.stream(array);
     }
 
-
-
     /**
      * Sets the values of this point to those in the array.
      *
@@ -580,7 +582,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public Point proj(ConvexSet cs) {
         return cs.proj(this);
     }
-    
 
     /**
      * Is this point above the plane
@@ -614,12 +615,13 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public PointD concat(Point p) {
         PointD concat = new PointD(dim() + p.dim());
         System.arraycopy(array, 0, concat.array, 0, dim());
-        
-        if(p.isDense())System.arraycopy(p.asDense().array, 0, concat.array, dim(), p.dim());
-        else{
+
+        if (p.isDense())
+            System.arraycopy(p.asDense().array, 0, concat.array, dim(), p.dim());
+        else {
             p.asSparse().nonZeroes().forEach(coord -> concat.set(dim() + coord.row, coord.value));
         }
-                
+
         return concat;
     }
 
@@ -681,9 +683,5 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         ps.setAll((i, j) -> get(i));
         return ps;
     }
-
-    
-    
-    
 
 }

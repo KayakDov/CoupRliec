@@ -6,8 +6,11 @@ import Convex.Linear.Plane;
 import Convex.Polytope;
 import Matricies.Point;
 import Matricies.PointD;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import listTools.Pair;
 
 /**
@@ -92,22 +95,39 @@ public class LocalPolyhedralCone extends Polytope {
         if(epsilonMult*epsilon >= 1) throw new RuntimeException("Something is wrong with the projection algortihm.");
 
         if (hasElement(preProj)) return new ASProj(AffineSpace.allSpace(dim()), preProj);
-
-        aspb.clearFailPoints();
-        
+      
         for (int i = 1; i < aspb.getAffSpByNumPlanes().size(); i++) {
-//            aspb.clearFailPoints(i - 2);
-            ASProj tryTravelThrough = aspb.affineSpaces(i)
+            aspb.clearFailPoints(i - 2);
+            
+            
+            ////////////////////////remove//////////////////////////////////////////
+//            System.out.println(aspb.affineSpaces(i).count());
+
+//            List<AffineSpace> asList = aspb.affineSpaces(i).collect(Collectors.toList());
+//            List<ASProj> filteredList = new ArrayList<>(asList.size()/2);
+//            
+//            
+//            for(AffineSpace as: asList){
+//                if(aspb.projectionRule(as, preProj, epsilon)){
+//                    ASProj proj = new ASProj(as, preProj);
+//                    if(hasElement(proj.proj())) filteredList.add(proj);
+//                }
+//            }
+//            
+//            ASProj minDist = filteredList.stream().min(Comparator.comparing(proj -> proj.proj().d(preProj))).orElse(null);
+/////////////////////////////end remove //////////////////////////////////////////////
+//            include:  
+            ASProj minDist = aspb.affineSpaces(i)
                     .filter(as -> aspb.projectionRule(as, preProj, epsilon))
                     .map(as -> new ASProj(as, preProj))
                     .filter(asProj -> hasElement(asProj.proj()))
                     .min(Comparator.comparing(p -> p.proj().d(preProj)))
                     .orElse(null);
 
-            if (tryTravelThrough != null) {
-//                aspb.clearFailPoints(i - 1);
-//                aspb.clearFailPoints(i);
-                return tryTravelThrough;
+            if (minDist != null) {
+                aspb.clearFailPoints(i - 1);
+                aspb.clearFailPoints(i);
+                return minDist;
             }
 
 //            System.out.println("num of planes in affine space = " + i);
