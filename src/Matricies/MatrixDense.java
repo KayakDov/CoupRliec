@@ -817,7 +817,6 @@ public class MatrixDense implements Matrix {
     @Override
     public MatrixDense pseudoInverse() {
         LinearSolverDense<DMatrixRMaj> pseudoInverseFinder = LinearSolverFactory_DDRM.pseudoInverse(false);
-        DMatrixRMaj ejmlMat = ejmlDense();
         pseudoInverseFinder.setA(ejmlDense());
         DMatrixRMaj pseudoInv = new DMatrixRMaj(cols, rows);
         pseudoInverseFinder.invert(pseudoInv);
