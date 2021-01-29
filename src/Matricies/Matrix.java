@@ -81,8 +81,6 @@ public interface Matrix {
      */
     public double get(int i, int j);
 
-    public Matrix inverse();
-
     /**
      * Is this a square matrix
      *
@@ -185,7 +183,7 @@ public interface Matrix {
      * @param d the value to be placed at (i, j)
      * @return this
      */
-    public Matrix set(int i, int j, double d);
+    public void set(int i, int j, double d);
 
     public interface Z2ToR extends BiFunction<Integer, Integer, Double> {
 
@@ -231,7 +229,6 @@ public interface Matrix {
         return k % cols();
     }
     
-    public DMatrix ejmlDense();
     public boolean isSparse();
     public default boolean isDense(){
         return !isSparse();

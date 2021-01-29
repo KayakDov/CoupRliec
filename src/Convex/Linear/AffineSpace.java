@@ -117,7 +117,7 @@ public class AffineSpace implements ConvexSet {
 
         boolean isSparse = linearSpace.getNormals()[0].isSparse();
         Matrix append = Matrix.fromRows(
-                rre.getFreeVariables().map(i -> new PointD(rre.cols).set(i, 1)).toArray(PointD[]::new)
+                rre.getFreeVariables().map(i -> new PointD(rre.numCols).set(i, 1)).toArray(PointD[]::new)
         );
 
         Point b2 = b.concat(new PointSparse(append.rows()));

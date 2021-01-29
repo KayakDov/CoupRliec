@@ -6,7 +6,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
@@ -18,13 +17,10 @@ import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.interfaces.decomposition.QRDecomposition;
-import org.ejml.interfaces.linsol.LinearSolverSparse;
 import org.ejml.ops.ConvertDMatrixStruct;
 import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.DecompositionFactory_DSCC;
-import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
-import org.ejml.sparse.csc.linsol.chol.LinearSolverCholesky_DSCC;
 
 public class MatrixSparse implements Matrix {
 
@@ -80,15 +76,11 @@ public class MatrixSparse implements Matrix {
     public Point solve(Point b) {
 
         PointSparse x = new PointSparse(rows());
-        CommonOps_DSCC.solve(ejmlSparse.copy(), b.asSparse().ejmlDense(), x.asSparse().ejmlDense());
+        CommonOps_DSCC.solve(ejmlSparse.copy(), b.asSparse().ejmlSparse, x.asSparse().ejmlSparse);
         return x;
 
     }
 
-    @Override
-    public DMatrixSparseCSC ejmlDense() {
-        return ejmlSparse;
-    }
 
     /**
      * A stream of rows
@@ -126,9 +118,8 @@ public class MatrixSparse implements Matrix {
      * @param d the value to be placed at (i, j)
      * @return this
      */
-    public MatrixSparse set(int row, int col, double d) {
+    public void set(int row, int col, double d) {
         ejmlSparse.set(row, col, d);
-        return this;
     }
 
     /**
@@ -140,7 +131,7 @@ public class MatrixSparse implements Matrix {
     public PointSparse mult(PointSparse p) {
 
         PointSparse mult = new PointSparse(rows());
-        CommonOps_DSCC.mult(ejmlSparse, p.ejmlDense(), mult.ejmlDense());
+        CommonOps_DSCC.mult(ejmlSparse, p.ejmlSparse, mult.ejmlSparse);
 
         return mult;
     }
@@ -148,7 +139,7 @@ public class MatrixSparse implements Matrix {
     public PointD mult(PointD p) {
 
         PointD mult = new PointD(rows());
-        CommonOps_DSCC.mult(ejmlSparse, p.ejmlDense(), mult.ejmlDense());
+        CommonOps_DSCC.mult(ejmlSparse, p, mult);
 
         return mult;
     }
@@ -171,14 +162,14 @@ public class MatrixSparse implements Matrix {
 
     public MatrixSparse mult(MatrixDense A) {
         MatrixSparse mult = new MatrixSparse(rows(), cols());
-        CommonOps_DSCC.mult(ejmlSparse, A.asSparse().ejmlSparse, mult.ejmlDense());
+        CommonOps_DSCC.mult(ejmlSparse, A.asSparse().ejmlSparse, mult.ejmlSparse);
         return mult;
     }
 
     public MatrixSparse mult(MatrixSparse A) {
 
         MatrixSparse mult = new MatrixSparse(rows(), cols());
-        CommonOps_DSCC.mult(ejmlSparse, A.ejmlDense(), mult.ejmlDense());
+        CommonOps_DSCC.mult(ejmlSparse, A.ejmlSparse, mult.ejmlSparse);
         return mult;
 
     }
@@ -219,13 +210,13 @@ public class MatrixSparse implements Matrix {
     public MatrixSparse plus(MatrixSparse m) {
 
         MatrixSparse plus = new MatrixSparse(rows(), cols(), m.ejmlSparse.getNonZeroLength() + ejmlSparse.getNonZeroLength());
-        CommonOps_DSCC.add(1, ejmlSparse, 1, m.ejmlDense(), plus.ejmlDense(), null, null);
+        CommonOps_DSCC.add(1, ejmlSparse, 1, m.ejmlSparse, plus.ejmlSparse, null, null);
         return plus;
 
     }
 
     public MatrixDense plus(MatrixDense m) {
-        return new MatrixDense(m.rows, m.cols).setAll((i, j) -> m.get(i, j) + ejmlSparse.get(i, j));
+        return new MatrixDense(m.numRows, m.numCols).setAll((i, j) -> m.get(i, j) + ejmlSparse.get(i, j));
     }
 
     public Matrix minus(Matrix m) {
@@ -264,7 +255,7 @@ public class MatrixSparse implements Matrix {
     public PointSparse row(int n) {
 
         PointSparse row = new PointSparse(cols());
-        row.ejmlSparse = new MatrixSparse(CommonOps_DSCC.extractRows(ejmlSparse, n, n + 1, null)).T().ejmlDense();
+        row.ejmlSparse = new MatrixSparse(CommonOps_DSCC.extractRows(ejmlSparse, n, n + 1, null)).T().ejmlSparse;
         return row;
 
     }

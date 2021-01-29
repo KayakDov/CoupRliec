@@ -24,9 +24,9 @@ public class ReducedRowEchelonDense extends MatrixDense implements ReducedRowEch
      */
     public ReducedRowEchelonDense(Matrix m) {
         
-        super(CommonOps_DDRM.rref(m.asDense().ejmlDense(), -1, null));
+        super(CommonOps_DDRM.rref(m.asDense(), -1, null));
         
-        this.freeVariables = new HashSet<>(cols);
+        this.freeVariables = new HashSet<>(numCols);
         
         setFreeVariables();
         

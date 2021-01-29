@@ -33,12 +33,6 @@ public class PointSparse extends MatrixSparse implements Point{
         super(p.asSparse());
     }
     
-    
-
-    @Override
-    public DMatrixSparseCSC ejmlDense() {
-        return super.ejmlDense(); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public boolean above(Plane plane) {
@@ -63,7 +57,7 @@ public class PointSparse extends MatrixSparse implements Point{
 
     @Override
     public double[] array() {
-        return asDense().array;
+        return asDense().data;
     }
 
     @Override
@@ -86,7 +80,7 @@ public class PointSparse extends MatrixSparse implements Point{
     }
     
     public PointSparse concat(PointD pd){
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows() + pd.rows, 1, ejmlSparse.getNonZeroLength() + pd.dim());
+        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows() + pd.numRows, 1, ejmlSparse.getNonZeroLength() + pd.dim());
         nonZeroes().forEach(coord -> trip.set(coord.row, 0, coord.value));
         IntStream.range(0, pd.dim()).forEach(i -> trip.set(i + dim(), 0, pd.get(i)));
         return new PointSparse(trip);
@@ -180,7 +174,7 @@ public class PointSparse extends MatrixSparse implements Point{
         return new PointSparse(super.minus(p).ejmlSparse);
     }
     public PointD minus(PointD p){
-        return new PointD(super.minus(p).array);
+        return new PointD(super.minus(p).data);
     }
 
     @Override
@@ -204,7 +198,7 @@ public class PointSparse extends MatrixSparse implements Point{
         return new PointSparse(super.plus(p).ejmlSparse);
     }
     public PointD plus(PointD p){
-        return new PointD(super.plus(p).array);
+        return new PointD(super.plus(p).data);
     }
 
     @Override
@@ -219,9 +213,9 @@ public class PointSparse extends MatrixSparse implements Point{
      * @return 
      */
     @Override
-    public PointSparse set(int i, double y) {
+    public double set(int i, double y) {
         set(i, 0, y);
-        return this;
+        return y;
     }
 
     @Override

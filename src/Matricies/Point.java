@@ -188,7 +188,18 @@ public interface Point extends Matrix{
      * @param y the new value at that index
      * @return this point
      */
-    public Point set(int i, double y);
+    public double set(int i, double y);
+    
+    /**
+     * Sets a value in this point and returns this point
+     * @param i
+     * @param y
+     * @return 
+     */
+    public default Point setInit(int i, double y){
+        set(i, y);
+        return this;
+    }
 
     /**
      * Sets the values of this point to those in the array.

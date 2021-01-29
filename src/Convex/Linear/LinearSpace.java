@@ -108,7 +108,7 @@ public class LinearSpace implements ConvexSet {
         nullMatrix.setCols(i -> {
             if(i < basis.cols())
                 return (isDense? new PointD(rows): new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
-            else return (isDense?new PointD(rows): new PointSparse(rows)).set(i - basis.cols(), -1);
+            else return (isDense?new PointD(rows): new PointSparse(rows)).setInit(i - basis.cols(), -1);
                 
         });
         return new LinearSpace(nullMatrix.rowsArray());
@@ -164,9 +164,9 @@ public class LinearSpace implements ConvexSet {
  
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
 
-        MatrixDense IMinus = MatrixDense.identity(Math.max(rre.rows, rre.cols)).minus(rre.square());
+        MatrixDense IMinus = MatrixDense.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
         
-        if (rre.noFreeVariable()) return new PointD(rre.rows);
+        if (rre.noFreeVariable()) return new PointD(rre.numRows);
 
         return MatrixDense.fromCols(
                 rre.getFreeVariables().map(i -> IMinus.col(i))

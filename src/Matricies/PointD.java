@@ -33,7 +33,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     public PointD(double[] x) {
         super(x.length, 1);
-        System.arraycopy(x, 0, array, 0, x.length);
+        System.arraycopy(x, 0, data, 0, x.length);
     }
 
     public PointD(Point x) {
@@ -52,7 +52,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     public static PointD sparse(int dim, int numNonZeroes) {
         PointD m = new PointD(dim);
-        m.array = null;
+        m.data = null;
         return m;
     }
 
@@ -80,8 +80,8 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @param p
      */
     public PointD(PointD p) {
-        this(p.array.length);
-        System.arraycopy(p.array, 0, array, 0, p.array.length);
+        this(p.data.length);
+        System.arraycopy(p.data, 0, data, 0, p.data.length);
     }
 
     /**
@@ -159,7 +159,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public PointD mapToDense(DoubleFunction<Double> f) {
-        return new PointD(dim()).setAll(i -> f.apply(array[i]));
+        return new PointD(dim()).setAll(i -> f.apply(data[i]));
     }
 
     @Override
@@ -179,7 +179,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         int dim = dim();
         double sum = 0;
         for (int i = 0; i < dim; i++)
-            sum += array[i] * p.get(i);
+            sum += data[i] * p.get(i);
         return sum;
 
     }
@@ -188,7 +188,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         int dim = dim();
         double sum = 0;
         for (int i = 0; i < dim; i++)
-            sum += array[i] * p.array[i];
+            sum += data[i] * p.data[i];
         return sum;
     }
 
@@ -258,7 +258,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
                 .replaceAll("\\)", "")
                 .replaceAll(" ", "");
 
-        array = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
+        data = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
     }
 
     /**
@@ -285,7 +285,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     public boolean equals(PointD pd) {
         if (this == pd) return true;
-        return Arrays.equals(array, pd.array);
+        return Arrays.equals(data, pd.data);
     }
 
     public boolean equals(PointSparse ps) {
@@ -294,7 +294,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(array);
+        return Arrays.hashCode(data);
     }
 
     @Override
@@ -303,7 +303,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final PointD other = (PointD) obj;
-        return Arrays.equals(this.array, other.array);
+        return Arrays.equals(this.data, other.data);
     }
 
     /**
@@ -326,7 +326,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public int dim() {
-        return array.length;
+        return data.length;
     }
 
     /**
@@ -339,7 +339,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public double get(int i) {
         if (i >= dim() || i < 0)
             return 0;
-        return array[i];
+        return data[i];
     }
 
     /**
@@ -359,9 +359,9 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @return this point
      */
     @Override
-    public PointD set(int i, double y) {
-        array[i] = y;
-        return this;
+    public double set(int i, double y) {
+        data[i] = y;
+        return y;
     }
 
     /**
@@ -370,7 +370,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public double[] array() {
-        return array;
+        return data;
     }
 
     /**
@@ -516,7 +516,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public DoubleStream stream() {
-        return Arrays.stream(array);
+        return Arrays.stream(data);
     }
 
     /**
@@ -527,7 +527,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public PointD set(double[] x) {
-        System.arraycopy(x, 0, array, 0, x.length);
+        System.arraycopy(x, 0, data, 0, x.length);
         return this;
     }
 
@@ -539,7 +539,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public PointD set(Point x) {
-        return set(x.asDense().array);
+        return set(x.asDense().data);
     }
 
     @Override
@@ -614,10 +614,10 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     @Override
     public PointD concat(Point p) {
         PointD concat = new PointD(dim() + p.dim());
-        System.arraycopy(array, 0, concat.array, 0, dim());
+        System.arraycopy(data, 0, concat.data, 0, dim());
 
         if (p.isDense())
-            System.arraycopy(p.asDense().array, 0, concat.array, dim(), p.dim());
+            System.arraycopy(p.asDense().data, 0, concat.data, dim(), p.dim());
         else {
             p.asSparse().nonZeroes().forEach(coord -> concat.set(dim() + coord.row, coord.value));
         }
@@ -638,7 +638,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public PointD setAll(IntToDoubleFunction f) {
-        Arrays.setAll(array, f);
+        Arrays.setAll(data, f);
         return this;
     }
 
@@ -669,7 +669,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public MatrixDense T() {
-        return new MatrixDense(array, 1, dim());
+        return new MatrixDense(data, 1, dim());
     }
 
     @Override
@@ -679,7 +679,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public PointSparse asSparse() {
-        PointSparse ps = new PointSparse(rows);
+        PointSparse ps = new PointSparse(numRows);
         ps.setAll((i, j) -> get(i));
         return ps;
     }
