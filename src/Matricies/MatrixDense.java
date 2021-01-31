@@ -112,12 +112,19 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @return the new vector, a result of multiplying the matrix by a vector.
      */
     @Override
-    public PointD mult(Point p) {
-        if (cols() != p.dim())
-            throw new RuntimeException("Mulitplication dimension mismatch.  "
-                    + "This matrix has " + cols() + " cols, but the point has " + p.dim() + " rows.");
-
-        return new PointD(numRows).setAll(i -> row(i).dot(p));
+    public Point mult(Point p) {
+        if(p.isDense()) return mult(p.asDense());
+        else return mult(p.asSparse());
+    }
+    
+    public PointD mult(PointD p){
+        PointD mult = new PointD(numRows);
+        CommonOps_DDRM.mult(this, p, mult);
+        return mult;
+    }
+    
+    public PointSparse mult(PointSparse p){
+        throw new UnsupportedOperationException("Dov, you still have to write this funtion.");
     }
 
     /**

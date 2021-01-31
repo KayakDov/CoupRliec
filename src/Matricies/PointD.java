@@ -363,6 +363,11 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         data[i] = y;
         return y;
     }
+    
+    @Override
+    public PointD asDense(){
+        return this;
+    }
 
     /**
      *
@@ -672,10 +677,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return new MatrixDense(data, 1, dim());
     }
 
-    @Override
-    public PointD asDense() {
-        return this;
-    }
 
     @Override
     public PointSparse asSparse() {

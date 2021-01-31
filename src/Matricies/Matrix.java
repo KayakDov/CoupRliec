@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import listTools.Pair1T;
-import org.ejml.data.DMatrix;
 
 /**
  *
