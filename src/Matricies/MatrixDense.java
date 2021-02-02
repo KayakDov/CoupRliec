@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
 import java.util.function.IntFunction;
@@ -153,16 +154,13 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         return new MatrixDense(numRows, numCols).setAll(i -> data[i] * k);
     }
 
-    @Override
-//    public DMatrixRMaj ejmlDense() {
-//        return this;
-//    }
 
     /**
      * The determinant
      *
      * @return
      */
+    @Override
     public double det() {
         if (numCols == 1) return data[0];
         return CommonOps_DDRM.det(this);
@@ -204,18 +202,15 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
     }
 
     public MatrixDense minus(Matrix m) {
-        return plus(m.mult(-1));
+        return new MatrixDense(numRows, numCols).setAll((i, j) -> get(i,j) - m.get(i, j));
+    }
+    
+    public MatrixDense minus(MatrixDense m) {
+        MatrixDense minus = new MatrixDense(numRows, numCols);
+        CommonOps_DDRM.subtract(this, m, minus);
+        return minus;
     }
 
-    /**
-     * subtracts the point from each row
-     *
-     * @param p
-     * @return
-     */
-    public MatrixDense minus(Point p) {
-        return new MatrixDense(numRows, numCols).setRows(i -> row(i).minus(p));
-    }
 
     @Override
     public String toString() {
@@ -670,4 +665,12 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         return new MatrixDense(pseudoInv);
     }
 
+    public static MatrixDense subMatrixFromCols(Set<Integer> cols, MatrixDense greater){
+        MatrixDense sub = new MatrixDense(greater.numRows, cols.size());
+        cols.forEach(col ->{
+            for(int j = 0; j < greater.numRows; j++)
+                sub.set(col,j, greater.get(col, j));
+        });
+        return sub;
+    }
 }

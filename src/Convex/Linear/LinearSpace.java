@@ -168,7 +168,7 @@ public class LinearSpace implements ConvexSet {
         
         if (rre.noFreeVariable()) return new PointD(rre.numRows);
 
-        return MatrixDense.fromCols(
+        return MatrixDense.fromCols(//TODO: make this faster.  generating pointDs that are columns and then converting them into a matrix is too slow.
                 rre.getFreeVariables().map(i -> IMinus.col(i))
         );
 
