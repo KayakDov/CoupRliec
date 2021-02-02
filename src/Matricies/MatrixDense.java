@@ -413,29 +413,6 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         }
     }
 
-    /**
-     * creates a new Matrix from a set of rows
-     *
-     * @param pointStream
-     * @return
-     */
-    public static MatrixDense fromRows(Stream<PointD> pointStream) {
-        return MatrixDense.fromRows(pointStream.toArray(PointD[]::new));
-    }
-
-    /**
-     * creates a new Matrix from a set of rows
-     *
-     * @param pointStream
-     * @return
-     */
-    public static MatrixDense fromRows(List<PointD> pointStream) {
-        return MatrixDense.fromRows(pointStream.toArray(PointD[]::new));
-    }
-
-    public static MatrixDense fromCols(Stream<PointD> pointStream) {
-        return MatrixDense.fromCols(pointStream.toArray(PointD[]::new));
-    }
 
     /**
      * creates a new Matrix from a set of cols
