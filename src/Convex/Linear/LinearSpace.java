@@ -168,9 +168,15 @@ public class LinearSpace implements ConvexSet {
         
         if (rre.noFreeVariable()) return new PointD(rre.numRows);
 
-        return MatrixDense.fromCols(//TODO: make this faster.  generating pointDs that are columns and then converting them into a matrix is too slow.
-                rre.getFreeVariables().map(i -> IMinus.col(i))
-        );
+        return MatrixDense.subMatrixFromCols(rre.freeVariables(), IMinus);
+//        MatrixDense colSpaceMatrix = MatrixDense.fromCols(//TODO: make this faster.  generating pointDs that are columns and then converting them into a matrix is too slow.
+//                rre.getFreeVariables().map(i -> IMinus.col(i))
+//        );
+//        
+//        System.out.println("a:\n"+MatrixDense.subMatrixFromCols(rre.freeVariables(), IMinus));
+//        System.out.println("b:\n"+colSpaceMatrix);
+//        
+//        return colSpaceMatrix;
 
     }
 

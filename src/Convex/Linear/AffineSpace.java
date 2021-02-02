@@ -270,19 +270,6 @@ public class AffineSpace implements ConvexSet {
         }
     }
 
-    /**
-     * A point not in this space.
-     *
-     * @return
-     */
-    public Point notInSpace() {
-        Point out = orthogonalComplement(p())
-                .linearSpace()
-                .colSpaceMatrix()
-                .colStream()
-                .reduce((a, b) -> a.plus(b)).get();
-        return p().plus(out);
-    }
 
     /**
      * is this space a subset of the given space

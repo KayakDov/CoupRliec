@@ -2,6 +2,7 @@ package Matricies;
 
 import listTools.Pair1T;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.List;
@@ -665,12 +666,24 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         return new MatrixDense(pseudoInv);
     }
 
+    
     public static MatrixDense subMatrixFromCols(Set<Integer> cols, MatrixDense greater){
-        MatrixDense sub = new MatrixDense(greater.numRows, cols.size());
-        cols.forEach(col ->{
-            for(int j = 0; j < greater.numRows; j++)
-                sub.set(col,j, greater.get(col, j));
-        });
+                
+        MatrixDense sub = new MatrixDense(greater.numRows, cols.size() + 1);
+        Iterator<Integer> fromCol = cols.iterator();
+        
+        int toJ = 0;
+        Integer fromJ;
+        
+        while(fromCol.hasNext()){
+            toJ++; 
+            fromJ = fromCol.next();
+            
+            for(int i = 0; i < sub.numRows; i++)    
+                sub.set(i, toJ, greater.get(i, fromJ));
+            
+        }
+       
         return sub;
     }
 }
