@@ -279,7 +279,7 @@ public class AffineSpacePlaneBipartate {
     public Stream<AffineSpace> affineSpaces() {
         return affineSpaceNodes()
                 .parallel()
-                .map(asn -> asn.affineSpace);//TODO: this should be parralel
+                .map(asn -> asn.affineSpace);
     }
 
     public int numAffineSpaces() {

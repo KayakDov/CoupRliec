@@ -15,13 +15,14 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 100;
-        int numFaces = 100000;
+        int dim = 15;
+        int numFaces = 10000;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 1; i++) {
             System.out.println("i = " + i);
-            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+//            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
@@ -84,7 +85,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        
+
         polytopeFeasabilityTest();
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plan.tosting for dim 2 or 3.
     }

@@ -41,8 +41,8 @@ public class FeasibilityGradDescent extends Polytope {
                             String[] pointStrings = line.replace("point ", "").split(" with normal ");
                             return new HalfSpace(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
                         })
-            );
-        
+        );
+
         System.out.println(new FeasibilityGradDescent(poly).fesibility(start));
     }
 
@@ -143,17 +143,15 @@ public class FeasibilityGradDescent extends Polytope {
         for (int i = 0; i <= size(); i++) {
 
             try {
-                
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
                 PointD oldY = new PointD(y);//TODO: remove from final code
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
-                if (oldY.d(y) < epsilon) 
+                if (oldY.d(y) < epsilon)
                     System.out.println("The new point is too close to the old point.  oldY = "
                             + oldY);
-                
 
                 if (!cone.hasElement(y, epsilon * 100)) {
                     throw new FailedDescentException("This point is outside the previouse cone. distMoved = "
@@ -170,9 +168,11 @@ public class FeasibilityGradDescent extends Polytope {
                     if (!hasElement(y, epsilon * 100)) //TODO:  once the algorithm works, this should be deleted.
                         throw new FailedDescentException("The feasibility point "
                                 + "found is outside the polytope.", start, y, part);
-                    
+
                     return y;
                 }
+            } catch (EmptyPolytopeException epe) {
+                return new PointD(dim()).setAll(j -> Double.NaN);
             } catch (Exception nsee) {//TODO: remove once everything is working
                 throw new FailedDescentException(nsee.getMessage(), start, y, part);
             }

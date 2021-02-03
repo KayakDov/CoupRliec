@@ -460,5 +460,18 @@ public class Polytope implements ConvexSet {
 
         return poly;
     }
+    
+    public static Polytope random(int numFaces, double radius, int dim) {
+
+        Polytope poly = new Polytope();
+        IntStream.range(0, numFaces).forEach(i -> {
+            PointD random1 = PointD.uniformRand(new PointD(dim), radius);
+            PointD random2 = PointD.uniformRand(new PointD(dim), radius);
+            
+            poly.add(new HalfSpace(random1.mult(radius), random2.mult(1/random2.magnitude())));
+        });
+
+        return poly;
+    }
 
 }
