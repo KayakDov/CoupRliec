@@ -133,7 +133,7 @@ public class AffineSpace implements ConvexSet {
     }
 
     /**
-     * It might be faster to compute the moore penrose psudo inverse
+     * p must be set before this function is called.
      *
      * @param x
      * @return
@@ -141,7 +141,7 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        return p().plus(linearSpace().proj(x.minus(p())));  //An older method
+        return p.plus(linearSpace().proj(x.minus(p())));  //An older method
     }
 
     /**
@@ -339,7 +339,9 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public int hashCode() {
-        return linearSpace.hashCode() + b.stream().mapToInt(d -> Double.hashCode(d)).sum();
+        int bHash = 0;
+        for(int i = 0; i < b.dim(); i++) bHash += Double.hashCode(b.get(i));
+        return linearSpace.hashCode() + bHash;
     }
 
     @Override

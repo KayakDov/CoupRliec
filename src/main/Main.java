@@ -15,7 +15,7 @@ public class Main {
 
     public static void polytopeFeasabilityTest() {
 
-        int dim = 25;
+        int dim = 26;
         int numFaces = 100;
         double epsilon = 1e-7;
 

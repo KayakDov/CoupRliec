@@ -6,6 +6,7 @@ import Convex.Polytope;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,7 +82,8 @@ public class AffineSpacePlaneBipartate {
 
         private void setPlanes(List<PlaneNode> planes) {
             this.planes = planes;
-            planes.forEach(pn -> pn.affineSpaces.add(this));
+            for(int i = 0; i < planes.size(); i++) 
+                planes.get(i).affineSpaces.add(this);
         }
 
         public void prepareForRemoval() {
@@ -129,7 +131,6 @@ public class AffineSpacePlaneBipartate {
             
             if(affineSpace.hasProjFunc()){
                 failPoints.add(affineSpace.proj(preProj));
-//                System.out.println("recycling proj");
                 return true;
             }
                 
@@ -222,13 +223,21 @@ public class AffineSpacePlaneBipartate {
             affSpByNumPlanes.add(new HashSet<>(dim * dim));
     }
 
+    /**
+     * TODO: this can be made faster by waiting until I need an affine space node to build it.
+     * Adds a new plane, and creates affine spaces for the intersection of this plane with all the other affine spaces.
+     * @param plane
+     * @param y a point on this plane, and every other in the cone
+     */
     public void addPlane(Plane plane, Point y) {
         PlaneNode planeNode = new PlaneNode(plane);
         List<ASNode> asNodesToBeAdded = new ArrayList<>(affineSpaceNodes.values());
 
-        for (ASNode asn : affineSpaceNodes.values()) {
+        Collection<ASNode> asnValues = affineSpaceNodes.values();
+        for (ASNode asn : asnValues) {
             if (asn.planes.size() < dim) {
                 AffineSpace as = asn.affineSpace.intersection(plane);
+                as.setP(y);
                 List<PlaneNode> asPlanes = new ArrayList<>(asn.planes);
                 asPlanes.add(planeNode);
                 asNodesToBeAdded.add(new ASNode(as, asPlanes));
@@ -238,13 +247,10 @@ public class AffineSpacePlaneBipartate {
 
         ASNode planeASNode = new ASNode(planeNode);
         planeNode.affineSpaces.add(planeASNode);
+        planeASNode.affineSpace.setP(y);
         affineSpaceNodes.put(planeASNode.affineSpace, planeASNode);
 
         planeNodes.put(plane, planeNode);
-
-        affineSpaceNodes().filter(asn -> !asn.affineSpace.hasAPoint()).forEach(asn -> asn.affineSpace.setP(y));
-
-//        System.out.println(affineSpaceNodes.size());
     }
 
     public void revmovePlane(Plane plane) {
@@ -263,7 +269,8 @@ public class AffineSpacePlaneBipartate {
      * @return
      */
     public Stream<AffineSpace> affineSpaces(int numPlanes) {
-
+        
+        
         return affSpByNumPlanes.get(numPlanes).stream()
                 .parallel()
                 .map(asn -> asn.affineSpace);
@@ -351,26 +358,8 @@ public class AffineSpacePlaneBipartate {
 
         return affineSpaceNodes.get(as).mightContainProj(preProj, epsilon);
 
-//        if (as.b.dim() == 1)
-//            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
-//
-//        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));
     }
 
-//        public boolean projectionRule(AffineSpace as, Point preProj, double epsilon) {
-//
-//         boolean fastTest =  
-//        planes(as).anyMatch(plane -> !plane.above(preProj, epsilon));
-//
-//         if(!fastTest) return false;
-//        if (as.b.dim() == 1)
-//            return as.linearSpace().getNormals()[0].dot(preProj) > as.b.get(0);
-//        boolean slowTest = 
-//        return hsProjections(as, preProj).allMatch(p -> outOfPoly(as, p, epsilon));//I need to think about this and make it better.  Right now it doesn't seem to catch anything the first one doesn't catch, whcih doesn't make sence to me.
-//
-//        if(!slowTest) System.out.println("Convex.thesisProjectionIdeas.GradDescentFeasibility.AffineSpacePlaneBipartate.projectionRule()");
-//        return slowTest;
-//    }
     /**
      * Is the point p in the polytope made from the planes that intersect to
      * form the affine space.

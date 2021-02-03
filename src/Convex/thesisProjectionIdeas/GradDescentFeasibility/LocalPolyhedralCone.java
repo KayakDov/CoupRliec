@@ -134,6 +134,7 @@ public class LocalPolyhedralCone extends Polytope {
         }
         System.err.println("projection error.  Setting epsilon to:" + epsilon
                 * epsilonMult * 10);
+        
         return hasProj(preProj, epsilonMult * 10);
     }
 

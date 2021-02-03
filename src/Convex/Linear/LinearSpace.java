@@ -30,7 +30,10 @@ public class LinearSpace implements ConvexSet {
 
     @Override
     public int hashCode() {
-        return Arrays.stream(normals).mapToInt(p -> p.hashCode()).sum();
+        int hashCode = 0;
+        for(int i = 0; i < normals.length; i++)
+            hashCode += normals[i].hashCode();
+        return hashCode;
     }
 
     /**
@@ -206,9 +209,10 @@ public class LinearSpace implements ConvexSet {
             
             if (!A.isZero(epsilon)) projFunc = A.mult(A.pseudoInverse()); 
             else return new PointD(p.dim());
+            
             proj = projFunc.mult(p);
             
-            if(Memory.lowOnMemory()) projFunc = null;
+//            if(Memory.lowOnMemory()) projFunc = null;
             
         }
         else proj = projFunc.mult(p);
