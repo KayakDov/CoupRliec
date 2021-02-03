@@ -35,11 +35,12 @@ public class LinearSpace implements ConvexSet {
 
     /**
      * note, the normals of two affine spaces must be in the same order to be equals.
-     * @param obj
+     * This checks if the normal lines are == and not .equal.
+     * @param ls
      * @return 
      */
-    public boolean equals(LinearSpace obj) {
-        return IntStream.range(0, normals.length).allMatch(i -> normals[i].equals(obj.normals[i]));
+    public boolean equals(LinearSpace ls) {
+        return IntStream.range(0, normals.length).allMatch(i -> normals[i] == ls.normals[i]);
     }
     
     

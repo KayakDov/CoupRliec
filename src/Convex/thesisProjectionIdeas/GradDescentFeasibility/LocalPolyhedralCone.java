@@ -102,7 +102,7 @@ public class LocalPolyhedralCone extends Polytope {
             
             ////////////////////////remove//////////////////////////////////////////
 //            System.out.println(aspb.affineSpaces(i).count());
-
+//
 //            List<AffineSpace> asList = aspb.affineSpaces(i).collect(Collectors.toList());
 //            List<ASProj> filteredList = new ArrayList<>(asList.size()/2);
 //            
@@ -123,7 +123,7 @@ public class LocalPolyhedralCone extends Polytope {
                     .filter(asProj -> hasElement(asProj.proj()))
                     .min(Comparator.comparing(p -> p.proj().d(preProj)))
                     .orElse(null);
-
+///////////////////////////////////////////////////////////////////////////////////////
             if (minDist != null) {
                 aspb.clearFailPoints(i - 1);
                 aspb.clearFailPoints(i);
