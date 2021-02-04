@@ -23,7 +23,7 @@ public class LocalPolyhedralCone extends Polytope {
     private Partition part;
     private AffineSpace travelThrough;
 
-    private AffineSpacePlaneBipartate aspb;
+    private AffineSpacePlaneBipartate_1 aspb;
 
     /**
      * Creates a polyhedral cone with y as its focal point.
@@ -33,7 +33,7 @@ public class LocalPolyhedralCone extends Polytope {
     public LocalPolyhedralCone(Partition part) {
         this.part = part;
         gradInBounds = part.getGradient();
-        aspb = new AffineSpacePlaneBipartate(part.getGradient().dim());
+        aspb = new AffineSpacePlaneBipartate_1(part.getGradient().dim());
         travelThrough = AffineSpace.allSpace(part.getGradient().dim());
     }
 

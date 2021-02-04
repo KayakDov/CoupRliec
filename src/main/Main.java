@@ -27,7 +27,7 @@ public class Main {
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
 
-//            System.out.println(feas);
+            System.out.println(feas);
         }
 
     }

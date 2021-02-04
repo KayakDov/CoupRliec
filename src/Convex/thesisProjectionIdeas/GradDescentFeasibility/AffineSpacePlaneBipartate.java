@@ -55,7 +55,7 @@ public class AffineSpacePlaneBipartate {
          * After calling this you still need to call planeNodes.remove(plane);
          */
         public void prepareForRemoval() {
-            for (ASNode asn : affineSpaces) asn.prepareForRemoval(this);
+            affineSpaces.forEach(asn -> asn.prepareForRemoval(this));
 
         }
     }
@@ -82,8 +82,7 @@ public class AffineSpacePlaneBipartate {
 
         private void setPlanes(List<PlaneNode> planes) {
             this.planes = planes;
-            for(int i = 0; i < planes.size(); i++) 
-                planes.get(i).affineSpaces.add(this);
+            planes.forEach(plane -> plane.affineSpaces.add(this));
         }
 
         public void prepareForRemoval() {
@@ -112,12 +111,10 @@ public class AffineSpacePlaneBipartate {
          * @param epsilon
          */
         private void checkFailedPoints(ASNode oneDown, Plane outPlane, double epsilon) {
-            
-            for (int j = 0; j < oneDown.failPoints.size(); j++) {
-                Point failPoint = oneDown.failPoints.get(j);
+            oneDown.failPoints.forEach(failPoint -> {
                 if (!outPlane.below(failPoint, epsilon))
                     failPoints.add(failPoint);
-            }
+            });
         }
 
         /**
@@ -179,23 +176,11 @@ public class AffineSpacePlaneBipartate {
 
             return affineSpace.oneDown().map(as -> {
                 ASNode asn = affineSpaceNodes.get(as);
-                if(asn == null) {
-//                    System.out.println("affine space key: linear space hash " + as.linearSpace().hashCode() + " b hash " + as.b.hashCode() + "  expected total "  + (as.linearSpace().hashCode() + as.b.hashCode() == as.hashCode()) + " tot hash = " + as.hashCode());
-//                    
-//                    affineSpaceNodes.keySet().forEach(key -> System.out.println("existing key: linear space" + key.linearSpace().hashCode() + "  b hash " + key.b.hashCode() + "  expected total "  + (key.linearSpace().hashCode() + key.b.hashCode() == key.hashCode()) + " tot hash = " + key.hashCode()));
-//                    
-//                    affineSpaceNodes.keySet().forEach(asKey -> System.out.println(asKey.equals(as) && asKey.hashCode() == as.hashCode()));
-//                    
-////                    affineSpaceNodes.values().forEach(asv -> System.out.println("as in set = " + asv.affineSpace.toString() + " has b value " + asv.affineSpace.b));
-//                    
-//                    
-////                    System.out.println("affine space sought = " + as);
-                    
+                if(asn == null) 
                     throw new NullPointerException("affine space not found in hashset. AS = \n" + as + " \nhashset = " + affineSpaceNodes);
-                }
                 return asn;
             }
-            ).collect(Collectors.toList());//TODO:affinespace.get is not finding the nodes that it's supposed to find
+            ).collect(Collectors.toList());
         }
     }
 

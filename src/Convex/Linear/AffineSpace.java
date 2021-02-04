@@ -9,6 +9,7 @@ import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -389,4 +390,14 @@ public class AffineSpace implements ConvexSet {
         });
     }
 
+    /**
+     * The planes that intersect to make this affine space
+     * @return 
+     */
+    public List<Plane> intersectingPlanes(){
+        ArrayList<Plane> planes = new ArrayList<>(b.dim());
+        for(int i = 0; i < b.dim(); i++)
+            planes.add(new Plane(linearSpace.normals[i], b.get(i)));
+        return planes;
+    }
 }
