@@ -1,7 +1,6 @@
 package Convex.Linear;
 
 import Convex.ConvexSet;
-import Convex.Linear.LinearSpace;
 import Convex.Polytope;
 import listTools.Pair1T;
 import Matricies.Matrix;

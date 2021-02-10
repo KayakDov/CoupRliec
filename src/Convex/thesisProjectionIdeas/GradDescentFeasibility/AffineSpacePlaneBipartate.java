@@ -4,7 +4,6 @@ import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
 import Matricies.Point;
-import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -125,12 +123,12 @@ public class AffineSpacePlaneBipartate {
          * @return
          */
         public boolean mightContainProj(Point preProj, double epsilon) {
-            
-            if(affineSpace.hasProjFunc()){
+
+            if (affineSpace.hasProjFunc()) {
                 failPoints.add(affineSpace.proj(preProj));
                 return true;
             }
-                
+
             if (planes.size() == 1) {
                 if (planes.get(0).plane.above(preProj)) {
                     failPoints.add(preProj);
@@ -140,27 +138,24 @@ public class AffineSpacePlaneBipartate {
                     return true;
                 }
             }
-                       
-            
+
             List<ASNode> oneDown = oneDown();
-            
-            
+
             for (int i = 0; i < oneDown.size(); i++) {
-                
+
                 Plane outPlaneI = planes.get(i).plane;
                 ASNode oneDownI = oneDown.get(i);
 
                 checkFailedPoints(oneDownI, outPlaneI, epsilon);
-                
+
             }
 
             boolean mightContainProj = failPoints.isEmpty();
-            
-            if(mightContainProj) failPoints.add(affineSpace.proj(preProj));
-            
+
+            if (mightContainProj) failPoints.add(affineSpace.proj(preProj));
+
 //            if(!mightContainProj) System.out.println("filtetred out");
 //            else System.out.println("in");
-            
             return mightContainProj;
         }
 
@@ -176,7 +171,7 @@ public class AffineSpacePlaneBipartate {
 
             return affineSpace.oneDown().map(as -> {
                 ASNode asn = affineSpaceNodes.get(as);
-                if(asn == null) 
+                if (asn == null)
                     throw new NullPointerException("affine space not found in hashset. AS = \n" + as + " \nhashset = " + affineSpaceNodes);
                 return asn;
             }
@@ -191,8 +186,10 @@ public class AffineSpacePlaneBipartate {
     public void clearFailPoints() {
         affineSpaceNodes.values().forEach(asn -> asn.failPoints.clear());
     }
-    public void clearFailPoints(int numPlanes){
-        if(numPlanes > 0) affSpByNumPlanes.get(numPlanes).stream().parallel().forEach(asn -> asn.failPoints.clear());
+
+    public void clearFailPoints(int numPlanes) {
+        if (numPlanes > 0)
+            affSpByNumPlanes.get(numPlanes).stream().parallel().forEach(asn -> asn.failPoints.clear());
     }
 
     public ArrayList<HashSet<ASNode>> getAffSpByNumPlanes() {
@@ -209,8 +206,10 @@ public class AffineSpacePlaneBipartate {
     }
 
     /**
-     * TODO: this can be made faster by waiting until I need an affine space node to build it.
-     * Adds a new plane, and creates affine spaces for the intersection of this plane with all the other affine spaces.
+     * TODO: this can be made faster by waiting until I need an affine space
+     * node to build it. Adds a new plane, and creates affine spaces for the
+     * intersection of this plane with all the other affine spaces.
+     *
      * @param plane
      * @param y a point on this plane, and every other in the cone
      */
@@ -223,7 +222,8 @@ public class AffineSpacePlaneBipartate {
             if (asn.planes.size() < dim) {
                 AffineSpace as = asn.affineSpace.intersection(plane);
                 as.setP(y);
-                List<PlaneNode> asPlanes = new ArrayList<>(asn.planes);
+                List<PlaneNode> asPlanes = new ArrayList<>(asn.planes.size() + 1);
+                asPlanes.addAll(asn.planes);
                 asPlanes.add(planeNode);
                 asNodesToBeAdded.add(new ASNode(as, asPlanes));
             }
@@ -254,8 +254,7 @@ public class AffineSpacePlaneBipartate {
      * @return
      */
     public Stream<AffineSpace> affineSpaces(int numPlanes) {
-        
-        
+
         return affSpByNumPlanes.get(numPlanes).stream()
                 .parallel()
                 .map(asn -> asn.affineSpace);

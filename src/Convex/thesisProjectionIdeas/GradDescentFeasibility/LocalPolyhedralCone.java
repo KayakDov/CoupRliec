@@ -2,16 +2,9 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.Linear.AffineSpace;
 import Convex.HalfSpace;
-import Convex.Linear.Plane;
 import Convex.Polytope;
 import Matricies.Point;
-import Matricies.PointD;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import listTools.Pair;
 
 /**
  *
@@ -23,7 +16,7 @@ public class LocalPolyhedralCone extends Polytope {
     private Partition part;
     private AffineSpace travelThrough;
 
-    private AffineSpacePlaneBipartate_1 aspb;
+    private AffineSpacePlaneBipartate aspb;
 
     /**
      * Creates a polyhedral cone with y as its focal point.
@@ -33,7 +26,7 @@ public class LocalPolyhedralCone extends Polytope {
     public LocalPolyhedralCone(Partition part) {
         this.part = part;
         gradInBounds = part.getGradient();
-        aspb = new AffineSpacePlaneBipartate_1(part.getGradient().dim());
+        aspb = new AffineSpacePlaneBipartate(part.getGradient().dim());
         travelThrough = AffineSpace.allSpace(part.getGradient().dim());
     }
 
