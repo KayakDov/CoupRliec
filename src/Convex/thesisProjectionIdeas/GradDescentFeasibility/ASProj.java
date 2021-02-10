@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.Linear.AffineSpace;
+import Convex.Linear.LinearSpace;
 import Matricies.Point;
 import listTools.Pair;
 
@@ -16,7 +12,12 @@ import listTools.Pair;
 class ASProj extends Pair<AffineSpace, Point> {
 
     public ASProj(AffineSpace as, Point preProj) {
-        super(as, as.proj(preProj));
+        super(as, null);
+//        try {
+            r = as.proj(preProj);
+//        } catch (LinearSpace.NoProjFuncExists ex) {
+//
+//        }
     }
 
     public AffineSpace as() {
@@ -29,8 +30,7 @@ class ASProj extends Pair<AffineSpace, Point> {
 
     @Override
     public String toString() {
-        return "AffinesSpace:\n" + l +"Proj:\n" + r; 
+        return "AffinesSpace:\n" + l + "Proj:\n" + r;
     }
-    
-    
+
 }

@@ -2,6 +2,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.Linear.AffineSpace;
 import Convex.HalfSpace;
+import Convex.Linear.LinearSpace;
 import Convex.Polytope;
 import Matricies.Point;
 import java.util.Comparator;
@@ -39,7 +40,7 @@ public class LocalPolyhedralCone extends Polytope {
         return gradInBounds;
     }
 
-    public void add(HalfSpace hs, Point y) {
+    private void add(HalfSpace hs, Point y) {
         aspb.addPlane(hs.boundary(), y);
         super.add(hs);
     }
@@ -59,16 +60,20 @@ public class LocalPolyhedralCone extends Polytope {
 
         add(add, y);
 
-        ASProj asProj = hasProj(preProj, 1);
+        try {
+            ASProj asProj = hasProj(preProj, 1);
 
-        travelThrough = asProj.as();
-        
-        if (asProj.proj().equals(y)) {
+            travelThrough = asProj.as();
+
+            if (asProj.proj().equals(y)) {
+                throw new EmptyPolytopeException();
+            }
+
+            gradInBounds = y.minus(asProj.proj());
+
+        } catch (LinearSpace.NoProjFuncExists ex) {
             throw new EmptyPolytopeException();
         }
-
-        gradInBounds = y.minus(asProj.proj());
-
     }
 
     /**
@@ -85,14 +90,15 @@ public class LocalPolyhedralCone extends Polytope {
      * @return
      */
     private ASProj hasProj(Point preProj, int epsilonMult) {
-        if(epsilonMult*epsilon >= 1) throw new RuntimeException("Something is wrong with the projection algortihm.");
+        if (epsilonMult * epsilon >= 1)
+            throw new RuntimeException("Something is wrong with the projection algortihm.");
 
-        if (hasElement(preProj)) return new ASProj(AffineSpace.allSpace(dim()), preProj);
-      
+        if (hasElement(preProj))
+            return new ASProj(AffineSpace.allSpace(dim()), preProj);
+
         for (int i = 1; i < aspb.getAffSpByNumPlanes().size(); i++) {
             aspb.clearFailPoints(i - 2);
-            
-            
+
             ////////////////////////remove//////////////////////////////////////////
 //            System.out.println(aspb.affineSpaces(i).count());
 //
@@ -127,7 +133,7 @@ public class LocalPolyhedralCone extends Polytope {
         }
         System.err.println("projection error.  Setting epsilon to:" + epsilon
                 * epsilonMult * 10);
-        
+
         return hasProj(preProj, epsilonMult * 10);
     }
 

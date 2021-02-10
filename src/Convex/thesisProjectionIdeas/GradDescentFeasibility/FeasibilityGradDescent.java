@@ -173,9 +173,10 @@ public class FeasibilityGradDescent extends Polytope {
                 }
             } catch (EmptyPolytopeException epe) {
                 return new PointD(1).setAll(j -> Double.NaN);
-            } catch (Exception nsee) {//TODO: remove once everything is working
-                throw new FailedDescentException(nsee.getMessage(), start, y, part);
-            }
+            } 
+//            catch (Exception nsee) {//TODO: remove once everything is working
+//                throw new FailedDescentException(nsee.getMessage(), start, y, part);
+//            }
 
         }
 

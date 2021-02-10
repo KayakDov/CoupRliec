@@ -20,33 +20,31 @@ import java.util.stream.IntStream;
  */
 public class LinearSpace implements ConvexSet {
 
-    public boolean hasProjFunction(){
+    public boolean hasProjFunction() {
         return projFunc != null;
     }
-    
-//    private final Matrix nullSpace;
 
+//    private final Matrix nullSpace;
     public Point[] normals;
 
     @Override
     public int hashCode() {
         int hashCode = 0;
-        for(int i = 0; i < normals.length; i++)
+        for (int i = 0; i < normals.length; i++)
             hashCode += normals[i].hashCode();
         return hashCode;
     }
 
     /**
-     * note, the normals of two affine spaces must be in the same order to be equals.
-     * This checks if the normal lines are == and not .equal.
+     * note, the normals of two affine spaces must be in the same order to be
+     * equals. This checks if the normal lines are == and not .equal.
+     *
      * @param ls
-     * @return 
+     * @return
      */
     public boolean equals(LinearSpace ls) {
         return IntStream.range(0, normals.length).allMatch(i -> normals[i] == ls.normals[i]);
     }
-    
-    
 
     public LinearSpace(Point[] normals) {
         this.normals = normals;
@@ -55,8 +53,7 @@ public class LinearSpace implements ConvexSet {
     public Point[] getNormals() {
         return normals;
     }
-    
-    
+
     /**
      * The constructor
      *
@@ -65,7 +62,6 @@ public class LinearSpace implements ConvexSet {
 //    protected LinearSpace(Matrix nullSpace) {
 //        this.nullSpace = nullSpace;
 //    }
-
     /**
      * A small number used for thresholds
      */
@@ -90,33 +86,33 @@ public class LinearSpace implements ConvexSet {
         return new LinearSpace(m.rowsArray());
     }
 
-
     /**
-     * TODO: is the null space generated from a sparse column space sparse?
-     * A linear space factory method to create a column space
+     * TODO: is the null space generated from a sparse column space sparse? A
+     * linear space factory method to create a column space
      *
      * @param basis the basis of the new linear space being created. Note, the
      * basis vectors are the columns of the matrix provided here.
      * @return the column space of the given matrix
      */
     public static LinearSpace colSpace(Matrix basis) {
-        
+
         Matrix rcef = basis.T().reducedRowEchelon().T();
-        
+
         boolean isDense = basis.isDense();
-        int rows = basis.rows() - basis.cols(), 
+        int rows = basis.rows() - basis.cols(),
                 cols = basis.rows();
-        
-        Matrix nullMatrix = isDense? new MatrixDense(rows, cols): new MatrixSparse(rows, cols);
-                
+
+        Matrix nullMatrix = isDense ? new MatrixDense(rows, cols) : new MatrixSparse(rows, cols);
+
         nullMatrix.setCols(i -> {
-            if(i < basis.cols())
-                return (isDense? new PointD(rows): new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
-            else return (isDense?new PointD(rows): new PointSparse(rows)).setInit(i - basis.cols(), -1);
-                
+            if (i < basis.cols())
+                return (isDense ? new PointD(rows) : new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
+            else
+                return (isDense ? new PointD(rows) : new PointSparse(rows)).setInit(i - basis.cols(), -1);
+
         });
         return new LinearSpace(nullMatrix.rowsArray());
-        
+
 //    An old way of doing it.    
 //        Matrix basisRows = basis.independentColumns(epsilon).T();        
 //        
@@ -131,7 +127,6 @@ public class LinearSpace implements ConvexSet {
 //                .map(pointsRowMat -> LinearSpace.plane(basisRows.rowConcat(pointsRowMat).T()))
 //                .reduce((ls1, ls2) -> ls1.intersection(ls2)).get();
     }
-    
 
     /**
      * The orthogonal complement of this linear space
@@ -142,34 +137,37 @@ public class LinearSpace implements ConvexSet {
         return colSpace(matrix().T());
     }
 
-    public boolean isAllSpace(){
+    public boolean isAllSpace() {
         return normals.length == 0;
     }
-    
+
     /**
-     * The matrix used for the null space.  Changing this matrix will change this linear space.
-     * @return 
+     * The matrix used for the null space. Changing this matrix will change this
+     * linear space.
+     *
+     * @return
      */
-    protected Matrix matrix(){
-        if(normals[0].isDense())return MatrixDense.fromRows(normals);
+    protected Matrix matrix() {
+        if (normals[0].isDense()) return MatrixDense.fromRows(normals);
         else return MatrixSparse.fromRows(normals);
     }
-    public Matrix nullSpaceMatrix(){
+
+    public Matrix nullSpaceMatrix() {
         return Matrix.fromRows(normals);
     }
 
     /**
-     * TODO: Can this be sparse, I don't think so.
-     * A new matrix whose column space defines this linear space
+     * TODO: Can this be sparse, I don't think so. A new matrix whose column
+     * space defines this linear space
      *
      * @return
      */
     public MatrixDense colSpaceMatrix() {
- 
+
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
 
         MatrixDense IMinus = MatrixDense.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
-        
+
         if (rre.noFreeVariable()) return new PointD(rre.numRows);
 
         return MatrixDense.subMatrixFromCols(rre.freeVariables(), IMinus);
@@ -197,31 +195,34 @@ public class LinearSpace implements ConvexSet {
 
     private Matrix projFunc = null;
 
+    public Matrix getProjFunc() {
+        if (projFunc == null) {
+
+            Matrix A = colSpaceMatrix();
+
+            if (!A.isZero(epsilon)) projFunc = A.mult(A.pseudoInverse());
+            else throw new NoProjFuncExists();
+        }
+        return projFunc;
+    }
+
+    public class NoProjFuncExists extends RuntimeException {
+
+        public NoProjFuncExists() {
+            super("There is no projection function for this linear space.");
+        }
+
+    }
+
     @Override
     public Point proj(Point p) {
         if (isAllSpace()) return p;
-        
-        Point proj;
-        
-        if (projFunc == null) {
-            
-            Matrix A = colSpaceMatrix();
-            
-            if (!A.isZero(epsilon)) projFunc = A.mult(A.pseudoInverse()); 
-            else return new PointD(p.dim());
-            
-            proj = projFunc.mult(p);
-            
-//            if(Memory.lowOnMemory()) projFunc = null;
-            
-        }
-        else proj = projFunc.mult(p);
-        
-        
-        return proj;
+
+        return getProjFunc().mult(p);
+
     }
-    
-    public void clearProjFunc(){
+
+    public void clearProjFunc() {
         projFunc = null;
     }
 
@@ -269,7 +270,4 @@ public class LinearSpace implements ConvexSet {
         return new LinearSpace(intersection);
     }
 
-    
-    
-    
 }

@@ -10,6 +10,7 @@ import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -141,7 +142,17 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        return p.plus(linearSpace().proj(x.minus(p())));  //An older method
+        return p.plus(linearSpace().proj(x.minus(p())));  
+    }
+    /**
+     * p must be set before this function is called.
+     *
+     * @param x
+     * @return
+     */
+    public Point proj(Matrix projFunc, Point x) {
+        if (isAllSpace()) return x;
+        return p.plus(projFunc.mult(x.minus(p())));  
     }
 
     /**
@@ -393,10 +404,23 @@ public class AffineSpace implements ConvexSet {
      * The planes that intersect to make this affine space
      * @return 
      */
-    public List<Plane> intersectingPlanes(){
+    public List<Plane> intersectingPlanesList(){
         ArrayList<Plane> planes = new ArrayList<>(b.dim());
         for(int i = 0; i < b.dim(); i++)
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
+    }
+    public HashSet<Plane> intersectingPlanesSet(){
+        HashSet<Plane> planes = new HashSet<>(b.dim());
+        for(int i = 0; i < b.dim(); i++)
+            planes.add(new Plane(linearSpace.normals[i], b.get(i)));
+        return planes;
+    }
+    /**
+     * The planes that intersect to make this affine space
+     * @return 
+     */
+    public Stream<Plane> intersectingPlanesStream(){
+        return IntStream.range(0, b.dim()).mapToObj(i -> new Plane(linearSpace.normals[i], b.get(i)));
     }
 }
