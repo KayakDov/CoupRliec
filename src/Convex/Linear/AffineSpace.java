@@ -153,6 +153,7 @@ public class AffineSpace implements ConvexSet {
      */
     public Point proj(Matrix projFunc, Point x) {
         if (isAllSpace()) return x;
+        linearSpace.projFunc = projFunc;
         return p.plus(projFunc.mult(x.minus(p())));  
     }
 

@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import listTools.Choose;
@@ -53,10 +54,20 @@ public class ProjPolytope {
             return as.hashCode();
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            return as.equals(((ASNode)obj).as);
+        }
+
         public ASNode(Plane plane) {
             this.as = plane;
             this.planes = new HashSet<Plane>(1);
             planes.add(plane);
+        }
+
+        @Override
+        public String toString() {
+            return as.toString(); //To change body of generated methods, choose Tools | Templates.
         }
 
     }
@@ -92,6 +103,7 @@ public class ProjPolytope {
 
             if (asNode.as.hasProjFunc()) {
                 failed.add(asNode.as.proj(preProj));
+
                 return true;
             }
 
@@ -138,22 +150,22 @@ public class ProjPolytope {
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-//            ASProjSave proj = currentLevel.stream().parallel()
-//                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-//                    .map(asf -> new ASProjSave(preProj, asf.asNode))
-//                    .filter(p -> hasElement(p.proj))
-//                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
-//                    .orElse(null);
+            ASProjSave proj = currentLevel.stream().parallel()
+                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
+                    .map(asf -> new ASProjSave(preProj, asf.asNode))
+                    .filter(p -> hasElement(p.proj))
+                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
+                    .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
-            List<ASProjSave> candidates = new ArrayList<>(5);
-
-            for (ASFail asf : currentLevel)
-                if (asf.mightContainProj(lowerLevel, preProj)) {
-                    ASProjSave asps = new ASProjSave(preProj, asf.asNode);
-                    if (hasElement(asps.proj))
-                        candidates.add(asps);
-                }
-            ASProjSave proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+//            List<ASProjSave> candidates = new ArrayList<>(5);
+//
+//            for (ASFail asf : currentLevel)
+//                if (asf.mightContainProj(lowerLevel, preProj)) {
+//                    ASProjSave asps = new ASProjSave(preProj, asf.asNode);
+//                    if (hasElement(asps.proj))
+//                        candidates.add(asps);
+//                }
+//            ASProjSave proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
@@ -181,11 +193,12 @@ public class ProjPolytope {
             this.as = asn.as;
 
             if (!affineSpacesProjections.containsKey(asn)) {
+                
                 affineSpacesProjections.put(asn, asn.as.linearSpace().getProjFunc());
                 proj = asn.as.proj(preProj);
-            } else{
-                System.out.println("recyling");
-                proj = asn.as.proj(affineSpacesProjections.get(asn.as), preProj);
+
+            } else {
+                proj = asn.as.proj(affineSpacesProjections.get(asn), preProj);
             }
 
         }
@@ -204,6 +217,7 @@ public class ProjPolytope {
         halfSpaces.removeIf(hs -> !planesToBePreserved.contains(hs.boundary()));
         affineSpacesProjections
                 .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
+
     }
 
     /**

@@ -193,7 +193,7 @@ public class LinearSpace implements ConvexSet {
         return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
     }
 
-    private Matrix projFunc = null;
+    public Matrix projFunc = null;
 
     public Matrix getProjFunc() {
         if (projFunc == null) {
