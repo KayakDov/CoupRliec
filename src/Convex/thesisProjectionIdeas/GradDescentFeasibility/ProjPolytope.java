@@ -33,12 +33,11 @@ public class ProjPolytope {
         this.part = part;
         travelThrough = AffineSpace.allSpace(gradInBounds.dim());
     }
-    
+
     public Point grad() {
         return gradInBounds;
     }
-    
-    
+
     private class ASNode {
 
         public AffineSpace as;
@@ -79,11 +78,10 @@ public class ProjPolytope {
 
         public ASFail(ArrayList<HalfSpace> hsList, Point y) {
             this(new ASNode(
-                    AffineSpace.intersection(hsList.stream().map(hs -> hs.boundary())).setP(y), 
+                    AffineSpace.intersection(hsList.stream().map(hs -> hs.boundary())).setP(y),
                     hsList.stream().map(hs -> hs.boundary()).collect(Collectors.toSet())
             ));
         }
-        
 
         private Plane somePlane() {
             return asNode.planes.iterator().next();
@@ -132,23 +130,34 @@ public class ProjPolytope {
         HashMap<AffineSpace, ASFail> lowerLevel = new HashMap<>();
         List<ASFail> currentLevel;
 
-        for (int i = 1; i < preProj.dim(); i++) {
-            
-            currentLevel = new Choose<HalfSpace>(new ArrayList<HalfSpace>(halfSpaces), i)
+        for (int i = 1; i < y.dim(); i++) {
+
+            currentLevel = new Choose<>(new ArrayList<HalfSpace>(halfSpaces), i)
                     .chooseStream()
                     .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces, y))
                     .collect(Collectors.toList());
 
-            
-            ASProjSave proj = currentLevel.stream().parallel()
-                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-                    .map(asf -> new ASProjSave(preProj, asf.asNode))
-                    .filter(p -> hasElement(p.proj))
-                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
-                    .orElse(null);
+            /////////////////////Good way to do it///////////////////////////////
+//            ASProjSave proj = currentLevel.stream().parallel()
+//                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
+//                    .map(asf -> new ASProjSave(preProj, asf.asNode))
+//                    .filter(p -> hasElement(p.proj))
+//                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
+//                    .orElse(null);
+            //////////////End of good way to do it, begin profiler way to do it////////////////
+            List<ASProjSave> candidates = new ArrayList<>(5);
+
+            for (ASFail asf : currentLevel)
+                if (asf.mightContainProj(lowerLevel, preProj)) {
+                    ASProjSave asps = new ASProjSave(preProj, asf.asNode);
+                    if (hasElement(asps.proj))
+                        candidates.add(asps);
+                }
+            ASProjSave proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+            ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
-            
+
             lowerLevel.clear();
             currentLevel.forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
         }
@@ -158,6 +167,7 @@ public class ProjPolytope {
     public boolean hasElement(Point p) {
         return halfSpaces.stream().allMatch(hs -> hs.hasElement(p));
     }
+
     public boolean hasElement(Point p, double epsilon) {
         return halfSpaces.stream().allMatch(hs -> hs.hasElement(p, epsilon));
     }
@@ -169,19 +179,19 @@ public class ProjPolytope {
 
         public ASProjSave(Point preProj, ASNode asn) {
             this.as = asn.as;
-                        
+
             if (!affineSpacesProjections.containsKey(asn)) {
                 affineSpacesProjections.put(asn, asn.as.linearSpace().getProjFunc());
                 proj = asn.as.proj(preProj);
-            } else
+            } else{
+                System.out.println("recyling");
                 proj = asn.as.proj(affineSpacesProjections.get(asn.as), preProj);
+            }
 
         }
 
     }
 
-    
-    ///////////////////////////////////////////////////////////////////////////
     public void removeExcept(AffineSpace as) {
 
         if (as.isAllSpace()) {
@@ -193,9 +203,9 @@ public class ProjPolytope {
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
         halfSpaces.removeIf(hs -> !planesToBePreserved.contains(hs.boundary()));
         affineSpacesProjections
-            .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
+                .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
     }
-    
+
     /**
      * Adds a newly encountered half space to this polytope, updates the
      * gradient, and removes and half spaces left behind.
@@ -214,7 +224,7 @@ public class ProjPolytope {
         ASProjSave asProj = proj(preProj, y);
 
         travelThrough = asProj.as;
-        
+
         if (asProj.proj.equals(y)) {
             throw new EmptyPolytopeException();
         }

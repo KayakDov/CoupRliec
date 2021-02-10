@@ -147,7 +147,7 @@ public class FeasibilityGradDescent extends Polytope {
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
                 PointD oldY = new PointD(y);//TODO: remove from final code
-
+////////////////////////method with paralel
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
                 if (oldY.d(y) < epsilon)

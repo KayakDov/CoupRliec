@@ -467,7 +467,9 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     @Override
     public boolean isZero(double epsilon) {
-        return Arrays.stream(data).allMatch(a -> Math.abs(a) <= epsilon);
+        for(int i = 0; i < data.length; i++)
+            if(data[i] < -epsilon || data[i] > epsilon) return false;
+        return true;
     }
 
     public long rank() {
