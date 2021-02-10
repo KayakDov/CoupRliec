@@ -98,8 +98,9 @@ public class AffineSpace implements ConvexSet {
      *
      * @param p
      */
-    public void setP(Point p) {
+    public AffineSpace setP(Point p) {
         this.p = p;
+        return this;
     }
 
     /**
@@ -172,18 +173,11 @@ public class AffineSpace implements ConvexSet {
     public static AffineSpace intersection(AffineSpace[] space) {
         if (space.length == 0)
             throw new RuntimeException("Empty intersection?");
-        if (space.length == 1) return space[0];
-
-        Pair1T<AffineSpace> spacePair = new Pair1T<>(
-                Arrays.copyOfRange(space, 0, space.length / 2),
-                Arrays.copyOfRange(space, space.length / 2, space.length),
-                spaces -> intersection(spaces));
-
-        return spacePair.l.intersection(spacePair.r);
+        return intersection(Arrays.stream(space));
     }
 
-    public static AffineSpace intersection(Stream<? extends AffineSpace> space) {
-        return intersection(space.toArray(AffineSpace[]::new));
+    public static AffineSpace intersection(Stream<AffineSpace> space) {
+        return space.reduce((a,b) -> a.intersection(b)).get();
     }
 
     public LinearSpace linearSpace() {

@@ -77,9 +77,9 @@ public class ProjPolytope {
             this(new ASNode(plane));
         }
 
-        public ASFail(ArrayList<HalfSpace> hsList) {
+        public ASFail(ArrayList<HalfSpace> hsList, Point y) {
             this(new ASNode(
-                    AffineSpace.intersection(hsList.stream().map(hs -> hs.boundary())), 
+                    AffineSpace.intersection(hsList.stream().map(hs -> hs.boundary())).setP(y), 
                     hsList.stream().map(hs -> hs.boundary()).collect(Collectors.toSet())
             ));
         }
@@ -127,16 +127,16 @@ public class ProjPolytope {
         halfSpaces.remove(hs);
     }
 
-    public ASProjSave proj(Point preProj) {
+    public ASProjSave proj(Point preProj, Point y) {
 
         HashMap<AffineSpace, ASFail> lowerLevel = new HashMap<>();
         List<ASFail> currentLevel;
 
-        for (int i = 0; i < preProj.dim(); i++) {
+        for (int i = 1; i < preProj.dim(); i++) {
             
             currentLevel = new Choose<HalfSpace>(new ArrayList<HalfSpace>(halfSpaces), i)
                     .chooseStream()
-                    .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces))
+                    .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces, y))
                     .collect(Collectors.toList());
 
             ASProjSave proj = currentLevel.stream()
@@ -157,6 +157,9 @@ public class ProjPolytope {
     public boolean hasElement(Point p) {
         return halfSpaces.stream().allMatch(hs -> hs.hasElement(p));
     }
+    public boolean hasElement(Point p, double epsilon) {
+        return halfSpaces.stream().allMatch(hs -> hs.hasElement(p, epsilon));
+    }
 
     public class ASProjSave {
 
@@ -164,11 +167,11 @@ public class ProjPolytope {
         public AffineSpace as;
 
         public ASProjSave(Point preProj, ASNode asn) {
-            this.proj = proj;
-
+            this.as = asn.as;
+                        
             if (!affineSpacesProjections.containsKey(asn)) {
                 affineSpacesProjections.put(asn, asn.as.linearSpace().getProjFunc());
-                proj = asn.as.proj(proj);
+                proj = asn.as.proj(preProj);
             } else
                 proj = asn.as.proj(affineSpacesProjections.get(asn.as), preProj);
 
@@ -207,7 +210,7 @@ public class ProjPolytope {
 
         halfSpaces.add(add);
 
-        ASProjSave asProj = proj(preProj);
+        ASProjSave asProj = proj(preProj, y);
 
         travelThrough = asProj.as;
         

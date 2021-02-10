@@ -408,7 +408,7 @@ public class Polytope implements ConvexSet {
                 i
         ).chooseStream()).map(hsList -> {
             try {
-                return AffineSpace.intersection(hsList.stream());
+                return AffineSpace.intersection(hsList.stream().map(hs -> (AffineSpace)hs));
             } catch (ArithmeticException ae) {
                 return null;
             }
