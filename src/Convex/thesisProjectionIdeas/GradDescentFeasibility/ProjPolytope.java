@@ -139,7 +139,8 @@ public class ProjPolytope {
                     .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces, y))
                     .collect(Collectors.toList());
 
-            ASProjSave proj = currentLevel.stream()
+            
+            ASProjSave proj = currentLevel.stream().parallel()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProjSave(preProj, asf.asNode))
                     .filter(p -> hasElement(p.proj))
