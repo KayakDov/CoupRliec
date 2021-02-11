@@ -56,7 +56,7 @@ public class ProjPolytope {
 
         @Override
         public boolean equals(Object obj) {
-            return as.equals(((ASNode)obj).as);
+            return as.equals(((ASNode) obj).as);
         }
 
         public ASNode(Plane plane) {
@@ -150,7 +150,7 @@ public class ProjPolytope {
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-            ASProjSave proj = currentLevel.stream().parallel()
+            ASProjSave proj = currentLevel.stream()//.parallel()//TODO: making this parralell causes varius bugs.  This should be fixed.
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProjSave(preProj, asf.asNode))
                     .filter(p -> hasElement(p.proj))
@@ -193,7 +193,7 @@ public class ProjPolytope {
             this.as = asn.as;
 
             if (!affineSpacesProjections.containsKey(asn)) {
-                
+
                 affineSpacesProjections.put(asn, asn.as.linearSpace().getProjFunc());
                 proj = asn.as.proj(preProj);
 

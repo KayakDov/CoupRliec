@@ -41,8 +41,6 @@ public class Plane extends AffineSpace {
         this(p.p(), p.normal());
     }
 
-
-
     /**
      * returns a point on the plane.
      *
@@ -84,8 +82,6 @@ public class Plane extends AffineSpace {
         return normal().dot(p) > b.get(0) + epsilon;
     }
 
-    
-    
     /**
      * is the given point on this plane.
      *
@@ -116,8 +112,8 @@ public class Plane extends AffineSpace {
     public boolean above(Point x) {
         return normal().dot(x) < b.get(0);
     }
-    
-    public boolean aboveOrContains(Point x){
+
+    public boolean aboveOrContains(Point x) {
         return normal().dot(x) <= b.get(0) + epsilon;
     }
 
@@ -138,8 +134,8 @@ public class Plane extends AffineSpace {
      * @return true if the two planes are equal.
      */
     public boolean equals(Plane plane, double epsilon) {
-        return onPlane(plane.p, epsilon) && 
-                normal().dir().equals(plane.normal().dir());
+        return onPlane(plane.p, epsilon)
+                && normal().dir().equals(plane.normal().dir());
     }
 
     /**
@@ -154,20 +150,20 @@ public class Plane extends AffineSpace {
     }
 
     public static boolean printEasyRead = true;
-    
+
     @Override
     public String toString() {
-        if(printEasyRead){
-        if (dim() == 2)
-            return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
-        if (dim() == 3)
-            return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
-    }
+        if (printEasyRead) {
+            if (dim() == 2)
+                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
+            if (dim() == 3)
+                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
+        }
         return toStringMultiDim();
 
     }
-    
-    public String toStringMultiDim(){
+
+    public String toStringMultiDim() {
         return "point " + p + " with normal " + normal();
     }
 
@@ -203,7 +199,7 @@ public class Plane extends AffineSpace {
     }
 
     private double epsilon = 1e-10;
-    
+
     @Override
     public boolean hasElement(Point p) {
         return hasElement(p, epsilon);
@@ -211,7 +207,7 @@ public class Plane extends AffineSpace {
 
     @Override
     public boolean hasElement(Point p, double epsilon) {
-        return Math.abs(normal().dot(p) - b.get(0)) <= dim()*epsilon;
+        return Math.abs(normal().dot(p) - b.get(0)) <= dim() * epsilon;
     }
 
     /**
@@ -226,15 +222,14 @@ public class Plane extends AffineSpace {
         return p;
     }
 
-
-
     /**
-     * returns the intersection of this plane and a line.  If no such intersextion 
-     * exists returns a point that is not a number.
-     * This is much slower than the other line intersection method.
+     * returns the intersection of this plane and a line. If no such
+     * intersextion exists returns a point that is not a number. This is much
+     * slower than the other line intersection method.
+     *
      * @param line a line
-     * @return the point of intersection of this plane and a line, 
-     * or an unreal point if there is no intersection. 
+     * @return the point of intersection of this plane and a line, or an unreal
+     * point if there is no intersection.
      */
     public Point lineIntersection(AffineSpace line) {
         try {
@@ -243,18 +238,19 @@ public class Plane extends AffineSpace {
             return new PointD(new double[]{Double.NaN});
         }
     }
-    
-        /**
-     * returns the intersection of this plane and a line.If no such intersextion 
- exists returns a point that is not a number.
+
+    /**
+     * returns the intersection of this plane and a line.If no such intersextion
+     * exists returns a point that is not a number.
+     *
      * @param grad the gradient for the line
      * @param onLine some point on the line
-     * @return the point of intersection of this plane and a line, 
-     * or an unreal point if there is no intersection. 
+     * @return the point of intersection of this plane and a line, or an unreal
+     * point if there is no intersection.
      */
     public Point lineIntersection(Point grad, Point onLine) {
-        double t = (b.get(0) - normal().dot(onLine))/(normal().dot(grad));
+        double t = (b.get(0) - normal().dot(onLine)) / (normal().dot(grad));
         return grad.mult(t).plus(onLine);
     }
-    
+
 }

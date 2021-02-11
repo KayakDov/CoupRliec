@@ -42,6 +42,7 @@ public class FeasibilityGradDescent extends Polytope {
                             return new HalfSpace(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
                         })
         );
+        System.out.println(poly);
 
         System.out.println(new FeasibilityGradDescent(poly).fesibility(start));
     }
@@ -147,7 +148,7 @@ public class FeasibilityGradDescent extends Polytope {
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
                 PointD oldY = new PointD(y);//TODO: remove from final code
-////////////////////////method with paralel
+
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
                 if (oldY.d(y) < epsilon)
