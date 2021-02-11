@@ -144,7 +144,7 @@ public class ProjPolytope {
 
         for (int i = 1; i < y.dim(); i++) {
 
-            currentLevel = new Choose<>(new ArrayList<HalfSpace>(halfSpaces), i)
+            currentLevel = new Choose<>(new ArrayList<>(halfSpaces), i)
                     .chooseStream()
                     .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces, y))
                     .collect(Collectors.toList());
