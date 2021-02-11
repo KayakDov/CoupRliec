@@ -101,18 +101,20 @@ public class ProjPolytope {
         //this class needs to be fleshed out so that the failure state and fail points are set given a preproj
         public boolean mightContainProj(HashMap<AffineSpace, ASFail> lowerLevel, Point preProj) {
 
-            if (asNode.as.hasProjFunc()) {
-                failed.add(asNode.as.proj(preProj));
-
+            if (asProjs.containsKey(asNode)) {
+                failed.add(asNode.as.proj(asProjs.get(asNode), preProj));
+                
                 return true;
             }
+            
+            if(asNode.as.hasProjFunc()) throw new RuntimeException("A projection function was not added to asProjs, or something else is wrong.");
 
             if (lowerLevel.isEmpty()) {
                 if (somePlane().above(preProj)) {
                     failed.add(preProj);
                     return false;
                 } else {
-                    failed.add(somePlane().proj(preProj));
+                    failed.add(new ASProjSave(preProj, asNode).proj);
                     return true;
                 }
             }
@@ -126,14 +128,14 @@ public class ProjPolytope {
         }
     }
 
-    public HashMap<ASNode, Matrix> affineSpacesProjections = new HashMap<>(); //TODO: init size for speeed
+    public HashMap<ASNode, Matrix> asProjs = new HashMap<>(); //TODO: init size for speeed
     public HashSet<HalfSpace> halfSpaces = new HashSet<>();
 
     public ProjPolytope() {
     }
 
     public void remove(HalfSpace hs) {
-        affineSpacesProjections.entrySet().removeIf(asn -> asn.getKey().planes.contains(hs.boundary()));
+        asProjs.entrySet().removeIf(asn -> asn.getKey().planes.contains(hs.boundary()));
         halfSpaces.remove(hs);
     }
 
@@ -192,13 +194,13 @@ public class ProjPolytope {
         public ASProjSave(Point preProj, ASNode asn) {
             this.as = asn.as;
 
-            if (!affineSpacesProjections.containsKey(asn)) {
+            if (!asProjs.containsKey(asn)) {
 
-                affineSpacesProjections.put(asn, asn.as.linearSpace().getProjFunc());
+                asProjs.put(asn, asn.as.linearSpace().getProjFunc());
                 proj = asn.as.proj(preProj);
 
             } else {
-                proj = asn.as.proj(affineSpacesProjections.get(asn), preProj);
+                proj = asn.as.proj(asProjs.get(asn), preProj);
             }
 
         }
@@ -208,14 +210,14 @@ public class ProjPolytope {
     public void removeExcept(AffineSpace as) {
 
         if (as.isAllSpace()) {
-            affineSpacesProjections.clear();
+            asProjs.clear();
             halfSpaces.clear();
             return;
         }
 
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
         halfSpaces.removeIf(hs -> !planesToBePreserved.contains(hs.boundary()));
-        affineSpacesProjections
+        asProjs
                 .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
 
     }
