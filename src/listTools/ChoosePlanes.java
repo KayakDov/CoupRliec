@@ -40,15 +40,6 @@ public class ChoosePlanes {
         return choose(n - 1, k - 1) * n / k;
     }
 
-    /**
-     * returns a stream of all the subsets of size choose.
-     *
-     * @param parallel should the stream be parallel.
-     * @return
-     */
-    public Stream<Plane[]> chooseStream(boolean parallel) {
-        return streamOfListsOfInts().parallel().map(al -> intsToList(al));
-    }
     
     /**
      * returns a stream of all the subsets of size choose.
@@ -56,7 +47,7 @@ public class ChoosePlanes {
      * @return
      */
     public Stream<Plane[]> chooseStream() {
-        return chooseStream(true);
+        return streamOfListsOfInts().parallel().map(al -> intsToList(al));
     }
     
     

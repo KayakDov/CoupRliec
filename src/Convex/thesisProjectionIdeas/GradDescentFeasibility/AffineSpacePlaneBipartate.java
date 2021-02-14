@@ -119,6 +119,8 @@ public class AffineSpacePlaneBipartate {
          * Is it possible that this affine space contains the projection onto
          * the polytope.
          *
+         * TODO: This can be made faster by computing projections for pass points when they are needed and not earlier.
+         * 
          * @param preProj
          * @return
          */

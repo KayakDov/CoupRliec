@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import listTools.ChoosePlanes;
 
 /**
@@ -46,13 +47,11 @@ public class ProjPolytope {
 
         public AffineSpace as;
         public Set<Plane> planes;
-        
 
         public ASNode(AffineSpace as, Set<Plane> planes) {
             this.as = as;
             this.planes = planes;
         }
-
 
         @Override
         public int hashCode() {
@@ -96,7 +95,6 @@ public class ProjPolytope {
             this(new ASNode(new AffineSpace(hsList).setP(y), hsList));
         }
 
-
         public ASFail(Plane[] planes, Point y) {
 
             this(new ASNode(new AffineSpace(planes).setP(y), Set.of(planes)));
@@ -106,31 +104,30 @@ public class ProjPolytope {
             return asNode.planes.iterator().next();
         }
 
+        private boolean localHasElement(Point x) {
+            return asNode.planes.stream()
+                    .allMatch(plane -> plane.aboveOrContains(x));
+        }
+
         public boolean mightContainProj(HashMap<AffineSpace, ASFail> lowerLevel, Point preProj) {
 
-            if (lowerLevel.isEmpty()) {
-                if (somePlane().above(preProj)) {
-                    failed.add(preProj);
-                    return false;
-                } else {
-                    failed.add(new ASProj(preProj, asNode).proj);
-                    return true;
-                }
-            }
+            if (lowerLevel.isEmpty()) 
+                if (somePlane().above(preProj)) return mightContProj = false;
+                else return mightContProj = true;
+                
+            
+            if (asProjs.containsKey(asNode)) return mightContProj = true;
+            
 
-            if (asProjs.containsKey(asNode)) {
-                failed.add(asNode.as.proj(asProjs.get(asNode), preProj));
-
-                return true;
-            }
-
-//            if (asNode.as.hasProjFunc())
-//                throw new RuntimeException("A projection function was not added to asProjs, or something else is wrong.");//TODO: remove after fixing
             asNode.as.oneDown()
-                    .flatMap(as -> lowerLevel.get(as).failed.stream())
-                    .filter(fp -> asNode.planes.stream()
-                    .allMatch(plane -> plane.aboveOrContains(fp)))
+                    .flatMap(as -> {
+                        ASFail llget = lowerLevel.get(as);
+                        if(llget.mightContProj) return Stream.of(new ASProj(preProj, llget.asNode).proj);
+                        return llget.failed.stream();
+                    })
+                    .filter(fp -> localHasElement(fp))
                     .collect(Collectors.toCollection(() -> failed));
+
             return mightContProj = failed.isEmpty();
         }
     }
@@ -159,22 +156,28 @@ public class ProjPolytope {
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-            ASProj proj = currentLevel.stream().parallel()
-                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-                    .map(asf -> new ASProj(preProj, asf.asNode))
-                    .filter(p -> hasElement(p.proj))
-                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
-                    .orElse(null);
+//            ASProj proj = currentLevel.stream().parallel()
+//                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
+//                    .map(asf -> new ASProj(preProj, asf.asNode))
+//                    .filter(p -> hasElement(p.proj))
+//                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
+//                    .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
-//            List<ASProj> candidates = new ArrayList<>(5);
-//
-//            for (ASFail asf : currentLevel)
-//                if (asf.mightContainProj(lowerLevel, preProj)) {
-//                    ASProj asps = new ASProj(preProj, asf.asNode);
-//                    if (hasElement(asps.proj))
-//                        candidates.add(asps);
-//                }
-//            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+            List<ASProj> candidates = new ArrayList<>(5);
+
+            int fail = 0, pass = 0;
+            for (ASFail asf : currentLevel) {
+                if (asf.mightContainProj(lowerLevel, preProj)) {
+                    pass++;
+                    ASProj asps = new ASProj(preProj, asf.asNode);
+                    if (hasElement(asps.proj))
+                        candidates.add(asps);
+                } else fail++;
+            }
+
+            System.out.println((double) pass / (pass + fail));
+
+            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
@@ -205,12 +208,14 @@ public class ProjPolytope {
 
         public ASProj(Point preProj, ASNode asn) {
             this.as = asn.as;
-
-            if (asProjs.containsKey(asn))
-                proj = asn.as.proj(asProjs.get(asn), preProj);
+            if (asn.planes.size() == 1) proj = asn.as.proj(preProj);
             else {
-                asProjs.put(asn, asn.as.linearSpace().getProjFunc());
-                proj = asn.as.proj(preProj);
+                if (asProjs.containsKey(asn))
+                    proj = asn.as.proj(asProjs.get(asn), preProj);
+                else {
+                    asProjs.put(asn, asn.as.linearSpace().getProjFunc());
+                    proj = asn.as.proj(preProj);
+                }
             }
         }
 
