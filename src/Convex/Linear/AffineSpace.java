@@ -2,7 +2,6 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Convex.Polytope;
-import listTools.Pair1T;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -11,9 +10,10 @@ import Matricies.PointSparse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -75,6 +75,41 @@ public class AffineSpace implements ConvexSet {
         p = onSpace;
     }
 
+    public AffineSpace(Set<Plane> intersectingPlanes){
+        
+        Iterator<Plane> iter = intersectingPlanes.iterator();
+        Point[] normals = new Point[intersectingPlanes.size()];
+        b = new PointD(intersectingPlanes.size());
+        
+        for(int i = 0; i < intersectingPlanes.size(); i++){
+            Plane p = iter.next();
+            normals[i] = p.normal();
+            b.set(i, p.b.get(0));
+        }
+        
+        linearSpace = new LinearSpace(normals);
+    }
+    
+    public AffineSpace(Plane[] planes){
+        Point[] normals = new Point[planes.length];
+        Arrays.setAll(normals, i -> planes[i].normal());
+        b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
+        linearSpace = new LinearSpace(normals);
+    }
+    
+    public AffineSpace(List<Plane> intersectingPlanes){
+        
+        Point[] normals = new PointD[intersectingPlanes.size()];
+        b = new PointD(intersectingPlanes.size());
+        
+        for(int i = 0; i < intersectingPlanes.size(); i++){
+            b.set(i, intersectingPlanes.get(i).b.get(0));
+            normals[i] = intersectingPlanes.get(i).normal();
+        }
+        
+        linearSpace = new LinearSpace(normals);
+    }
+    
     @Override
     public boolean hasElement(Point x) {
         return nullMatrix().mult(x).equals(b);
@@ -178,8 +213,8 @@ public class AffineSpace implements ConvexSet {
         return intersection(Arrays.stream(space));
     }
 
-    public static AffineSpace intersection(Stream<AffineSpace> space) {
-        return space.reduce((a,b) -> a.intersection(b)).get();
+    public static AffineSpace intersection(Stream<? extends AffineSpace> space) {
+        return space.map(as -> (AffineSpace)as).reduce((a,b) -> a.intersection(b)).get();
     }
 
     public LinearSpace linearSpace() {
@@ -347,6 +382,7 @@ public class AffineSpace implements ConvexSet {
     @Override
     public int hashCode() {
         int bHash = 0;
+        
         for(int i = 0; i < b.dim(); i++) bHash += Double.hashCode(b.get(i));
         return linearSpace.hashCode() + bHash;
     }

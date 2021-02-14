@@ -116,6 +116,10 @@ public class Plane extends AffineSpace {
     public boolean aboveOrContains(Point x) {
         return normal().dot(x) <= b.get(0) + epsilon;
     }
+    
+    public boolean aboveOrContains(Point x, double epsilon) {
+        return normal().dot(x) <= b.get(0) + epsilon;
+    }
 
     /**
      * the number of dimensions of the points in this plane

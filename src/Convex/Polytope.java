@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import listTools.Choose;
+import listTools.ChoosePlanes;
 
 /**
  * This is a convex polyhedron in R^3 By default, instances do not keep track of
@@ -90,7 +90,6 @@ public class Polytope implements ConvexSet {
      * All the vertices of the polytope. be sure to call with getVertices().
      */
     protected Matrix vertices;
-
 
     /**
      * Every Point x in this polytope satisfies the equation Mx less than b
@@ -248,7 +247,6 @@ public class Polytope implements ConvexSet {
         return halfSpaces.get(0).dim();
     }
 
-
     public Stream<HalfSpace> stream() {
         return halfSpaces.stream();
     }
@@ -402,17 +400,13 @@ public class Polytope implements ConvexSet {
      */
     public Stream<AffineSpace> affineSubSpaces(int maxHSPerIntersection) {
 
-        return IntStream.rangeClosed(1, maxHSPerIntersection).parallel().mapToObj(i -> i)
-                .flatMap(i -> new Choose<>(
-                halfSpaces.stream().map(hs -> hs.boundary()).collect(Collectors.toList()),
-                i
-        ).chooseStream()).map(hsList -> {
-            try {
-                return AffineSpace.intersection(hsList.stream().map(hs -> (AffineSpace)hs));
-            } catch (ArithmeticException ae) {
-                return null;
-            }
-        }).filter(as -> as != null);
+        return IntStream
+                .rangeClosed(1, maxHSPerIntersection)
+                .mapToObj(i -> i)
+                .flatMap(i -> 
+                        new ChoosePlanes(planes().collect(Collectors.toList()),i)
+                                .chooseStream())
+                        .map(planeArray -> new AffineSpace(planeArray));
 
     }
 
@@ -454,21 +448,21 @@ public class Polytope implements ConvexSet {
         Polytope poly = new Polytope();
         IntStream.range(0, numFaces).forEach(i -> {
             PointD random = PointD.uniformRand(new PointD(dim), radius);
-            random.multMe(radius/random.magnitude());
+            random.multMe(radius / random.magnitude());
             poly.add(new HalfSpace(random, random));
         });
 
         return poly;
     }
-    
+
     public static Polytope random(int numFaces, double radius, int dim) {
 
         Polytope poly = new Polytope();
         IntStream.range(0, numFaces).forEach(i -> {
             PointD random1 = PointD.uniformRand(new PointD(dim), radius);
             PointD random2 = PointD.uniformRand(new PointD(dim), radius);
-            
-            poly.add(new HalfSpace(random1.mult(radius), random2.mult(1/random2.magnitude())));
+
+            poly.add(new HalfSpace(random1.mult(radius), random2.mult(1 / random2.magnitude())));
         });
 
         return poly;

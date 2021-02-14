@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import listTools.Choose;
+import listTools.ChoosePlanes;
 
 /**
  * What does this polytope need to do: 1: Save any projection functions that
@@ -30,6 +30,9 @@ public class ProjPolytope {
     public AffineSpace travelThrough;
 
     public ProjPolytope(Partition part) {
+        int dim = part.getGradient().dim();
+        this.planes = new HashSet<>(dim);
+        this.asProjs = new HashMap<>((int) Math.pow(2, dim));
         this.gradInBounds = part.getGradient();
         this.part = part;
         travelThrough = AffineSpace.allSpace(gradInBounds.dim());
@@ -43,11 +46,13 @@ public class ProjPolytope {
 
         public AffineSpace as;
         public Set<Plane> planes;
+        
 
         public ASNode(AffineSpace as, Set<Plane> planes) {
             this.as = as;
             this.planes = planes;
         }
+
 
         @Override
         public int hashCode() {
@@ -87,38 +92,40 @@ public class ProjPolytope {
             this(new ASNode(plane));
         }
 
-        public ASFail(ArrayList<HalfSpace> hsList, Point y) {
-            this(new ASNode(
-                    AffineSpace.intersection(hsList.stream().map(hs -> hs.boundary())).setP(y),
-                    hsList.stream().map(hs -> hs.boundary()).collect(Collectors.toSet())
-            ));
+        public ASFail(HashSet<Plane> hsList, Point y) {
+            this(new ASNode(new AffineSpace(hsList).setP(y), hsList));
+        }
+
+
+        public ASFail(Plane[] planes, Point y) {
+
+            this(new ASNode(new AffineSpace(planes).setP(y), Set.of(planes)));
         }
 
         private Plane somePlane() {
             return asNode.planes.iterator().next();
         }
 
-        //this class needs to be fleshed out so that the failure state and fail points are set given a preproj
         public boolean mightContainProj(HashMap<AffineSpace, ASFail> lowerLevel, Point preProj) {
-
-            if (asProjs.containsKey(asNode)) {
-                failed.add(asNode.as.proj(asProjs.get(asNode), preProj));
-                
-                return true;
-            }
-            
-            if(asNode.as.hasProjFunc()) throw new RuntimeException("A projection function was not added to asProjs, or something else is wrong.");
 
             if (lowerLevel.isEmpty()) {
                 if (somePlane().above(preProj)) {
                     failed.add(preProj);
                     return false;
                 } else {
-                    failed.add(new ASProjSave(preProj, asNode).proj);
+                    failed.add(new ASProj(preProj, asNode).proj);
                     return true;
                 }
             }
 
+            if (asProjs.containsKey(asNode)) {
+                failed.add(asNode.as.proj(asProjs.get(asNode), preProj));
+
+                return true;
+            }
+
+//            if (asNode.as.hasProjFunc())
+//                throw new RuntimeException("A projection function was not added to asProjs, or something else is wrong.");//TODO: remove after fixing
             asNode.as.oneDown()
                     .flatMap(as -> lowerLevel.get(as).failed.stream())
                     .filter(fp -> asNode.planes.stream()
@@ -127,47 +134,47 @@ public class ProjPolytope {
             return mightContProj = failed.isEmpty();
         }
     }
+    //TODO: init size for speeed
 
-    public HashMap<ASNode, Matrix> asProjs = new HashMap<>(); //TODO: init size for speeed
-    public HashSet<HalfSpace> halfSpaces = new HashSet<>();
-
-    public ProjPolytope() {
-    }
+    public HashMap<ASNode, Matrix> asProjs;
+    public HashSet<Plane> planes;
 
     public void remove(HalfSpace hs) {
         asProjs.entrySet().removeIf(asn -> asn.getKey().planes.contains(hs.boundary()));
-        halfSpaces.remove(hs);
+        planes.remove(hs);
     }
 
-    public ASProjSave proj(Point preProj, Point y) {
+    public ASProj proj(Point preProj, Point y) {
+        if (hasElement(preProj))
+            return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
         HashMap<AffineSpace, ASFail> lowerLevel = new HashMap<>();
         List<ASFail> currentLevel;
 
         for (int i = 1; i < y.dim(); i++) {
 
-            currentLevel = new Choose<>(new ArrayList<>(halfSpaces), i)
+            currentLevel = new ChoosePlanes(new ArrayList<>(planes), i)
                     .chooseStream()
-                    .map(subsetOfHalfSpaces -> new ASFail(subsetOfHalfSpaces, y))
+                    .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y))
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-            ASProjSave proj = currentLevel.stream()//.parallel()//TODO: making this parralell causes varius bugs.  This should be fixed.
+            ASProj proj = currentLevel.stream().parallel()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-                    .map(asf -> new ASProjSave(preProj, asf.asNode))
+                    .map(asf -> new ASProj(preProj, asf.asNode))
                     .filter(p -> hasElement(p.proj))
                     .min(Comparator.comparing(p -> p.proj.d(preProj)))
                     .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
-//            List<ASProjSave> candidates = new ArrayList<>(5);
+//            List<ASProj> candidates = new ArrayList<>(5);
 //
 //            for (ASFail asf : currentLevel)
 //                if (asf.mightContainProj(lowerLevel, preProj)) {
-//                    ASProjSave asps = new ASProjSave(preProj, asf.asNode);
+//                    ASProj asps = new ASProj(preProj, asf.asNode);
 //                    if (hasElement(asps.proj))
 //                        candidates.add(asps);
 //                }
-//            ASProjSave proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+//            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
@@ -179,30 +186,32 @@ public class ProjPolytope {
     }
 
     public boolean hasElement(Point p) {
-        return halfSpaces.stream().allMatch(hs -> hs.hasElement(p));
+        return planes.stream().allMatch(hs -> hs.aboveOrContains(p));
     }
 
     public boolean hasElement(Point p, double epsilon) {
-        return halfSpaces.stream().allMatch(hs -> hs.hasElement(p, epsilon));
+        return planes.stream().allMatch(hs -> hs.aboveOrContains(p, epsilon));
     }
 
-    public class ASProjSave {
+    public class ASProj {
 
         public Point proj;
         public AffineSpace as;
 
-        public ASProjSave(Point preProj, ASNode asn) {
+        public ASProj(Point proj, AffineSpace as) {
+            this.proj = proj;
+            this.as = as;
+        }
+
+        public ASProj(Point preProj, ASNode asn) {
             this.as = asn.as;
 
-            if (!asProjs.containsKey(asn)) {
-
+            if (asProjs.containsKey(asn))
+                proj = asn.as.proj(asProjs.get(asn), preProj);
+            else {
                 asProjs.put(asn, asn.as.linearSpace().getProjFunc());
                 proj = asn.as.proj(preProj);
-
-            } else {
-                proj = asn.as.proj(asProjs.get(asn), preProj);
             }
-
         }
 
     }
@@ -211,12 +220,12 @@ public class ProjPolytope {
 
         if (as.isAllSpace()) {
             asProjs.clear();
-            halfSpaces.clear();
+            planes.clear();
             return;
         }
 
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
-        halfSpaces.removeIf(hs -> !planesToBePreserved.contains(hs.boundary()));
+        planes.removeIf(hs -> !planesToBePreserved.contains(hs));
         asProjs
                 .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
 
@@ -235,9 +244,9 @@ public class ProjPolytope {
 
         Point preProj = y.minus(part.getGradient());
 
-        halfSpaces.add(add);
+        planes.add(add.boundary());
 
-        ASProjSave asProj = proj(preProj, y);
+        ASProj asProj = proj(preProj, y);
 
         travelThrough = asProj.as;
 
