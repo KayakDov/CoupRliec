@@ -105,28 +105,28 @@ public class LocalPolyhedralCone extends Polytope {
             ////////////////////////remove//////////////////////////////////////////
 //            System.out.println(aspb.affineSpaces(i).count());
 
-            List<AffineSpace> asList = aspb.affineSpaces(i).collect(Collectors.toList());
-            List<ASProj> filteredList = new ArrayList<>(asList.size()/2);
-            
-            int pass = 0, fail = 0;
-            for(AffineSpace as: asList){
-                if(aspb.projectionRule(as, preProj, epsilon)){
-                    pass++;
-                    ASProj proj = new ASProj(as, preProj);
-                    if(hasElement(proj.proj())) filteredList.add(proj);
-                }else fail++;
-            }
-            System.out.println((double)pass/(pass + fail));
-            
-            ASProj minDist = filteredList.stream().min(Comparator.comparing(proj -> proj.proj().d(preProj))).orElse(null);
+//            List<AffineSpace> asList = aspb.affineSpaces(i).collect(Collectors.toList());
+//            List<ASProj> filteredList = new ArrayList<>(asList.size()/2);
+//            
+//            int pass = 0, fail = 0;
+//            for(AffineSpace as: asList){
+//                if(aspb.projectionRule(as, preProj, epsilon)){
+//                    pass++;
+//                    ASProj proj = new ASProj(as, preProj);
+//                    if(hasElement(proj.proj())) filteredList.add(proj);
+//                }else fail++;
+//            }
+//            System.out.println((double)pass/(pass + fail));
+//            
+//            ASProj minDist = filteredList.stream().min(Comparator.comparing(proj -> proj.proj().d(preProj))).orElse(null);
 /////////////////////////////end remove //////////////////////////////////////////////
 //            include:  
-//            ASProj minDist = aspb.affineSpaces(i)
-//                    .filter(as -> aspb.projectionRule(as, preProj, epsilon))
-//                    .map(as -> new ASProj(as, preProj))
-//                    .filter(asProj -> hasElement(asProj.proj()))
-//                    .min(Comparator.comparing(p -> p.proj().d(preProj)))
-//                    .orElse(null);
+            ASProj minDist = aspb.affineSpaces(i)
+                    .filter(as -> aspb.projectionRule(as, preProj, epsilon))
+                    .map(as -> new ASProj(as, preProj))
+                    .filter(asProj -> hasElement(asProj.proj()))
+                    .min(Comparator.comparing(p -> p.proj().d(preProj)))
+                    .orElse(null);
 ///////////////////////////////////////////////////////////////////////////////////////
             if (minDist != null) {
                 aspb.clearFailPoints(i - 1);

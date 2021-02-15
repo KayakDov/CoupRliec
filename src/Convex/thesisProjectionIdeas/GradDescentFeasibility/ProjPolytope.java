@@ -68,6 +68,18 @@ public class ProjPolytope {
             this.planes = new HashSet<Plane>(1);
             planes.add(plane);
         }
+        
+        public Point getProj(Point preProj) {
+        if (planes.size() == 1) return as.proj(preProj);
+        else {
+            if (asProjs.containsKey(this))
+                return as.proj(asProjs.get(this), preProj);
+            else {
+                asProjs.put(this, as.linearSpace().getProjFunc());
+                return as.proj(preProj);
+            }
+        }
+    }
 
         @Override
         public String toString() {
@@ -111,18 +123,17 @@ public class ProjPolytope {
 
         public boolean mightContainProj(HashMap<AffineSpace, ASFail> lowerLevel, Point preProj) {
 
-            if (lowerLevel.isEmpty()) 
+            if (lowerLevel.isEmpty())
                 if (somePlane().above(preProj)) return mightContProj = false;
                 else return mightContProj = true;
-                
-            
+
             if (asProjs.containsKey(asNode)) return mightContProj = true;
-            
 
             asNode.as.oneDown()
                     .flatMap(as -> {
                         ASFail llget = lowerLevel.get(as);
-                        if(llget.mightContProj) return Stream.of(new ASProj(preProj, llget.asNode).proj);
+                        if (llget.mightContProj)
+                            return Stream.of(llget.asNode.getProj(preProj));
                         return llget.failed.stream();
                     })
                     .filter(fp -> localHasElement(fp))
@@ -156,28 +167,28 @@ public class ProjPolytope {
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-//            ASProj proj = currentLevel.stream().parallel()
-//                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-//                    .map(asf -> new ASProj(preProj, asf.asNode))
-//                    .filter(p -> hasElement(p.proj))
-//                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
-//                    .orElse(null);
+            ASProj proj = currentLevel.stream().parallel()
+                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
+                    .map(asf -> new ASProj(preProj, asf.asNode))
+                    .filter(p -> hasElement(p.proj))
+                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
+                    .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
-            List<ASProj> candidates = new ArrayList<>(5);
-
-            int fail = 0, pass = 0;
-            for (ASFail asf : currentLevel) {
-                if (asf.mightContainProj(lowerLevel, preProj)) {
-                    pass++;
-                    ASProj asps = new ASProj(preProj, asf.asNode);
-                    if (hasElement(asps.proj))
-                        candidates.add(asps);
-                } else fail++;
-            }
-
-            System.out.println((double) pass / (pass + fail));
-
-            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+//            List<ASProj> candidates = new ArrayList<>(5);
+//
+//            int fail = 0, pass = 0;
+//            for (ASFail asf : currentLevel) {
+//                if (asf.mightContainProj(lowerLevel, preProj)) {
+//                    pass++;
+//                    ASProj asps = new ASProj(preProj, asf.asNode);
+//                    if (hasElement(asps.proj))
+//                        candidates.add(asps);
+//                } else fail++;
+//            }
+//
+//            System.out.println((double) pass / (pass + fail));
+//
+//            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
