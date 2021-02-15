@@ -40,7 +40,6 @@ public class ChoosePlanes {
         return choose(n - 1, k - 1) * n / k;
     }
 
-    
     /**
      * returns a stream of all the subsets of size choose.
      *
@@ -49,9 +48,6 @@ public class ChoosePlanes {
     public Stream<Plane[]> chooseStream() {
         return streamOfListsOfInts().parallel().map(al -> intsToList(al));
     }
-    
-    
-
 
     /**
      * converts a list of integers into a list of T's
@@ -60,48 +56,50 @@ public class ChoosePlanes {
      * @return a list of T's
      */
     private Plane[] intsToList(int[] ints) {
-        
+
         Plane[] ts = new Plane[ints.length];
-        
+
         Arrays.setAll(ts, i -> this.list.get(ints[i]));
         return ts;
     }
-    
-    
 
     private Stream<int[]> streamOfListsOfInts() {
-        return streamOfListsOfInts(new int[0], choose, list.size());
+        return streamOfListsOfInts(new int[choose], choose, list.size(), 0);
     }
-    
-    private static Stream<int[]> streamOfListsOfInts(int choose, int from) {
-        return streamOfListsOfInts(new int[0], choose, from);
+
+    public static Stream<int[]> streamOfListsOfInts(int choose, int from) {
+        return streamOfListsOfInts(new int[choose], choose, from, 0);
     }
-    
-    
+
     /**
      *
-     * @param soFar This should be an empty set when this method is called from
+     * @param soFar This should be an empty array of size choose when this method is called from
      * anywhere other than inside the method.
      * @return All the combinations of integers of the given size
      */
-    public static Stream<int[]> streamOfListsOfInts(int[] soFar, int choose, int from) {
+    public static Stream<int[]> streamOfListsOfInts(int[] soFar, int choose, int from, int depth) {
 
-        if (soFar.length == choose)
+        if (depth == choose)
             return Stream.of(soFar);
+
+        int start = depth - 1 >= 0 ? soFar[depth - 1] + 1 : 0;
+        if(start == from) return Stream.of();
         
-        int start = soFar.length - 1 >= 0 ? soFar[ soFar.length - 1] + 1 : 0;
+        soFar[depth] = start;
+        Stream<int[]> soFarStream = streamOfListsOfInts(soFar, choose, from, depth + 1);
         
-        
-        return IntStream
-                .range(start, from)
+        Stream<int[]> soloi = IntStream
+                .range(start + 1, from)
                 .mapToObj(i -> i)
                 .flatMap(i -> {
-                    int[] next = new int[soFar.length + 1];
-                    System.arraycopy(soFar, 0, next, 0, soFar.length);
-                    next[next.length - 1] = i;
-                    return streamOfListsOfInts(next, choose, from);
+                    int[] next = new int[choose];
+                    System.arraycopy(soFar, 0, next, 0, depth);
+                    next[depth] = i;
+                    return streamOfListsOfInts(next, choose, from, depth + 1);
                 });
+        
+        
+        return Stream.concat(soFarStream, soloi);
     }
-    
 
 }
