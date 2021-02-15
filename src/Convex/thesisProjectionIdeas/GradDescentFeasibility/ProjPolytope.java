@@ -68,9 +68,12 @@ public class ProjPolytope {
             this.planes = new HashSet<Plane>(1);
             planes.add(plane);
         }
+        public Plane somePlane(){
+            return planes.iterator().next();
+        }
         
         public Point getProj(Point preProj) {
-        if (planes.size() == 1) return as.proj(preProj);
+        if (planes.size() == 1) return somePlane().proj(preProj);
         else {
             if (asProjs.containsKey(this))
                 return as.proj(asProjs.get(this), preProj);
@@ -79,6 +82,7 @@ public class ProjPolytope {
                 return as.proj(preProj);
             }
         }
+        
     }
 
         @Override
@@ -113,7 +117,7 @@ public class ProjPolytope {
         }
 
         private Plane somePlane() {
-            return asNode.planes.iterator().next();
+            return asNode.somePlane();
         }
 
         private boolean localHasElement(Point x) {
@@ -219,7 +223,7 @@ public class ProjPolytope {
 
         public ASProj(Point preProj, ASNode asn) {
             this.as = asn.as;
-            if (asn.planes.size() == 1) proj = asn.as.proj(preProj);
+            if (asn.planes.size() == 1) proj = asn.somePlane().proj(preProj);
             else {
                 if (asProjs.containsKey(asn))
                     proj = asn.as.proj(asProjs.get(asn), preProj);

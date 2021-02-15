@@ -28,7 +28,7 @@ public class Plane extends AffineSpace {
      * @param normal a vector normal to the plane
      */
     public Plane(Point p, Point normal) {
-        super(new LinearSpace(new Point[]{normal}), p);
+        super(new LinearSpace(new Point[]{normal.dir()}), p);
 
     }
 
@@ -90,13 +90,13 @@ public class Plane extends AffineSpace {
      * @return true if the point is on the plane.
      */
     public boolean onPlane(Point x, double epsilon) {
-        return Math.abs(x.dot(normal().dir()) - b.get(0)) <= epsilon;
+        return Math.abs(x.dot(normal()) - b.get(0)) <= epsilon;
     }
 
     /**
      * Constructor
      *
-     * @param normal a point normal to the plane
+     * @param normal a point normal to the plane.  It should have magnitude 1.
      * @param b the inner product of a point on the plane, and the normal vector
      */
     public Plane(Point normal, double b) {
@@ -139,7 +139,7 @@ public class Plane extends AffineSpace {
      */
     public boolean equals(Plane plane, double epsilon) {
         return onPlane(plane.p, epsilon)
-                && normal().dir().equals(plane.normal().dir());
+                && normal().equals(plane.normal());
     }
 
     /**
@@ -150,7 +150,7 @@ public class Plane extends AffineSpace {
      */
     @Override
     public Point proj(Point x) {
-        return x.minus(normal().dir().mult((x.minus(p)).dot(normal().dir())));
+        return x.minus(normal().mult((x.minus(p)).dot(normal())));
     }
 
     public static boolean printEasyRead = true;
@@ -180,7 +180,7 @@ public class Plane extends AffineSpace {
      */
     @Override
     public double d(Point x) {
-        return Math.abs((x.minus(p)).dot(normal().dir()));
+        return Math.abs((x.minus(p)).dot(normal()));
     }
 
     /**
