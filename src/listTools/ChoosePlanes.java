@@ -73,8 +73,8 @@ public class ChoosePlanes {
 
     /**
      *
-     * @param soFar This should be an empty array of size choose when this method is called from
-     * anywhere other than inside the method.
+     * @param soFar This should be an empty array of size choose when this
+     * method is called from anywhere other than inside the method.
      * @return All the combinations of integers of the given size
      */
     public static Stream<int[]> streamOfListsOfInts(int[] soFar, int choose, int from, int depth) {
@@ -83,23 +83,21 @@ public class ChoosePlanes {
             return Stream.of(soFar);
 
         int start = depth - 1 >= 0 ? soFar[depth - 1] + 1 : 0;
-        if(start == from) return Stream.of();
-        
+        if (start == from) return Stream.of();
+
         soFar[depth] = start;
-        Stream<int[]> soFarStream = streamOfListsOfInts(soFar, choose, from, depth + 1);
-        
-        Stream<int[]> soloi = IntStream
-                .range(start + 1, from)
-                .mapToObj(i -> i)
-                .flatMap(i -> {
-                    int[] next = new int[choose];
-                    System.arraycopy(soFar, 0, next, 0, depth);
-                    next[depth] = i;
-                    return streamOfListsOfInts(next, choose, from, depth + 1);
-                });
-        
-        
-        return Stream.concat(soFarStream, soloi);
+
+        return Stream.concat(
+                streamOfListsOfInts(soFar, choose, from, depth + 1),
+                IntStream.range(start + 1, from)
+                        .mapToObj(i -> i)
+                        .flatMap(i -> {
+                            int[] next = new int[choose];
+                            System.arraycopy(soFar, 0, next, 0, depth);
+                            next[depth] = i;
+                            return streamOfListsOfInts(next, choose, from, depth + 1);
+                        }));
+
     }
 
 }

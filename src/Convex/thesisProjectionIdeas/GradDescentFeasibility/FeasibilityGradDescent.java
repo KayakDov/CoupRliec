@@ -137,8 +137,8 @@ public class FeasibilityGradDescent extends Polytope {
         Partition part = new Partition(y, this);
         if (part.pointIsFeasible()) return y;
 
-//        LocalPolyhedralCone cone = new LocalPolyhedralCone(part);//TODO:this old method seems to be faster than the newer method
-        ProjPolytope cone = new ProjPolytope(part);//TODO: this is the newer method, it should be faster but isn't.
+        LocalPolyhedralCone cone = new LocalPolyhedralCone(part);//TODO:this old method seems to be faster than the newer method
+//        ProjPolytope cone = new ProjPolytope(part);//TODO: this is the newer method, it should be faster but isn't.
 
         Point start = y;      //TODO remove
 
