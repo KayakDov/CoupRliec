@@ -95,12 +95,17 @@ public class Plane extends AffineSpace {
 
     /**
      * Constructor
-     *
+     *TODO: for some reason it does not work to try to normalize the normal vector here, and b.
      * @param normal a point normal to the plane.  It should have magnitude 1.
      * @param b the inner product of a point on the plane, and the normal vector
      */
     public Plane(Point normal, double b) {
         super(new Point[]{normal}, PointD.oneD(b));
+        if(Math.abs(normal.magnitude() - 1) > epsilon){
+            double mag = normal.magnitude();
+            this.b.set(0, b/mag);
+            linearSpace.normals[0] = normal.mult(1/mag);
+        }
     }
 
     /**
