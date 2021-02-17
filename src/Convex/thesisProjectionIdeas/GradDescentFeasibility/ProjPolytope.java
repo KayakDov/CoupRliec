@@ -7,11 +7,11 @@ import Matricies.Matrix;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import listTools.ChoosePlanes;
@@ -33,7 +33,7 @@ public class ProjPolytope {
     public ProjPolytope(Partition part) {
         int dim = part.getGradient().dim();
         this.planes = new HashSet<>(dim);
-        this.asProjs = new HashMap<>((int) Math.pow(2, dim));
+        this.asProjs = new ConcurrentHashMap<>((int) Math.pow(2, dim));
         this.gradInBounds = part.getGradient();
         this.part = part;
         travelThrough = AffineSpace.allSpace(gradInBounds.dim());
@@ -52,7 +52,7 @@ public class ProjPolytope {
             this.as = as;
             this.planes = planes;
         }
-
+        
         @Override
         public int hashCode() {
             return as.hashCode();
@@ -95,12 +95,11 @@ public class ProjPolytope {
     private class ASFail {
 
         public ASNode asNode;
-        public ArrayList<Point> failed;
+        public List<Point> failed;
         public boolean mightContProj;
 
         public ASFail(ASNode asNode) {
             this.asNode = asNode;
-            this.failed = new ArrayList<>(1);
         }
 
         public ASFail(Plane plane) {
@@ -125,7 +124,12 @@ public class ProjPolytope {
                     .allMatch(plane -> plane.aboveOrContains(x));
         }
 
-        public boolean mightContainProj(HashMap<AffineSpace, ASFail> lowerLevel, Point preProj) {
+        @Override
+        public String toString() {
+            return asNode.toString() + "\n" + failed; 
+        }
+
+        public boolean mightContainProj(Map<AffineSpace, ASFail> lowerLevel, Point preProj) {
 
             if (lowerLevel.isEmpty())
                 if (somePlane().above(preProj)) return mightContProj = false;
@@ -133,22 +137,22 @@ public class ProjPolytope {
 
             if (asProjs.containsKey(asNode)) return mightContProj = true;
 
-            asNode.as.oneDown()
+            failed = asNode.as.oneDown()
                     .flatMap(as -> {
-                        ASFail llget = lowerLevel.get(as);
-                        if (llget.mightContProj)
-                            return Stream.of(llget.asNode.getProj(preProj));
-                        return llget.failed.stream();
+                        ASFail oneDownI = lowerLevel.get(as);
+                        if (oneDownI.mightContProj) return Stream.of(oneDownI.asNode.getProj(preProj));
+                        if(oneDownI.failed == null) return Stream.of();
+                        return oneDownI.failed.stream();
                     })
-                    .filter(fp -> localHasElement(fp))
-                    .collect(Collectors.toCollection(() -> failed));
+                    .filter(p -> localHasElement(p))
+                    .collect(Collectors.toList());
 
             return mightContProj = failed.isEmpty();
         }
     }
     //TODO: init size for speeed
 
-    public HashMap<ASNode, Matrix> asProjs;
+    public ConcurrentHashMap<ASNode, Matrix> asProjs;
     public HashSet<Plane> planes;
 
     public void remove(HalfSpace hs) {
@@ -157,10 +161,10 @@ public class ProjPolytope {
     }
 
     public ASProj proj(Point preProj, Point y) {
-        if (hasElement(preProj))
+        if (hasElementParallel(preProj))
             return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
-        HashMap<AffineSpace, ASFail> lowerLevel = new HashMap<>();
+        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int)ChoosePlanes.choose(y.dim(), y.dim()/2));
         List<ASFail> currentLevel;
 
         for (int i = 1; i < y.dim(); i++) {
@@ -171,7 +175,7 @@ public class ProjPolytope {
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-            ASProj proj = currentLevel.stream().parallel()
+            ASProj proj = currentLevel.parallelStream()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProj(preProj, asf.asNode))
                     .filter(p -> hasElement(p.proj))
@@ -192,19 +196,23 @@ public class ProjPolytope {
 //
 //            System.out.println((double) pass / (pass + fail));
 //
-//            ASProj proj = candidates.stream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+//            ASProj proj = candidates.parallelStream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
             if (proj != null) return proj;
 
             lowerLevel.clear();
-            currentLevel.forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
+            
+            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
         }
         throw new EmptyPolytopeException();
     }
 
     public boolean hasElement(Point p) {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p));
+    }
+    public boolean hasElementParallel(Point p) {
+        return planes.parallelStream().allMatch(hs -> hs.aboveOrContains(p));
     }
 
     public boolean hasElement(Point p, double epsilon) {
@@ -246,8 +254,7 @@ public class ProjPolytope {
 
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));
-        asProjs
-                .keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
+        asProjs.keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planes));
 
     }
 
