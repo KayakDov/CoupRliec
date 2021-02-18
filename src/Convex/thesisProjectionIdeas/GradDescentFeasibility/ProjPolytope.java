@@ -52,7 +52,7 @@ public class ProjPolytope {
             this.as = as;
             this.planes = planes;
         }
-        
+
         @Override
         public int hashCode() {
             return as.hashCode();
@@ -68,22 +68,28 @@ public class ProjPolytope {
             this.planes = new HashSet<Plane>(1);
             planes.add(plane);
         }
-        public Plane somePlane(){
+
+        public Plane somePlane() {
             return planes.iterator().next();
         }
-        
-        public Point getProj(Point preProj) {
-        if (planes.size() == 1) return somePlane().proj(preProj);
-        else {
-            if (asProjs.containsKey(this))
-                return as.proj(asProjs.get(this), preProj);
-            else {
-                asProjs.put(this, as.linearSpace().getProjFunc());
-                return as.proj(preProj);
-            }
+
+        private boolean localHasElement(Point x) {
+            return planes.stream()
+                    .allMatch(plane -> plane.aboveOrContains(x));
         }
-        
-    }
+
+        public Point getProj(Point preProj) {
+            if (planes.size() == 1) return somePlane().proj(preProj);
+            else {
+                if (asProjs.containsKey(this))
+                    return as.proj(asProjs.get(this), preProj);
+                else {
+                    asProjs.put(this, as.linearSpace().getProjFunc());
+                    return as.proj(preProj);
+                }
+            }
+
+        }
 
         @Override
         public String toString() {
@@ -106,6 +112,11 @@ public class ProjPolytope {
             this(new ASNode(plane));
         }
 
+        public ASFail setMightContainProh(boolean might) {
+            mightContProj = might;
+            return this;
+        }
+
         public ASFail(HashSet<Plane> hsList, Point y) {
             this(new ASNode(new AffineSpace(hsList).setP(y), hsList));
         }
@@ -119,32 +130,24 @@ public class ProjPolytope {
             return asNode.somePlane();
         }
 
-        private boolean localHasElement(Point x) {
-            return asNode.planes.stream()
-                    .allMatch(plane -> plane.aboveOrContains(x));
-        }
-
         @Override
         public String toString() {
-            return asNode.toString() + "\n" + failed; 
+            return asNode.toString() + "\n" + failed;
         }
 
         public boolean mightContainProj(Map<AffineSpace, ASFail> lowerLevel, Point preProj) {
-
-            if (lowerLevel.isEmpty())
-                if (somePlane().above(preProj)) return mightContProj = false;
-                else return mightContProj = true;
 
             if (asProjs.containsKey(asNode)) return mightContProj = true;
 
             failed = asNode.as.oneDown()
                     .flatMap(as -> {
                         ASFail oneDownI = lowerLevel.get(as);
-                        if (oneDownI.mightContProj) return Stream.of(oneDownI.asNode.getProj(preProj));
-                        if(oneDownI.failed == null) return Stream.of();
+                        if (oneDownI.mightContProj)
+                            return Stream.of(oneDownI.asNode.getProj(preProj));
+                        if (oneDownI.failed == null) return Stream.of();
                         return oneDownI.failed.stream();
                     })
-                    .filter(p -> localHasElement(p))
+                    .filter(p -> asNode.localHasElement(p))
                     .collect(Collectors.toList());
 
             return mightContProj = failed.isEmpty();
@@ -164,18 +167,34 @@ public class ProjPolytope {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
-        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int)ChoosePlanes.choose(y.dim(), y.dim()/2));
-        List<ASFail> currentLevel;
+        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int) ChoosePlanes.choose(y.dim(), y.dim() / 2));
+        List<ASFail> currentLevel = planes
+                .parallelStream()
+                .map(plane -> new ASFail(plane).setMightContainProh(plane.below(preProj)))
+                .collect(Collectors.toList());
 
-        for (int i = 1; i < y.dim(); i++) {
+        ASProj proj = currentLevel
+                .parallelStream()
+                .map(asFail -> new ASProj(asFail.asNode.as.proj(preProj), asFail.asNode.somePlane()))
+                .filter(p -> hasElement(p.proj))
+                .findAny()
+                .orElse(null);
 
+        for (int i = 2; i < y.dim(); i++) {
+            
+            if (proj != null) return proj;
+
+            lowerLevel.clear();
+
+            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
+            
             currentLevel = new ChoosePlanes(new ArrayList<>(planes), i)
                     .chooseStream()
                     .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y))
                     .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
-            ASProj proj = currentLevel.parallelStream()
+            proj = currentLevel.parallelStream()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProj(preProj, asf.asNode))
                     .filter(p -> hasElement(p.proj))
@@ -199,11 +218,6 @@ public class ProjPolytope {
 //            ASProj proj = candidates.parallelStream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
             ///////////end of slow section to be cut/////////////////////////////////
 
-            if (proj != null) return proj;
-
-            lowerLevel.clear();
-            
-            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
         }
         throw new EmptyPolytopeException();
     }
@@ -211,6 +225,7 @@ public class ProjPolytope {
     public boolean hasElement(Point p) {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p));
     }
+
     public boolean hasElementParallel(Point p) {
         return planes.parallelStream().allMatch(hs -> hs.aboveOrContains(p));
     }

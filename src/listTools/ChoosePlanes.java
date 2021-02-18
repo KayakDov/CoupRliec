@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  */
 public class ChoosePlanes {
 
-    private final List<Plane> list;
+    private final List<Plane> fromList;
     private final int choose;
 
     /**
@@ -24,7 +24,7 @@ public class ChoosePlanes {
      * @param choose
      */
     public ChoosePlanes(List<Plane> list, int choose) {
-        this.list = list;
+        this.fromList = list;
         this.choose = choose;
     }
 
@@ -57,14 +57,15 @@ public class ChoosePlanes {
      */
     private Plane[] intsToList(int[] ints) {
 
-        Plane[] ts = new Plane[ints.length];
+        Plane[] planeArray = new Plane[ints.length];
 
-        Arrays.setAll(ts, i -> this.list.get(ints[i]));
-        return ts;
+        Arrays.setAll(planeArray, i -> fromList.get(ints[i]));
+        
+        return planeArray;
     }
 
     private Stream<int[]> streamOfListsOfInts() {
-        return streamOfListsOfInts(new int[choose], choose, list.size(), 0);
+        return streamOfListsOfInts(new int[choose], choose, fromList.size(), 0);
     }
 
     public static Stream<int[]> streamOfListsOfInts(int choose, int from) {
