@@ -112,7 +112,7 @@ public class ProjPolytope {
             this(new ASNode(plane));
         }
 
-        public ASFail setMightContainProh(boolean might) {
+        public ASFail setMightContainProj(boolean might) {
             mightContProj = might;
             return this;
         }
@@ -153,7 +153,6 @@ public class ProjPolytope {
             return mightContProj = failed.isEmpty();
         }
     }
-    //TODO: init size for speeed
 
     public ConcurrentHashMap<ASNode, Matrix> asProjs;
     public HashSet<Plane> planes;
@@ -163,35 +162,54 @@ public class ProjPolytope {
         planes.remove(hs);
     }
 
+    private List<ASFail> nextLevel(List<ASFail> lowerLevel, Point y) {
+        return planes.parallelStream().flatMap(plane
+                -> lowerLevel.stream()
+                        .filter(asf -> !asf.asNode.planes.contains(plane))
+                        .map(asf -> {
+                            Plane[] planes = new Plane[asf.asNode.planes.size() + 1];
+                            System.arraycopy(asf.asNode.as.intersectingPlanesArray(), 0, planes, 0, asf.asNode.planes.size());
+                            planes[planes.length - 1] = plane;
+                            ASFail asFail = new ASFail(planes, y);
+                            System.out.println("the plane \n" + plane + " \nand the affine space " + asf + " contribute to make " + asFail);
+                            return asFail;
+                        })
+        ).collect(Collectors.toList());
+    }
+
     public ASProj proj(Point preProj, Point y) {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
-        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int) ChoosePlanes.choose(y.dim(), y.dim() / 2));
         List<ASFail> currentLevel = planes
                 .parallelStream()
-                .map(plane -> new ASFail(plane).setMightContainProh(plane.below(preProj)))
+                .map(plane -> new ASFail(plane).setMightContainProj(plane.below(preProj)))
                 .collect(Collectors.toList());
 
         ASProj proj = currentLevel
                 .parallelStream()
+                .filter(asf -> asf.mightContProj)
                 .map(asFail -> new ASProj(asFail.asNode.as.proj(preProj), asFail.asNode.somePlane()))
                 .filter(p -> hasElement(p.proj))
                 .findAny()
                 .orElse(null);
-
+        
+        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int) ChoosePlanes.choose(y.dim(), y.dim() / 2));
+        
         for (int i = 2; i < y.dim(); i++) {
-            
+
             if (proj != null) return proj;
 
             lowerLevel.clear();
 
             currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
-            
-            currentLevel = new ChoosePlanes(new ArrayList<>(planes), i)
-                    .chooseStream()
-                    .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y))
-                    .collect(Collectors.toList());
+
+            currentLevel = //nextLevel(currentLevel, y);
+                    //          Old code that I don't dare remove yet.  This should be what current level is set to.  
+                    new ChoosePlanes(new ArrayList<>(planes), i)
+                            .chooseStream()
+                            .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y))
+                            .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
@@ -213,12 +231,13 @@ public class ProjPolytope {
 //                } else fail++;
 //            }
 //
-//            System.out.println((double) pass / (pass + fail));
-//
-//            ASProj proj = candidates.parallelStream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
-            ///////////end of slow section to be cut/////////////////////////////////
+//            System.out.println("dim:" + i + " percent pass" + (double) pass / (pass + fail));
 
+//            proj = candidates.parallelStream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
+            ///////////end of slow section to be cut/////////////////////////////////
         }
+        
+        if(y.dim() == 2 || proj != null) return proj;
         throw new EmptyPolytopeException();
     }
 

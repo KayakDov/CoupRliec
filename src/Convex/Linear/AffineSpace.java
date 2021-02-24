@@ -442,6 +442,13 @@ public class AffineSpace implements ConvexSet {
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
     }
+    public Plane[] intersectingPlanesArray(){
+        Plane[] planes = new Plane[b.dim()];
+        for(int i = 0; i < b.dim(); i++)
+            planes[i] = new Plane(linearSpace.normals[i], b.get(i));
+        return planes;
+    }
+    
     public HashSet<Plane> intersectingPlanesSet(){
         HashSet<Plane> planes = new HashSet<>(b.dim());
         for(int i = 0; i < b.dim(); i++)
