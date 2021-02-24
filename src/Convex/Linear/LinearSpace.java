@@ -4,12 +4,10 @@ import Convex.ConvexSet;
 import Matricies.Matrix;
 import Matricies.MatrixDense;
 import Matricies.MatrixSparse;
-import Matricies.Point;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
-import MySystem.Memory;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
