@@ -144,7 +144,7 @@ public class FeasibilityGradDescent extends Polytope {
 
         for (int i = 0; i <= size() + 1; i++) {
 
-            try {
+//            try {
 //                System.out.println(y);
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
@@ -176,9 +176,9 @@ public class FeasibilityGradDescent extends Polytope {
                 }
 //            } catch (EmptyPolytopeException epe) {
 //                return new PointD(1).setAll(j -> Double.NaN);
-            } catch (Exception nsee) {//TODO: remove once everything is working
-                throw new FailedDescentException(nsee.getMessage(), start, y, part);
-            }
+//            } catch (Exception nsee) {//TODO: remove once everything is working
+//                throw new FailedDescentException(nsee.getMessage(), start, y, part);
+//            }
 
         }
 
