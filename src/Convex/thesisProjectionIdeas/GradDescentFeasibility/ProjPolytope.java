@@ -49,17 +49,19 @@ public class ProjPolytope {
         public AffineSpace as;
         public final Set<Plane> planeSet;
         public final List<Plane> planeList;
-        public int lastIndex;
+        public final int lastIndex;
 
         public ASNode(AffineSpace as, Set<Plane> planes, int index) {
             this.as = as;
             this.planeSet = planes;
             planeList = new ArrayList<>(planes);
+            lastIndex = index;
         }
         public ASNode(AffineSpace as, List<Plane> planeList, int index) {
             this.as = as;
             this.planeSet = new HashSet<>(planeList);
             this.planeList = planeList;
+            lastIndex = index;
         }
 
         @Override
@@ -72,12 +74,13 @@ public class ProjPolytope {
             return as.equals(((ASNode) obj).as);
         }
 
-        public ASNode(Plane plane) {
+        public ASNode(Plane plane, int index) {
             this.as = plane;
             this.planeSet = new HashSet<Plane>(1);
             planeSet.add(plane);
             this.planeList = new ArrayList<>(1);
             planeList.add(plane);
+            lastIndex = index;
         }
 
         public Plane somePlane() {
@@ -119,8 +122,8 @@ public class ProjPolytope {
             this.asNode = asNode;
         }
 
-        public ASFail(Plane plane) {
-            this(new ASNode(plane));
+        public ASFail(Plane plane, int planeIndex) {
+            this(new ASNode(plane, planeIndex));
         }
 
         public ASFail setMightContainProj(boolean might) {
@@ -195,9 +198,9 @@ public class ProjPolytope {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
-        List<ASFail> currentLevel = planes
-                .parallelStream()
-                .map(plane -> new ASFail(plane).setMightContainProj(plane.below(preProj)))
+        List<ASFail> currentLevel = IntStream.range(0, planes.size())
+                .parallel()
+                .mapToObj(i -> new ASFail(planes.get(i), i).setMightContainProj(planes.get(i).below(preProj)))
                 .collect(Collectors.toList());
 
         ASProj proj = currentLevel
@@ -218,12 +221,13 @@ public class ProjPolytope {
 
             currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
 
-            currentLevel = nextLevel(currentLevel, y);
-            //          Old code that I don't dare remove yet.  This should be what current level is set to.  
-//                    new ChoosePlanes(new ArrayList<>(planes), i)
-//                            .chooseStream()
-//                            .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y, 0))
-//                            .collect(Collectors.toList());
+            currentLevel = //nextLevel(currentLevel, y);
+//                      Old code that I don't dare remove yet.  This should be what current level is set to.  
+//System.out.println("current:" + currentLevel.size());
+             new ChoosePlanes(new ArrayList<>(planes), i)
+                    .chooseStream()
+                    .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y, 0))
+                    .collect(Collectors.toList());
 
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
