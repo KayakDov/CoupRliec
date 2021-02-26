@@ -19,7 +19,7 @@ public class Main {
         int numFaces = 100;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 100; i++) {
             System.out.println("i = " + i);
             FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
 //            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));

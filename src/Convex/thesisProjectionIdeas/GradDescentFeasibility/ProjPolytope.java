@@ -173,7 +173,7 @@ public class ProjPolytope {
     }
 
     public ConcurrentHashMap<ASNode, Matrix> asProjs;
-    public ArrayList<Plane> planes;
+    public List<Plane> planes;
 
     public void remove(HalfSpace hs) {
         asProjs.entrySet().removeIf(asn -> asn.getKey().planeSet.contains(hs.boundary()));
@@ -226,7 +226,7 @@ public class ProjPolytope {
             proj = currentLevel.parallelStream()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProj(preProj, asf.asNode))
-                    .filter(p -> hasElement(p.proj))
+                    .filter(asp -> hasElement(asp.proj))
                     .min(Comparator.comparing(p -> p.proj.d(preProj)))
                     .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
@@ -276,15 +276,7 @@ public class ProjPolytope {
 
         public ASProj(Point preProj, ASNode asn) {
             this.as = asn.as;
-            if (asn.planeSet.size() == 1) proj = asn.somePlane().proj(preProj);
-            else {
-                if (asProjs.containsKey(asn))
-                    proj = asn.as.proj(asProjs.get(asn), preProj);
-                else {
-                    asProjs.put(asn, asn.as.linearSpace().getProjFunc());
-                    proj = asn.as.proj(preProj);
-                }
-            }
+            proj = asn.getProj(preProj);
         }
 
     }
@@ -299,7 +291,7 @@ public class ProjPolytope {
 
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));
-        asProjs.keySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.planeSet));
+        asProjs.entrySet().removeIf(asn -> !planesToBePreserved.containsAll(asn.getKey().planeSet));
 
     }
 
