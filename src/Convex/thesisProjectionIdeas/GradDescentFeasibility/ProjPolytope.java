@@ -57,6 +57,7 @@ public class ProjPolytope {
             planeList = new ArrayList<>(planes);
             lastIndex = index;
         }
+
         public ASNode(AffineSpace as, List<Plane> planeList, int index) {
             this.as = as;
             this.planeSet = new HashSet<>(planeList);
@@ -134,15 +135,14 @@ public class ProjPolytope {
         public ASFail(HashSet<Plane> hsSet, Point y, int index) {
             this(new ASNode(new AffineSpace(hsSet).setP(y), hsSet, index));
         }
-        
+
         public ASFail(List<Plane> hsList, Point y, int index) {
             this(new ASNode(new AffineSpace(hsList).setP(y), hsList, index));
         }
-        
+
         public ASFail(Plane[] hsList, Point y, int index) {
             this(new ASNode(new AffineSpace(hsList).setP(y), List.of(hsList), index));
         }
-
 
         private Plane somePlane() {
             return asNode.somePlane();
@@ -181,16 +181,15 @@ public class ProjPolytope {
     }
 
     private List<ASFail> nextLevel(List<ASFail> lowerLevel, Point y) {
-        return lowerLevel.parallelStream()
-                .flatMap(asf -> IntStream
-                        .range(asf.asNode.lastIndex + 1, planes.size())
-                        .mapToObj(i -> {
-                            ArrayList<Plane> arrayOfPlanes = new ArrayList<>(asf.asNode.planeSet.size() + 1);
-                            arrayOfPlanes.addAll(asf.asNode.planeList);
-                            arrayOfPlanes.add(planes.get(i));
-                            return new ASFail(arrayOfPlanes, y, i);
-                        })
-        ).collect(Collectors.toList()); 
+        return lowerLevel.parallelStream().flatMap(asf -> IntStream
+                .range(asf.asNode.lastIndex + 1, planes.size())
+                .mapToObj(i -> {
+                    ArrayList<Plane> arrayOfPlanes = new ArrayList<>(asf.asNode.planeSet.size() + 1);
+                    arrayOfPlanes.addAll(asf.asNode.planeList);
+                    arrayOfPlanes.add(planes.get(i));
+                    return new ASFail(arrayOfPlanes, y, i);
+                })
+        ).collect(Collectors.toList());
 
     }
 
@@ -221,13 +220,7 @@ public class ProjPolytope {
 
             currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
 
-            currentLevel = //nextLevel(currentLevel, y);
-//                      Old code that I don't dare remove yet.  This should be what current level is set to.  
-//System.out.println("current:" + currentLevel.size());
-             new ChoosePlanes(new ArrayList<>(planes), i)
-                    .chooseStream()
-                    .map(arrayOfPlanes -> new ASFail(arrayOfPlanes, y, 0))
-                    .collect(Collectors.toList());
+            currentLevel = nextLevel(currentLevel, y);
 
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
