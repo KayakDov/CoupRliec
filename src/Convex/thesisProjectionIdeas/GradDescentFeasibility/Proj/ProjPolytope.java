@@ -91,6 +91,8 @@ public class ProjPolytope {
             currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
 
             currentLevel = nextLevel(currentLevel, y);
+            
+            System.out.println(currentLevel.size());
 
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
@@ -133,22 +135,7 @@ public class ProjPolytope {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p, epsilon));
     }
 
-    public class ASProj {
-
-        public Point proj;
-        public AffineSpace as;
-
-        public ASProj(Point proj, AffineSpace as) {
-            this.proj = proj;
-            this.as = as;
-        }
-
-        public ASProj(Point preProj, ASNode asn) {
-            this.as = asn.as;
-            proj = asn.getProj(preProj);
-        }
-
-    }
+    
 
     public void removeExcept(AffineSpace as) {
 
