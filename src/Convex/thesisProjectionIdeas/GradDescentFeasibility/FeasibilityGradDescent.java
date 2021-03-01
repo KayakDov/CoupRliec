@@ -1,5 +1,6 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
 import Convex.HalfSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;

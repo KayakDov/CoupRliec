@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -75,41 +76,41 @@ public class AffineSpace implements ConvexSet {
         p = onSpace;
     }
 
-    public AffineSpace(Set<Plane> intersectingPlanes){
-        
+    public AffineSpace(Set<Plane> intersectingPlanes) {
+
         Iterator<Plane> iter = intersectingPlanes.iterator();
         Point[] normals = new Point[intersectingPlanes.size()];
         b = new PointD(intersectingPlanes.size());
-        
-        for(int i = 0; i < intersectingPlanes.size(); i++){
+
+        for (int i = 0; i < intersectingPlanes.size(); i++) {
             Plane p = iter.next();
             normals[i] = p.normal();
             b.set(i, p.b.get(0));
         }
-        
+
         linearSpace = new LinearSpace(normals);
     }
-    
-    public AffineSpace(Plane[] planes){
+
+    public AffineSpace(Plane[] planes) {
         Point[] normals = new Point[planes.length];
         Arrays.setAll(normals, i -> planes[i].normal());
         b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
         linearSpace = new LinearSpace(normals);
     }
-    
-    public AffineSpace(List<Plane> intersectingPlanes){
-        
+
+    public AffineSpace(List<Plane> intersectingPlanes) {
+
         Point[] normals = new PointD[intersectingPlanes.size()];
         b = new PointD(intersectingPlanes.size());
-        
-        for(int i = 0; i < intersectingPlanes.size(); i++){
+
+        for (int i = 0; i < intersectingPlanes.size(); i++) {
             b.set(i, intersectingPlanes.get(i).b.get(0));
             normals[i] = intersectingPlanes.get(i).normal();
         }
-        
+
         linearSpace = new LinearSpace(normals);
     }
-    
+
     @Override
     public boolean hasElement(Point x) {
         return nullMatrix().mult(x).equals(b);
@@ -178,8 +179,9 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        return p.plus(linearSpace().proj(x.minus(p())));  
+        return p.plus(linearSpace().proj(x.minus(p())));
     }
+
     /**
      * p must be set before this function is called.
      *
@@ -189,8 +191,9 @@ public class AffineSpace implements ConvexSet {
     public Point proj(Matrix projFunc, Point x) {
         if (isAllSpace()) return x;
         linearSpace.projFunc = projFunc;
-        if(p == null) throw new RuntimeException("You need to give this affinespace a point.");
-        return p.plus(projFunc.mult(x.minus(p())));  
+        if (p == null)
+            throw new RuntimeException("You need to give this affinespace a point.");
+        return p.plus(projFunc.mult(x.minus(p())));
     }
 
     /**
@@ -214,14 +217,14 @@ public class AffineSpace implements ConvexSet {
     }
 
     public static AffineSpace intersection(Stream<? extends AffineSpace> space) {
-        return space.map(as -> (AffineSpace)as).reduce((a,b) -> a.intersection(b)).get();
+        return space.map(as -> (AffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
     }
 
     public LinearSpace linearSpace() {
         return linearSpace;
     }
-    
-    public boolean hasProjFunc(){
+
+    public boolean hasProjFunc() {
         return linearSpace.hasProjFunction();
     }
 
@@ -312,7 +315,6 @@ public class AffineSpace implements ConvexSet {
         }
     }
 
-
     /**
      * is this space a subset of the given space
      *
@@ -382,8 +384,8 @@ public class AffineSpace implements ConvexSet {
     @Override
     public int hashCode() {
         int bHash = 0;
-        
-        for(int i = 0; i < b.dim(); i++) bHash += Double.hashCode(b.get(i));
+
+        for (int i = 0; i < b.dim(); i++) bHash += Double.hashCode(b.get(i));
         return linearSpace.hashCode() + bHash;
     }
 
@@ -397,9 +399,9 @@ public class AffineSpace implements ConvexSet {
     }
 
     public boolean equals(AffineSpace obj) {
-        
+
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
-    
+
     }
 
     /**
@@ -410,12 +412,17 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     public Stream<AffineSpace> oneDown() {
-        
-        int numRows = linearSpace.getNormals().length;
-        
-        if(numRows == 1) throw new RuntimeException("oneDown may not be called on planes.");
 
-        return IntStream.range(0, numRows).mapToObj(removedI -> {
+        int numRows = linearSpace.getNormals().length;
+
+        if (numRows == 1)
+            throw new RuntimeException("oneDown may not be called on planes.");
+
+        return IntStream.range(0, numRows).mapToObj(oneDownGenerator(numRows));
+    }
+
+    private IntFunction<AffineSpace> oneDownGenerator(int numRows) {
+        return removedI -> {
 
             Point toNormals[] = new Point[numRows - 1];
             Point b2 = new PointD(numRows - 1);
@@ -429,37 +436,53 @@ public class AffineSpace implements ConvexSet {
                 toNormals[toI] = linearSpace.getNormals()[fromI];
             }
             return new AffineSpace(toNormals, b2);
-        });
+        };
+    }
+
+    public AffineSpace[] oneDownArray() {
+
+        int numRows = linearSpace.getNormals().length;
+
+        if (numRows == 1)
+            throw new RuntimeException("oneDown may not be called on planes.");
+
+        AffineSpace[] oneDownArray = new AffineSpace[numRows];
+        Arrays.setAll(oneDownArray, oneDownGenerator(numRows));
+        return oneDownArray;
     }
 
     /**
      * The planes that intersect to make this affine space
-     * @return 
+     *
+     * @return
      */
-    public List<Plane> intersectingPlanesList(){
+    public List<Plane> intersectingPlanesList() {
         ArrayList<Plane> planes = new ArrayList<>(b.dim());
-        for(int i = 0; i < b.dim(); i++)
+        for (int i = 0; i < b.dim(); i++)
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
     }
-    public Plane[] intersectingPlanesArray(){
+
+    public Plane[] intersectingPlanesArray() {
         Plane[] planes = new Plane[b.dim()];
-        for(int i = 0; i < b.dim(); i++)
+        for (int i = 0; i < b.dim(); i++)
             planes[i] = new Plane(linearSpace.normals[i], b.get(i));
         return planes;
     }
-    
-    public HashSet<Plane> intersectingPlanesSet(){
+
+    public HashSet<Plane> intersectingPlanesSet() {
         HashSet<Plane> planes = new HashSet<>(b.dim());
-        for(int i = 0; i < b.dim(); i++)
+        for (int i = 0; i < b.dim(); i++)
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
     }
+
     /**
      * The planes that intersect to make this affine space
-     * @return 
+     *
+     * @return
      */
-    public Stream<Plane> intersectingPlanesStream(){
+    public Stream<Plane> intersectingPlanesStream() {
         return IntStream.range(0, b.dim()).mapToObj(i -> new Plane(linearSpace.normals[i], b.get(i)));
     }
 }
