@@ -1,4 +1,4 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility;
+package Convex.thesisProjectionIdeas.GradDescentFeasibility.olderProj;
 
 import Convex.Linear.AffineSpace;
 import Convex.Linear.LinearSpace;

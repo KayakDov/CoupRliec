@@ -30,6 +30,9 @@ public class ProjPolytope {
     private Partition part;
     public AffineSpace travelThrough;
 
+    public ConcurrentHashMap<ASNKey, ASNode> asProjs;
+    public List<Plane> planes;
+
     public ProjPolytope(Partition part) {
         int dim = part.getGradient().dim();
         this.planes = new ArrayList<>(dim);
@@ -42,9 +45,6 @@ public class ProjPolytope {
     public Point grad() {
         return gradInBounds;
     }
-
-    public ConcurrentHashMap<ASNKey, ASNode> asProjs;
-    public List<Plane> planes;
 
     public Plane[] concat(Plane[] a, Plane b) {
         Plane[] arrayOfPlanes = new Plane[a.length + 1];
@@ -79,8 +79,8 @@ public class ProjPolytope {
                 .filter(p -> hasElement(p.proj))
                 .findAny()
                 .orElse(null);
-
-        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>((int) ChoosePlanes.choose(y.dim(), y.dim() / 2));
+        int size = ChoosePlanes.choose(y.dim(), y.dim() / 2);
+        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0? size: Integer.MAX_VALUE);
 
         for (int i = 2; i < y.dim(); i++) {
 
@@ -92,8 +92,7 @@ public class ProjPolytope {
 
             currentLevel = nextLevel(currentLevel, y);
             
-            System.out.println(currentLevel.size());
-
+            
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
@@ -113,10 +112,10 @@ public class ProjPolytope {
 //                        candidates.add(asps);
 //                } else fail++;
 //            }
-//
-////            System.out.println("dim:" + i + " percent pass" + (double) pass / (pass + fail));
+
+//            System.out.println("dim:" + i + " percent pass" + (double) pass / (pass + fail));
 //            proj = candidates.parallelStream().min(Comparator.comparing(p -> p.proj.d(preProj))).orElse(null);
-            ///////////end of slow section to be cut/////////////////////////////////
+            ///////end of slow section to be cut/////////////////////////////////
         }
 
         if (y.dim() == 2 || proj != null) return proj;

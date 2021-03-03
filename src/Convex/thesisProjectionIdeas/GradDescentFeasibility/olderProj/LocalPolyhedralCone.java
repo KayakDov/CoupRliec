@@ -1,9 +1,13 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility;
+package Convex.thesisProjectionIdeas.GradDescentFeasibility.olderProj;
 
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.olderProj.AffineSpacePlaneBipartate;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.olderProj.ASProj;
 import Convex.Linear.AffineSpace;
 import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Polytope;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.EmptyPolytopeException;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Partition;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Comparator;

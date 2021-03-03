@@ -27,7 +27,7 @@ public class ASFail {
 
         public ASFail(ASNode asNode) {
             this.asNode = asNode;
-            if(asNode == null) throw new NullPointerException();//TODO: remove
+            failed = new ArrayList<>(asNode.planeList.length*2);
             
         }
 
@@ -66,19 +66,21 @@ public class ASFail {
 
             AffineSpace[] oneDown = asNode.as.oneDownArray();
 
-            failed = new ArrayList<>(oneDown.length * 2);
-
             for (AffineSpace oneDownAS : oneDown) {
 
                 ASFail oneDownI = lowerLevel.get(oneDownAS);
                 if (oneDownI.mightContProj) {
                     Point proj = oneDownI.asNode.getProj(preProj);
                     if (asNode.localHasElement(proj)) failed.add(proj);
-                } else if (oneDownI.failed != null)
+                } else if (!oneDownI.failed.isEmpty())
                     for (Point fail : oneDownI.failed)
                         if (asNode.localHasElement(fail)) failed.add(fail);
             }
 
             return mightContProj = failed.isEmpty();
+        }
+        
+        public void clearFailures(){
+            failed.clear();
         }
     }
