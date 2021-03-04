@@ -60,6 +60,10 @@ public class ASFail {
     public String toString() {
         return asNode.toString() + "\n" + failed;
     }
+    
+    private boolean asHasFail(int outPlane, Point lowerFail){
+        return asNode.planeList[outPlane].above(lowerFail);
+    }
 
     public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
 
@@ -69,18 +73,19 @@ public class ASFail {
 
         boolean allFacesContainPreProj = true;
 
+        
         for (ASKey oneDownAS : oneDown) {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
             if (oneDownI.mightContProj) {
-                allFacesContainPreProj = false;
+                if(allFacesContainPreProj) allFacesContainPreProj = false;
                 Point proj = oneDownI.asNode.getProj(preProj);
-                if (asNode.localHasElement(proj)) failed.add(proj);
+                if (asHasFail(oneDownAS.removeIndex, proj)) failed.add(proj);
             } else if (!oneDownI.failed.isEmpty()) {
-                allFacesContainPreProj = false;
+                if(allFacesContainPreProj) allFacesContainPreProj = false;
                 for (Point fail : oneDownI.failed)
-                    if (asNode.localHasElement(fail)) failed.add(fail);
+                    if (asHasFail(oneDownAS.removeIndex, fail)) failed.add(fail);
 
             }
         }

@@ -98,7 +98,7 @@ public class ProjPolytope {
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
                     .map(asf -> new ASProj(preProj, asf.asNode))
                     .filter(asp -> hasElement(asp.proj))
-                    .min(Comparator.comparing(p -> p.proj.d(preProj)))
+                    .findAny()//min(Comparator.comparing(p -> p.proj.d(preProj)))
                     .orElse(null);
             //////////////End of good way to do it, begin profiler way to do it////////////////
 //            List<ASProj> candidates = new ArrayList<>(5);

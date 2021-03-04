@@ -21,6 +21,7 @@ public class ASKey {
         for (Plane p : planes) hashCode += p.hashCode();
     }
     public ASKey(AffineSpace as, int removeIndex){
+        this.removeIndex = removeIndex;
         hashCode = 0;
         for(int i = 0; i < as.b.dim(); i++){
             if(i != removeIndex){
@@ -29,6 +30,8 @@ public class ASKey {
             }
         }
     }
+    public int removeIndex;
+    
     public ASKey(ASNode as){
         this(as.planeList);
     }

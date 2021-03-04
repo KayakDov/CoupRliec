@@ -13,12 +13,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 /**
  *
  * @author dov
  */
 public class ASNode {
-
+    
     public AffineSpace as;
     public Set<Plane> planeSet;
     public Plane[] planeList;
