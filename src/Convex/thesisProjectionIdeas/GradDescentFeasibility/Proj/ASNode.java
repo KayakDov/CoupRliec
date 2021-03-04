@@ -23,9 +23,9 @@ public class ASNode {
     public Set<Plane> planeSet;
     public Plane[] planeList;
     public int lastIndex;
-    public ConcurrentHashMap<ASNKey, ASNode> asProjs;
+    public ConcurrentHashMap<ASKey, ASNode> asProjs;
 
-    public ASNode(int index, ConcurrentHashMap<ASNKey, ASNode> map) {
+    public ASNode(int index, ConcurrentHashMap<ASKey, ASNode> map) {
         this.lastIndex = index;
         asProjs = map;
     }
@@ -54,7 +54,7 @@ public class ASNode {
     public Point getProj(Point preProj) {
         if (planeSet.size() == 1) return somePlane().proj(preProj);
         else {
-            if (!as.hasProjFunc()) asProjs.put(new ASNKey(planeList), this);
+            if (!as.hasProjFunc()) asProjs.put(new ASKey(planeList), this);
             return as.proj(preProj);
         }
 
@@ -70,9 +70,9 @@ public class ASNode {
         return this;
     }
 
-    public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASNKey, ASNode> map) {
+    public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
 
-        ASNKey key = new ASNKey(planeList);
+        ASKey key = new ASKey(planeList);
         if (map.containsKey(key)) return map.get(key).setIndex(index);
         
         ASNode asn = new ASNode(index, map);
@@ -83,7 +83,7 @@ public class ASNode {
         return asn;
     }
 
-    public static ASNode factory(Plane plane, int index, ConcurrentHashMap<ASNKey, ASNode> map) {
+    public static ASNode factory(Plane plane, int index, ConcurrentHashMap<ASKey, ASNode> map) {
         ASNode asn = new ASNode(index, map);
         asn.as = plane;
         asn.planeSet = new HashSet<Plane>(1);

@@ -2,6 +2,7 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Convex.Polytope;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKey;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -383,10 +384,9 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public int hashCode() {
-        int bHash = 0;
-
-        for (int i = 0; i < b.dim(); i++) bHash += Double.hashCode(b.get(i));
-        return linearSpace.hashCode() + bHash;
+        int hash = 0;
+        for (int i = 0; i < b.dim(); i++) hash += Double.hashCode(b.get(i));
+        return linearSpace.hashCode() + hash;
     }
 
     @Override
@@ -412,7 +412,7 @@ public class AffineSpace implements ConvexSet {
      * @return
      */
     public Stream<AffineSpace> oneDown() {
-
+        
         int numRows = linearSpace.getNormals().length;
 
         if (numRows == 1)
@@ -451,6 +451,16 @@ public class AffineSpace implements ConvexSet {
         return oneDownArray;
     }
 
+    public ASKey[] oneDownKeys(){
+        int numRows = linearSpace.getNormals().length;
+
+        if (numRows == 1)
+            throw new RuntimeException("oneDown may not be called on planes.");
+
+        ASKey[] oneDownArray = new ASKey[numRows];
+        Arrays.setAll(oneDownArray, i -> new ASKey(this, i));
+        return oneDownArray;
+    }
     /**
      * The planes that intersect to make this affine space
      *

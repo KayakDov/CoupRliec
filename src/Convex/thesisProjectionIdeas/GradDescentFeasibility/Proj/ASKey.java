@@ -5,21 +5,32 @@
  */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 
+import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 
 /**
  *
  * @author dov
  */
-public class ASNKey {
+public class ASKey {
 
-    Plane[] planes;
     int hashCode;
 
-    public ASNKey(Plane[] planes) {
-        this.planes = planes;
+    public ASKey(Plane[] planes) {
         hashCode = 0;
         for (Plane p : planes) hashCode += p.hashCode();
+    }
+    public ASKey(AffineSpace as, int removeIndex){
+        hashCode = 0;
+        for(int i = 0; i < as.b.dim(); i++){
+            if(i != removeIndex){
+                hashCode += Double.hashCode(as.b.get(i));
+                hashCode += as.linearSpace().normals[i].hashCode();
+            }
+        }
+    }
+    public ASKey(ASNode as){
+        this(as.planeList);
     }
 
     @Override
@@ -33,7 +44,14 @@ public class ASNKey {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
 
-        return hashCode == ((ASNKey) obj).hashCode;
+        return hashCode == ((ASKey) obj).hashCode;
     }
+
+    @Override
+    public String toString() {
+        return "" + hashCode;
+    }
+    
+    
 
 }

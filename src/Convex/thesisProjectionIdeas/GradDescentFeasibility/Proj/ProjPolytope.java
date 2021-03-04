@@ -30,7 +30,7 @@ public class ProjPolytope {
     private Partition part;
     public AffineSpace travelThrough;
 
-    public ConcurrentHashMap<ASNKey, ASNode> asProjs;
+    public ConcurrentHashMap<ASKey, ASNode> asProjs;
     public List<Plane> planes;
 
     public ProjPolytope(Partition part) {
@@ -80,7 +80,7 @@ public class ProjPolytope {
                 .findAny()
                 .orElse(null);
         int size = ChoosePlanes.choose(y.dim(), y.dim() / 2);
-        ConcurrentHashMap<AffineSpace, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0? size: Integer.MAX_VALUE);
+        ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0? size: Integer.MAX_VALUE);
 
         for (int i = 2; i < y.dim(); i++) {
 
@@ -88,7 +88,7 @@ public class ProjPolytope {
 
             lowerLevel.clear();
 
-            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(asf.asNode.as, asf));
+            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(new ASKey(asf.asNode), asf));
 
             currentLevel = nextLevel(currentLevel, y);
             
