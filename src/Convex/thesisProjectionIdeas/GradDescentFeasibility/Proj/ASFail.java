@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ASFail {
 
     public final ASNode asNode;
-    private List<Point> failed;
+    public List<Point> failed;
     public boolean mightContProj;
 
     public ASFail(ASNode asNode) {
@@ -61,7 +61,7 @@ public class ASFail {
         return asNode.toString() + "\n" + failed;
     }
     
-    private boolean asHasFail(int outPlane, Point lowerFail){
+    private boolean asHasFailElement(int outPlane, Point lowerFail){
         return asNode.planeList[outPlane].above(lowerFail);
     }
 
@@ -73,20 +73,18 @@ public class ASFail {
 
         boolean allFacesContainPreProj = true;
 
-        
         for (ASKey oneDownAS : oneDown) {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
             if (oneDownI.mightContProj) {
                 if(allFacesContainPreProj) allFacesContainPreProj = false;
-                Point proj = oneDownI.asNode.getProj(preProj);
-                if (asHasFail(oneDownAS.removeIndex, proj)) failed.add(proj);
+                Point proj = oneDownI.asNode.planeList.length > 1? oneDownI.failed.get(0): oneDownI.asNode.getProj(preProj);
+                if (asHasFailElement(oneDownAS.removeIndex, proj)) failed.add(proj);
             } else if (!oneDownI.failed.isEmpty()) {
                 if(allFacesContainPreProj) allFacesContainPreProj = false;
                 for (Point fail : oneDownI.failed)
-                    if (asHasFail(oneDownAS.removeIndex, fail)) failed.add(fail);
-
+                    if (asHasFailElement(oneDownAS.removeIndex, fail)) failed.add(fail);
             }
         }
 

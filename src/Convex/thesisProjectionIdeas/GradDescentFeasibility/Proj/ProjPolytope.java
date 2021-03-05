@@ -57,8 +57,8 @@ public class ProjPolytope {
         List<ASFail> nextLevel = lowerLevel
                 .parallelStream()
                 .flatMap(asf -> IntStream
-                            .range(asf.asNode.lastIndex + 1, planes.size())
-                            .mapToObj(i -> new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, asProjs))
+                .range(asf.asNode.lastIndex + 1, planes.size())
+                .mapToObj(i -> new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, asProjs))
                 ).collect(Collectors.toList());
         return nextLevel;
     }
@@ -80,7 +80,7 @@ public class ProjPolytope {
                 .findAny()
                 .orElse(null);
         int size = ChoosePlanes.choose(y.dim(), y.dim() / 2);
-        ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0? size: Integer.MAX_VALUE);
+        ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
 
         for (int i = 2; i < y.dim(); i++) {
 
@@ -91,12 +91,11 @@ public class ProjPolytope {
             currentLevel.parallelStream().forEach(asf -> lowerLevel.put(new ASKey(asf.asNode), asf));
 
             currentLevel = nextLevel(currentLevel, y);
-            
-            
+
             /////////////////////Good way to do it///////////////////////////////
             proj = currentLevel.parallelStream()
                     .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-                    .map(asf -> new ASProj(preProj, asf.asNode))
+                    .map(asf -> new ASProj(preProj, asf))
                     .filter(asp -> hasElement(asp.proj))
                     .findAny()//min(Comparator.comparing(p -> p.proj.d(preProj)))
                     .orElse(null);
@@ -134,8 +133,6 @@ public class ProjPolytope {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p, epsilon));
     }
 
-    
-
     public void removeExcept(AffineSpace as) {
 
         if (as.isAllSpace()) {
@@ -145,12 +142,13 @@ public class ProjPolytope {
         }
 
         HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
-        IntStream.range(0, 2).parallel().forEach(i -> {
-            if(i == 0) planes.removeIf(hs -> !planesToBePreserved.contains(hs));
-            else asProjs.entrySet().removeIf(asnMap -> !planesToBePreserved.containsAll(asnMap.getValue().planeSet));
-        });
+
+        planes.parallelStream()
+                .filter(plane -> !planesToBePreserved.contains(plane))
+                .forEach(plane -> asProjs.entrySet()
+                    .removeIf(asnMap -> asnMap.getValue().planeSet.contains(plane)));
         
-        
+        planes.removeIf(hs -> !planesToBePreserved.contains(hs));
 
     }
 

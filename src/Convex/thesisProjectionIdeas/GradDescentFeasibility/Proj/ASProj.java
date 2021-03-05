@@ -22,9 +22,15 @@ public class ASProj {
             this.as = as;
         }
 
-        public ASProj(Point preProj, ASNode asn) {
-            this.as = asn.as;
-            proj = asn.getProj(preProj);
+//        public ASProj(Point preProj, ASNode asn) {
+//            this.as = asn.as;
+//            proj = asn.getProj(preProj);
+//        }
+        
+        public ASProj(Point preProj, ASFail asf) {
+            this.as = asf.asNode.as;
+            proj = asf.asNode.getProj(preProj);
+            if(asf.mightContProj) asf.failed.add(proj);
         }
 
     }
