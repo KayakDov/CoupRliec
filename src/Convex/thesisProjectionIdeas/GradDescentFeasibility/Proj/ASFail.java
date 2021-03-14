@@ -68,6 +68,12 @@ public class ASFail {
         return asNode.planeList[outPlane].above(lowerFail);
     }
 
+    boolean fail(Point fail){
+        checked.clear();
+        failed.add(fail);
+        return mightContProj = false;
+    }
+    
     public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
 
         if (asNode.asProjs.containsKey(asNode)) return mightContProj = true;
@@ -84,22 +90,17 @@ public class ASFail {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
                 Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed.get(0) : oneDownI.asNode.getProj(preProj);
                 if (asHasFailElement(oneDownAS.removeIndex, proj))
-                    failed.add(proj);
+                    return fail(proj);
+                
             } else if (!oneDownI.failed.isEmpty()) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
-
-                for (Point fail : oneDownI.failed) {
-                    
-                    if (!checked.contains(fail) && asHasFailElement(oneDownAS.removeIndex, fail)) {
-                        checked.add(fail);
-                        failed.add(fail);
-                    }
-                }
+                for (Point fail : oneDownI.failed)
+                    if (!checked.add(fail) && asHasFailElement(oneDownAS.removeIndex, fail)) 
+                        return fail(fail);
             }
         }
         checked.clear();
-
-        return mightContProj = (failed.isEmpty() && !allFacesContainPreProj);
+        return mightContProj = !allFacesContainPreProj;
     }
 
     public void clearFailures() {
