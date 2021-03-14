@@ -10,6 +10,7 @@ import Convex.Linear.Plane;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,10 +24,12 @@ public class ASFail {
     public final ASNode asNode;
     public List<Point> failed;
     public boolean mightContProj;
+    HashSet<Point> checked;
 
     public ASFail(ASNode asNode) {
         this.asNode = asNode;
         failed = new ArrayList<>(asNode.planeList.length * 2);
+        checked = new HashSet<>(1);
 
     }
 
@@ -60,8 +63,8 @@ public class ASFail {
     public String toString() {
         return asNode.toString() + "\n" + failed;
     }
-    
-    private boolean asHasFailElement(int outPlane, Point lowerFail){
+
+    private boolean asHasFailElement(int outPlane, Point lowerFail) {
         return asNode.planeList[outPlane].above(lowerFail);
     }
 
@@ -78,15 +81,23 @@ public class ASFail {
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
             if (oneDownI.mightContProj) {
-                if(allFacesContainPreProj) allFacesContainPreProj = false;
-                Point proj = oneDownI.asNode.planeList.length > 1? oneDownI.failed.get(0): oneDownI.asNode.getProj(preProj);
-                if (asHasFailElement(oneDownAS.removeIndex, proj)) failed.add(proj);
+                if (allFacesContainPreProj) allFacesContainPreProj = false;
+                Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed.get(0) : oneDownI.asNode.getProj(preProj);
+                if (asHasFailElement(oneDownAS.removeIndex, proj))
+                    failed.add(proj);
             } else if (!oneDownI.failed.isEmpty()) {
-                if(allFacesContainPreProj) allFacesContainPreProj = false;
-                for (Point fail : oneDownI.failed)
-                    if (asHasFailElement(oneDownAS.removeIndex, fail)) failed.add(fail);
+                if (allFacesContainPreProj) allFacesContainPreProj = false;
+
+                for (Point fail : oneDownI.failed) {
+                    
+                    if (!checked.contains(fail) && asHasFailElement(oneDownAS.removeIndex, fail)) {
+                        checked.add(fail);
+                        failed.add(fail);
+                    }
+                }
             }
         }
+        checked.clear();
 
         return mightContProj = (failed.isEmpty() && !allFacesContainPreProj);
     }

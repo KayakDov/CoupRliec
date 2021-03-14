@@ -421,6 +421,17 @@ public class AffineSpace implements ConvexSet {
         return IntStream.range(0, numRows).mapToObj(oneDownGenerator(numRows));
     }
 
+    public Stream<ASKey> oneDownKey() {
+        
+        int numRows = linearSpace.getNormals().length;
+
+        if (numRows == 1)
+            throw new RuntimeException("oneDown may not be called on planes.");
+
+        return IntStream.range(0, numRows).mapToObj(i -> new ASKey(oneDownGenerator(numRows).apply(i), i));
+    }
+
+    
     private IntFunction<AffineSpace> oneDownGenerator(int numRows) {
         return removedI -> {
 
