@@ -17,14 +17,15 @@ public class Main {
     fix half function to use normal*b for each hyperplane
     fix proj polytope has element so it doesn't check the halfspace of super polytopes that the projection is already on
     change fail list to fail point
+    When I run on 15 dim for 100 faces I get a null pointer exception
     */
     public static void polytopeFeasabilityTest() {
 
-        int dim = 20;
+        int dim = 10;
         int numFaces = 100;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 1000; i++) {
             System.out.println("i = " + i);
 //            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
             FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));

@@ -1,21 +1,12 @@
 package Matricies;
-
 import Convex.ConvexSet;
 import Convex.Linear.Plane;
-import Matricies.Matrix;
-import static java.lang.Math.abs;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.List;
 import java.util.function.DoubleFunction;
-import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
-import java.util.stream.Collectors;
-import org.ejml.data.DMatrixSparse;
-import org.ejml.data.DMatrixSparseTriplet;
 
 /**
  *
