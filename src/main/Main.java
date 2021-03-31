@@ -12,17 +12,22 @@ import java.io.IOException;
 import listTools.ChoosePlanes;
 
 public class Main {
-
+/*TODO:
+    Save hash values for affine spaces
+    fix half function to use normal*b for each hyperplane
+    fix proj polytope has element so it doesn't check the halfspace of super polytopes that the projection is already on
+    change fail list to fail point
+    */
     public static void polytopeFeasabilityTest() {
 
-        int dim = 26;
+        int dim = 20;
         int numFaces = 100;
         double epsilon = 1e-7;
 
         for (int i = 0; i < 1; i++) {
             System.out.println("i = " + i);
-            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
-//            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));
+//            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));
             poly.setEpsilon(epsilon);
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));

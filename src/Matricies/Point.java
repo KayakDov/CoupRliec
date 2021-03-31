@@ -144,8 +144,6 @@ public interface Point extends Matrix{
     public PointSparse mapToSparse(DoubleFunction<Double> f);
     public PointD mapToDense(DoubleFunction<Double> f);
 
-    public <T> List mapToList(Function<Double, T> f);
-
     /**
      * @see plus
      * @param p

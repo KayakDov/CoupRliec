@@ -14,10 +14,8 @@ import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
-import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseTriplet;
-import org.ejml.dense.row.CommonOps_FDRM;
 
 /**
  *
@@ -34,6 +32,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public PointD(double[] x) {
         super(x.length, 1);
         System.arraycopy(x, 0, data, 0, x.length);
+        hash = Arrays.hashCode(x);
     }
 
     public PointD(Point x) {
@@ -82,28 +81,20 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public PointD(PointD p) {
         this(p.data.length);
         System.arraycopy(p.data, 0, data, 0, p.data.length);
+        this.hash = p.hash;
+    }
+
+    private int hash;
+
+    public PointD setHash() {
+        hash = Arrays.hashCode(super.data);
+        return this;
     }
 
     /**
-     * constructor
-     *
-     * @param p another point
-     * @param mag start scalar the other point gets multiplied by to create this
-     * point.
+     * @param p the point to be added to this one
+     * @return this point, with p added to it.
      */
-    public PointD(PointD p, double mag) {
-        this(p.dim());
-        setAll(i -> p.get(i) * mag);
-    }
-
-    /**
-     * @param dim the number of dimensions of the origin.
-     * @return (0,0)
-     */
-    public static PointD Origin(int dim) {
-        return new PointD(dim).setAll(i -> 0);
-    }
-
     @Override
     public PointD addToMe(Point p) {
         return setAll(i -> get(i) + p.get(i));
@@ -142,7 +133,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public double magnitude() {
-        return d(Origin(dim()));
+        return d(new PointD(dim()));
     }
 
     /**
@@ -153,7 +144,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     @Override
     public PointD dir() {
         double m = magnitude();
-        if (m == 0) return Origin(dim());
+        if (m == 0) return new PointD(dim());
         return mapToDense(x -> x / m);
     }
 
@@ -202,17 +193,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return dot(new PointD(p));
     }
 
-    public MatrixSparse outerProduct(PointSparse p) {
-
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(dim(), p.dim(), p.ejmlSparse.getNonZeroLength() * dim());
-        Iterator<DMatrixSparse.CoordinateRealValue> iter = p.ejmlSparse.createCoordinateIterator();
-        while (iter.hasNext()) {
-            DMatrixSparse.CoordinateRealValue crv = iter.next();
-            IntStream.range(0, dim()).forEach(i -> trip.set(i, crv.row, crv.value));
-        }
-        return new MatrixSparse(trip);
-    }
-
     /**
      * scalar multiplication
      *
@@ -259,6 +239,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
                 .replaceAll(" ", "");
 
         data = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
+        setHash();
     }
 
     /**
@@ -294,7 +275,8 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(data);
+//        return Arrays.hashCode(data);
+        return hash;
     }
 
     @Override
@@ -363,9 +345,9 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         data[i] = y;
         return y;
     }
-    
+
     @Override
-    public PointD asDense(){
+    public PointD asDense() {
         return this;
     }
 
@@ -378,21 +360,12 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return data;
     }
 
-    /**
-     *
-     * @return the sum of the absolute values of the elements in the point
-     */
-    public double sumAbs() {
-        double s = 0;
-        for (int i = 0; i < dim(); i++)
-            s += Math.abs(get(i));
-        return s;
-    }
 
     public PointD(double x, double y) {
         this(2);
         set(0, x);
         set(1, y);
+        setHash();
     }
 
     public PointD(double x, double y, double z) {
@@ -400,6 +373,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         set(0, x);
         set(1, y);
         set(2, z);
+        setHash();
     }
 
     public double x() {
@@ -433,18 +407,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return new PointD(m.cols()).setAll(i -> m.row(i).dot(this));
     }
 
-    /**
-     * creates start new point shifted in one dimension the given distance
-     *
-     * @param dim the dimension the new point is shifted in from this one.
-     * @param dist the distance the new point is shifted.
-     * @return start new point as described above.
-     */
-    public PointD shift(int dim, double dist) {
-        PointD shift = new PointD(this);
-        shift.set(dim, get(dim) + dist);
-        return shift;
-    }
 
     /**
      * creates start one dimensional point
@@ -489,35 +451,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
                 * standardDeviation.get(i) + mean.get(i));
     }
 
-    /**
-     * reflects this point through start center point
-     *
-     * @param center
-     * @param scale
-     * @return the new point
-     */
-    public PointD reflectThrough(PointD center, double scale) {
 
-        return new PointD(center.dim()).setAll(i -> center.get(i) + scale
-                * (center.get(i) - get(i)));
-
-    }
-
-    public void swapValues(int i, int j) {
-        double temp = get(i);
-        set(i, get(j));
-        set(j, temp);
-    }
-
-    /**
-     * the absolute value at the given index
-     *
-     * @param i the index you want to get the absolute value at
-     * @return
-     */
-    public double getAbs(int i) {
-        return abs(get(i));
-    }
 
     @Override
     public DoubleStream stream() {
@@ -533,7 +467,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     @Override
     public PointD set(double[] x) {
         System.arraycopy(x, 0, data, 0, x.length);
-        return this;
+        return setHash();
     }
 
     /**
@@ -547,21 +481,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return set(x.asDense().data);
     }
 
-    @Override
-    public <T> List mapToList(Function<Double, T> f) {
-        return stream().parallel().mapToObj(t -> f.apply(t)).collect(Collectors.toList());
-    }
-
-    /**
-     * are all the elmenets in this point less than all the elements in the
-     * given point.
-     *
-     * @param p
-     * @return
-     */
-    public boolean lessThan(PointD p) {
-        return IntStream.range(0, dim()).allMatch(i -> get(i) < p.get(i));
-    }
 
     /**
      * Is this point in a convex set
@@ -627,7 +546,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
             p.asSparse().nonZeroes().forEach(coord -> concat.set(dim() + coord.row, coord.value));
         }
 
-        return concat;
+        return concat.setHash();
     }
 
     /**
@@ -644,7 +563,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     @Override
     public PointD setAll(IntToDoubleFunction f) {
         Arrays.setAll(data, f);
-        return this;
+        return setHash();
     }
 
     /**
@@ -659,24 +578,11 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         this(new double[]{x, y, z, t});
     }
 
-    /**
-     * cut the rows identified in the list
-     *
-     * @param cut a list of rows to be cut
-     * @return a new point without the rows cut.
-     */
-    public PointD removeRows(List<Integer> cut) {
-        PointD removeRows = new PointD(dim() - cut.size());
-        for (int to = 0, from = 0; from < dim(); from++)
-            if (!cut.contains(from)) removeRows.set(to++, get(from));
-        return removeRows;
-    }
 
     @Override
     public MatrixDense T() {
         return new MatrixDense(data, 1, dim());
     }
-
 
     @Override
     public PointSparse asSparse() {

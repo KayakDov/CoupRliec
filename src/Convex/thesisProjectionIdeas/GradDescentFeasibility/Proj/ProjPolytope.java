@@ -7,8 +7,6 @@ import Convex.thesisProjectionIdeas.GradDescentFeasibility.EmptyPolytopeExceptio
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Partition;
 import Matricies.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -122,9 +120,12 @@ public class ProjPolytope {
     }
 
     public boolean hasElement(Point p) {
-        return planes.stream().allMatch(hs -> hs.aboveOrContains(p));
-    }
+        for(Plane plane: planes)
+            if(!plane.aboveOrContains(p)) return false;
+        return true;
 
+    }
+    
     public boolean hasElementParallel(Point p) {
         return planes.parallelStream().allMatch(hs -> hs.aboveOrContains(p));
     }

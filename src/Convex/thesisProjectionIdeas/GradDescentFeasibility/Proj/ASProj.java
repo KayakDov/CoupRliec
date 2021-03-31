@@ -16,17 +16,12 @@ public class ASProj {
 
         public Point proj;
         public AffineSpace as;
-
+        
         public ASProj(Point proj, AffineSpace as) {
             this.proj = proj;
             this.as = as;
         }
 
-//        public ASProj(Point preProj, ASNode asn) {
-//            this.as = asn.as;
-//            proj = asn.getProj(preProj);
-//        }
-        
         public ASProj(Point preProj, ASFail asf) {
             this.as = asf.asNode.as;
             proj = asf.asNode.getProj(preProj);

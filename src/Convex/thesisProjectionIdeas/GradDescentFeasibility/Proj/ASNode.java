@@ -55,7 +55,11 @@ public class ASNode {
     public Point getProj(Point preProj) {
         if (planeSet.size() == 1) return somePlane().proj(preProj);
         else {
-            if (!as.hasProjFunc()) asProjs.put(new ASKey(planeList), this);
+            try{
+                if (!as.hasProjFunc()) asProjs.put(new ASKey(planeList), this);
+            }catch(OutOfMemoryError er){
+                asProjs.clear();
+            }
             return as.proj(preProj);
         }
 
