@@ -22,18 +22,17 @@ public class ASKey {
     }
     public ASKey(AffineSpace as, int removeIndex){
         this.removeIndex = removeIndex;
-        hashCode = 0;
-        for(int i = 0; i < as.b.dim(); i++){
-            if(i != removeIndex){
-                hashCode += Double.hashCode(as.b.get(i));
-                hashCode += as.linearSpace().normals[i].hashCode();
-            }
-        }
+        hashCode = as.hashCode();
     }
+    public ASKey(int hashCode, int removeIndex){
+        this.removeIndex = removeIndex;
+        this.hashCode = hashCode;
+    }
+    
     public int removeIndex;
     
     public ASKey(ASNode as){
-        this(as.planeList);
+        hashCode = as.as.hashCode();
     }
 
     @Override

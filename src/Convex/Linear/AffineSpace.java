@@ -57,6 +57,7 @@ public class AffineSpace implements ConvexSet {
     public AffineSpace(Point[] normals, Point b) {
         linearSpace = new LinearSpace(normals);
         this.b = b;
+        setHashCode();
     }
 
     public Matrix nullMatrix() {
@@ -71,9 +72,11 @@ public class AffineSpace implements ConvexSet {
      */
     public AffineSpace(LinearSpace ls, Point onSpace) {
         linearSpace = ls;
-        if (!ls.isAllSpace())
+        if (!ls.isAllSpace()){
             b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
-
+            setHashCode();
+        }
+        else hashCode = 0;
         p = onSpace;
     }
 
@@ -90,6 +93,7 @@ public class AffineSpace implements ConvexSet {
         }
 
         linearSpace = new LinearSpace(normals);
+        setHashCode();
     }
 
     public AffineSpace(Plane[] planes) {
@@ -97,6 +101,7 @@ public class AffineSpace implements ConvexSet {
         Arrays.setAll(normals, i -> planes[i].normal());
         b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
         linearSpace = new LinearSpace(normals);
+        setHashCode();
     }
 
     public AffineSpace(List<Plane> intersectingPlanes) {
@@ -110,6 +115,7 @@ public class AffineSpace implements ConvexSet {
         }
 
         linearSpace = new LinearSpace(normals);
+        setHashCode();
     }
 
     @Override
@@ -384,9 +390,7 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public int hashCode() {
-        int hash = 0;
-        for (int i = 0; i < b.dim(); i++) hash += Double.hashCode(b.get(i));
-        return linearSpace.hashCode() + hash;
+        return hashCode;
     }
 
     @Override
@@ -462,6 +466,19 @@ public class AffineSpace implements ConvexSet {
         return oneDownArray;
     }
 
+    private int hashRow(int row){
+        return linearSpace.normals[row].hashCode()*Double.hashCode(b.get(row));
+    }
+    private int hashCode;
+
+    public void setHashCode() {
+        hashCode = 0;
+        for(int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
+    }
+    
+    
+    
+    
     public ASKey[] oneDownKeys(){
         int numRows = linearSpace.getNormals().length;
 
@@ -469,7 +486,7 @@ public class AffineSpace implements ConvexSet {
             throw new RuntimeException("oneDown may not be called on planes.");
 
         ASKey[] oneDownArray = new ASKey[numRows];
-        Arrays.setAll(oneDownArray, i -> new ASKey(this, i));
+        Arrays.setAll(oneDownArray, i -> new ASKey(hashCode - hashRow(i), i));
         return oneDownArray;
     }
     /**
