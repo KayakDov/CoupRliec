@@ -159,13 +159,6 @@ public class PointSparse extends MatrixSparse implements Point{
 
 
     @Override
-    public <T> List mapToList(Function<Double, T> f) {
-        List<T> list = new ArrayList<>(dim());
-        IntStream.range(0, dim()).forEach(i -> list.set(i, f.apply(get(i))));
-        return list;
-    }
-
-    @Override
     public Point minus(Point p) {
         if(p.isDense()) return minus(p.asDense());
         else return minus(p.asSparse());
