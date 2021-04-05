@@ -13,22 +13,21 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 /**
  *
  * @author dov
  */
 public class ASNode {
-    
+
     public AffineSpace as;
     public Set<Plane> planeSet;
     public Plane[] planeList;
     public int lastIndex;
-    public ConcurrentHashMap<ASKey, ASNode> asProjs;
+    public ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
 
     public ASNode(int index, ConcurrentHashMap<ASKey, ASNode> map) {
         this.lastIndex = index;
-        asProjs = map;
+        projectionFunctions = map;
     }
 
     @Override
@@ -55,11 +54,12 @@ public class ASNode {
     public Point getProj(Point preProj) {
         if (planeSet.size() == 1) return somePlane().proj(preProj);
         else {
-            try{
-                if (!as.hasProjFunc()) asProjs.put(new ASKey(planeList), this);
-            }catch(OutOfMemoryError er){
-                asProjs.clear();
-            }
+//            try{
+            if (!as.hasProjFunc())
+                projectionFunctions.put(new ASKey(planeList), this);
+//            }catch(OutOfMemoryError er){
+//                projectionFunctions.clear();
+//            }
             return as.proj(preProj);
         }
 
@@ -69,8 +69,8 @@ public class ASNode {
     public String toString() {
         return as.toString(); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    public ASNode setIndex(int index){
+
+    public ASNode setIndex(int index) {
         this.lastIndex = index;
         return this;
     }
@@ -79,7 +79,7 @@ public class ASNode {
 
         ASKey key = new ASKey(planeList);
         if (map.containsKey(key)) return map.get(key).setIndex(index);
-        
+
         ASNode asn = new ASNode(index, map);
         asn.as = as;
         asn.planeSet = Set.of(planeList);

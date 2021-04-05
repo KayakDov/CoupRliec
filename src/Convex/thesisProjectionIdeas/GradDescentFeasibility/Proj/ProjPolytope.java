@@ -7,9 +7,11 @@ import Convex.thesisProjectionIdeas.GradDescentFeasibility.EmptyPolytopeExceptio
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Partition;
 import Matricies.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import listTools.ChoosePlanes;
@@ -28,13 +30,13 @@ public class ProjPolytope {
     private Partition part;
     public AffineSpace travelThrough;
 
-    public ConcurrentHashMap<ASKey, ASNode> asProjs;
+    public ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
     public List<Plane> planes;
 
     public ProjPolytope(Partition part) {
         int dim = part.getGradient().dim();
         this.planes = new ArrayList<>(dim);
-        this.asProjs = new ConcurrentHashMap<>((int) Math.pow(2, dim));
+        this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, dim));
         this.gradInBounds = part.getGradient();
         this.part = part;
         travelThrough = AffineSpace.allSpace(gradInBounds.dim());
@@ -51,32 +53,33 @@ public class ProjPolytope {
         return arrayOfPlanes;
     }
 
-    private List<ASFail> nextLevel(List<ASFail> lowerLevel, Point y) {
-        List<ASFail> nextLevel = lowerLevel
-                .parallelStream()
+    private ASFail[] nextLevel(ASFail[] lowerLevel, Point y) {
+        return Arrays.stream(lowerLevel).parallel()
                 .flatMap(asf -> IntStream
                 .range(asf.asNode.lastIndex + 1, planes.size())
-                .mapToObj(i -> new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, asProjs))
-                ).collect(Collectors.toList());
-        return nextLevel;
+                .mapToObj(i -> new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, projectionFunctions))
+                ).toArray(ASFail[]::new);
+        
     }
 
+    private ASProj projOnLevel(Point preProj, ASFail[] cl, ConcurrentHashMap<ASKey, ASFail> ll){
+        return Arrays.stream(cl).parallel()
+                .filter(asf -> asf.mightContainProj(ll, preProj))
+                .map(asFail -> new ASNProj(preProj, asFail))
+                .filter(p -> hasElement(p))
+                .findAny()
+                .orElse(null);
+    }
+    
     public ASProj proj(Point preProj, Point y) {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
 
-        List<ASFail> currentLevel = IntStream.range(0, planes.size())
-                .parallel()
-                .mapToObj(i -> new ASFail(planes.get(i), i, asProjs).setMightContainProj(planes.get(i).below(preProj)))
-                .collect(Collectors.toList());
+        ASFail currentLevel[] = new ASFail[planes.size()];
+        Arrays.setAll(currentLevel, i -> new ASFail(planes.get(i), i, projectionFunctions));
 
-        ASProj proj = currentLevel
-                .parallelStream()
-                .filter(asf -> asf.mightContProj)
-                .map(asFail -> new ASProj(asFail.asNode.as.proj(preProj), asFail.asNode.somePlane()))
-                .filter(p -> hasElement(p.proj))
-                .findAny()
-                .orElse(null);
+        ASProj proj = projOnLevel(preProj, currentLevel, null);
+        
         int size = ChoosePlanes.choose(y.dim(), y.dim() / 2);
         ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
 
@@ -86,17 +89,12 @@ public class ProjPolytope {
 
             lowerLevel.clear();
 
-            currentLevel.parallelStream().forEach(asf -> lowerLevel.put(new ASKey(asf.asNode), asf));
+            Arrays.stream(currentLevel).parallel().forEach(asf -> lowerLevel.put(new ASKey(asf.asNode), asf));
 
             currentLevel = nextLevel(currentLevel, y);
 
             /////////////////////Good way to do it///////////////////////////////
-            proj = currentLevel.parallelStream()
-                    .filter(asf -> asf.mightContainProj(lowerLevel, preProj))
-                    .map(asf -> new ASProj(preProj, asf))
-                    .filter(asp -> hasElement(asp.proj))
-                    .findAny()//min(Comparator.comparing(p -> p.proj.d(preProj)))
-                    .orElse(null);
+            proj = projOnLevel(preProj, currentLevel, lowerLevel);
             //////////////End of good way to do it, begin profiler way to do it////////////////
 //            List<ASProj> candidates = new ArrayList<>(5);
 //
@@ -133,11 +131,17 @@ public class ProjPolytope {
     public boolean hasElement(Point p, double epsilon) {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p, epsilon));
     }
+    
+    public boolean hasElement(ASNProj p){
+        for(Plane plane: planes)
+            if(!p.asn.planeSet.contains(plane) && !plane.aboveOrContains(p.proj)) return false;
+        return true;
+    }
 
     public void removeExcept(AffineSpace as) {
 
         if (as.isAllSpace()) {
-            asProjs.clear();
+            projectionFunctions.clear();
             planes.clear();
             return;
         }
@@ -146,7 +150,7 @@ public class ProjPolytope {
 
         planes.parallelStream()
                 .filter(plane -> !planesToBePreserved.contains(plane))
-                .forEach(plane -> asProjs.entrySet()
+                .forEach(plane -> projectionFunctions.entrySet()
                     .removeIf(asnMap -> asnMap.getValue().planeSet.contains(plane)));
         
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));

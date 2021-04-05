@@ -22,13 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ASFail {
 
     public final ASNode asNode;
-    public List<Point> failed;
+    public Point failed;
     public boolean mightContProj;
     HashSet<Point> checked;
 
     public ASFail(ASNode asNode) {
         this.asNode = asNode;
-        failed = new ArrayList<>(asNode.planeList.length * 2);
+        failed = null;
         checked = new HashSet<>(1);
 
     }
@@ -68,15 +68,15 @@ public class ASFail {
         return asNode.planeList[outPlane].above(lowerFail);
     }
 
-    boolean fail(Point fail){
+    boolean fail(Point fail) {
         checked.clear();
-        failed.add(fail);
+        failed = fail;
         return mightContProj = false;
     }
-    
-    public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
 
-        if (asNode.asProjs.containsKey(asNode)) return mightContProj = true;
+    public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
+        if (lowerLevel == null)
+            return mightContProj = asNode.planeList[0].below(preProj);
 
         ASKey[] oneDown = asNode.as.oneDownKeys();
 
@@ -88,15 +88,14 @@ public class ASFail {
 
             if (oneDownI.mightContProj) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
-                Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed.get(0) : oneDownI.asNode.getProj(preProj);
+                Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed : oneDownI.asNode.getProj(preProj);
                 if (asHasFailElement(oneDownAS.removeIndex, proj))
                     return fail(proj);
-                
-            } else if (!oneDownI.failed.isEmpty()) {
+
+            } else if (oneDownI.failed != null) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
-                for (Point fail : oneDownI.failed)
-                    if (!checked.add(fail) && asHasFailElement(oneDownAS.removeIndex, fail)) 
-                        return fail(fail);
+                if (!checked.add(oneDownI.failed) && asHasFailElement(oneDownAS.removeIndex, oneDownI.failed))
+                    return fail(oneDownI.failed);
             }
         }
         checked.clear();
@@ -104,6 +103,6 @@ public class ASFail {
     }
 
     public void clearFailures() {
-        failed.clear();
+        failed = null;
     }
 }

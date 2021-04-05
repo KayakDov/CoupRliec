@@ -12,10 +12,7 @@ import java.io.IOException;
 import listTools.ChoosePlanes;
 
 public class Main {
-/*TODO:
-    fix proj polytope has element so it doesn't check the halfspace of super polytopes that the projection is already on
-    change fail list to fail point
-    */
+
     public static void polytopeFeasabilityTest() {
 
         int dim = 15;

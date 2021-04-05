@@ -12,16 +12,12 @@ import Matricies.Point;
  *
  * @author dov
  */
-public class ASProj {
+public class ASNProj extends ASProj {
+    public ASNode asn; 
 
-    public Point proj;
-    public AffineSpace as;
-
-    public ASProj(Point proj, AffineSpace as) {
-        this.proj = proj;
-        this.as = as;
+    public ASNProj(Point preProj, ASFail asf) {
+        super(asf.asNode.getProj(preProj), asf.asNode.as);
+        asn = asf.asNode;
+        if (asf.mightContProj) asf.failed = proj;
     }
-
-
-
 }

@@ -41,7 +41,7 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public boolean equals(LinearSpace ls) {
-        return IntStream.range(0, normals.length).allMatch(i -> normals[i] == ls.normals[i]);
+       return Arrays.equals(normals, ls.normals);
     }
 
     public LinearSpace(Point[] normals) {
