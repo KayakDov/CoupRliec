@@ -13,15 +13,12 @@ import listTools.ChoosePlanes;
 
 public class Main {
 /*TODO:
-    Save hash values for affine spaces
-    fix half function to use normal*b for each hyperplane
     fix proj polytope has element so it doesn't check the halfspace of super polytopes that the projection is already on
     change fail list to fail point
-    When I run on 15 dim for 100 faces I get a null pointer exception
     */
     public static void polytopeFeasabilityTest() {
 
-        int dim = 10;
+        int dim = 15;
         int numFaces = 100;
         double epsilon = 1e-7;
 
