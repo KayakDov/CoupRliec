@@ -408,63 +408,7 @@ public class AffineSpace implements ConvexSet {
 
     }
 
-    /**
-     * If this affine space is defined by the set of solutions to Ax=b, then
-     * this function returns the set of A'x = b, where A' is A with one row
-     * removed.
-     *
-     * @return
-     */
-    public Stream<AffineSpace> oneDown() {
-        
-        int numRows = linearSpace.getNormals().length;
-
-        if (numRows == 1)
-            throw new RuntimeException("oneDown may not be called on planes.");
-
-        return IntStream.range(0, numRows).mapToObj(oneDownGenerator(numRows));
-    }
-
-    public Stream<ASKey> oneDownKey() {
-        
-        int numRows = linearSpace.getNormals().length;
-
-        if (numRows == 1)
-            throw new RuntimeException("oneDown may not be called on planes.");
-
-        return IntStream.range(0, numRows).mapToObj(i -> new ASKey(oneDownGenerator(numRows).apply(i), i));
-    }
-
     
-    private IntFunction<AffineSpace> oneDownGenerator(int numRows) {
-        return removedI -> {
-
-            Point toNormals[] = new Point[numRows - 1];
-            Point b2 = new PointD(numRows - 1);
-
-            for (int toI = 0, fromI = 0; toI < numRows - 1; toI++, fromI++) {
-
-                if (fromI == removedI) fromI++;
-
-                b2.set(toI, b.get(fromI));
-
-                toNormals[toI] = linearSpace.getNormals()[fromI];
-            }
-            return new AffineSpace(toNormals, b2);
-        };
-    }
-
-    public AffineSpace[] oneDownArray() {
-
-        int numRows = linearSpace.getNormals().length;
-
-        if (numRows == 1)
-            throw new RuntimeException("oneDown may not be called on planes.");
-
-        AffineSpace[] oneDownArray = new AffineSpace[numRows];
-        Arrays.setAll(oneDownArray, oneDownGenerator(numRows));
-        return oneDownArray;
-    }
 
     private int hashRow(int row){
         return linearSpace.normals[row].hashCode()*Double.hashCode(b.get(row));
@@ -478,6 +422,13 @@ public class AffineSpace implements ConvexSet {
     
     
     
+    /**
+     * If this affine space is defined by the set of solutions to Ax=b, then
+     * this function returns the set of A'x = b, where A' is A with one row
+     * removed.
+     *
+     * @return the keys for the afformentioned affine spaces
+     */
     
     public ASKey[] oneDownKeys(){
         int numRows = linearSpace.getNormals().length;
@@ -494,20 +445,6 @@ public class AffineSpace implements ConvexSet {
      *
      * @return
      */
-    public List<Plane> intersectingPlanesList() {
-        ArrayList<Plane> planes = new ArrayList<>(b.dim());
-        for (int i = 0; i < b.dim(); i++)
-            planes.add(new Plane(linearSpace.normals[i], b.get(i)));
-        return planes;
-    }
-
-    public Plane[] intersectingPlanesArray() {
-        Plane[] planes = new Plane[b.dim()];
-        for (int i = 0; i < b.dim(); i++)
-            planes[i] = new Plane(linearSpace.normals[i], b.get(i));
-        return planes;
-    }
-
     public HashSet<Plane> intersectingPlanesSet() {
         HashSet<Plane> planes = new HashSet<>(b.dim());
         for (int i = 0; i < b.dim(); i++)

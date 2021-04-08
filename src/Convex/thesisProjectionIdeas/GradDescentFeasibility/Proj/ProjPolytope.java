@@ -26,25 +26,15 @@ import listTools.ChoosePlanes;
  */
 public class ProjPolytope {
 
-    private Point gradInBounds;
-    private Partition part;
-    public AffineSpace travelThrough;
 
     public ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
     public List<Plane> planes;
 
-    public ProjPolytope(Partition part) {
-        int dim = part.getGradient().dim();
+    public ProjPolytope(int dim) {
         this.planes = new ArrayList<>(dim);
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, dim));
-        this.gradInBounds = part.getGradient();
-        this.part = part;
-        travelThrough = AffineSpace.allSpace(gradInBounds.dim());
     }
 
-    public Point grad() {
-        return gradInBounds;
-    }
 
     public Plane[] concat(Plane[] a, Plane b) {
         Plane[] arrayOfPlanes = new Plane[a.length + 1];
@@ -157,30 +147,4 @@ public class ProjPolytope {
 
     }
 
-    /**
-     * Adds a newly encountered half space to this polytope, updates the
-     * gradient, and removes and half spaces left behind.
-     *
-     * @param add the half space being added
-     * @param y the value for y.
-     */
-    public void addHalfSpace(HalfSpace add, Point y) {
-
-        removeExcept(travelThrough);
-
-        Point preProj = y.minus(part.getGradient());
-
-        planes.add(add.boundary());
-
-        ASProj asProj = proj(preProj, y);
-
-        travelThrough = asProj.as;
-
-        if (asProj.proj.equals(y)) {
-            throw new EmptyPolytopeException();
-        }
-
-        gradInBounds = y.minus(asProj.proj);
-
-    }
 }

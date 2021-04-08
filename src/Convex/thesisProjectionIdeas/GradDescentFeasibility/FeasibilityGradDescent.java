@@ -139,7 +139,7 @@ public class FeasibilityGradDescent extends Polytope {
         if (part.pointIsFeasible()) return y;
 
 //        LocalPolyhedralCone cone = new LocalPolyhedralCone(part);//TODO:this old method seems to be faster than the newer method
-        ProjPolytope cone = new ProjPolytope(part);//TODO: this is the newer method, it should be faster but isn't.
+        ProjPolytopeManager cone = new ProjPolytopeManager(part);//TODO: this is the newer method, it should be faster but isn't.
 
         Point start = y;      //TODO remove
 
@@ -167,7 +167,7 @@ public class FeasibilityGradDescent extends Polytope {
                 part.enterSpace(rollToPlane);
 
                 if (!part.pointIsFeasible()) {
-                    cone.addHalfSpace(rollToPlane, y);
+                    cone.travelToNewLocalPolytope(rollToPlane, y);
                 } else {
                     if (!hasElement(y, epsilon * 100)) //TODO:  once the algorithm works, this should be deleted.
                         throw new FailedDescentException("The feasibility point "

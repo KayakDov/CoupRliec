@@ -13,16 +13,17 @@ import listTools.ChoosePlanes;
 
 public class Main {
 
-    public static void polytopeFeasabilityTest() {
+    public static void polytopeFeasabilityTest(int dim, int numFaces, int numRuns, boolean empty) {
 
-        int dim = 15;
-        int numFaces = 100;
         double epsilon = 1e-7;
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < numRuns; i++) {
             System.out.println("i = " + i);
-//            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
-            FeasibilityGradDescent poly = new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim));
+            
+            FeasibilityGradDescent poly = empty? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim)):
+                    new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+            
+            
             poly.setEpsilon(epsilon);
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
@@ -87,7 +88,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         
-        polytopeFeasabilityTest();
+        polytopeFeasabilityTest(15,100,1, false);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
     }
 
