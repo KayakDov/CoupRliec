@@ -22,7 +22,7 @@ public class ASNode {
     public AffineSpace as;
     public Set<Plane> planeSet;
     public Plane[] planeList;
-    public int lastIndex;
+    private int lastIndex;
     public ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
 
     public ASNode(int index, ConcurrentHashMap<ASKey, ASNode> map) {
@@ -75,12 +75,26 @@ public class ASNode {
         return this;
     }
 
+    public int lastIndex() {
+        return lastIndex;
+    }
+
     public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
 
         ASKey key = new ASKey(planeList);
-        if (map.containsKey(key)) return map.get(key).setIndex(index);
-
-        ASNode asn = new ASNode(index, map);
+        
+        ASNode asn;
+        if (map.containsKey(key)) {
+             asn =  map.get(key).setIndex(index);
+            if(as.equals(asn.as)) {
+//                System.out.println("recylcing");
+                return asn;
+            }else {
+//                System.out.println("failing to recylce.  Searching for\n" + as + "\nfound\n" + asn.as);
+            }
+        }
+        
+        asn = new ASNode(index, map);
         asn.as = as;
         asn.planeSet = Set.of(planeList);
         asn.planeList = planeList;

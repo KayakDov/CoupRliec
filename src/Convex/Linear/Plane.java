@@ -161,12 +161,12 @@ public class Plane extends AffineSpace {
 
     @Override
     public String toString() {
-//        if (printEasyRead) {
-//            if (dim() == 2)
-//                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
-//            if (dim() == 3)
-//                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
-//        }
+        if (printEasyRead) {
+            if (dim() == 2)
+                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
+            if (dim() == 3)
+                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
+        }
         return toStringMultiDim();
 
     }

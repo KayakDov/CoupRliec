@@ -8,15 +8,12 @@ import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -237,7 +234,7 @@ public class AffineSpace implements ConvexSet {
 
     @Override
     public String toString() {
-        return linearSpace().toString() + (p != null ? "\nwith point " + p : "\nb = " + b);
+        return linearSpace().toString() + "\nb = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
     }
 
     private long subSpaceDim = -2;
@@ -298,29 +295,7 @@ public class AffineSpace implements ConvexSet {
         return nullMatrix().cols();
     }
 
-    public boolean hasFullDimensionality() {
-        return subSpaceDim() == dim();
-    }
 
-    public boolean hasIntersection(AffineSpace as) {
-        if (as.hasFullDimensionality() || hasFullDimensionality()) return true;
-        try {
-            return intersection(as).p().isReal();
-        } catch (NoSuchElementException ex) {
-            return false;
-        } catch (ArithmeticException ex) {
-            return false;
-        }
-    }
-
-    public static boolean hasIntersection(Stream<? extends AffineSpace> asStream) {
-        List<AffineSpace> asList = asStream.collect(Collectors.toList());
-        try {
-            return AffineSpace.intersection(asList.stream()).p().isReal();
-        } catch (ArithmeticException ae) {
-            return false;
-        }
-    }
 
     /**
      * is this space a subset of the given space
@@ -411,11 +386,11 @@ public class AffineSpace implements ConvexSet {
     
 
     private int hashRow(int row){
-        return linearSpace.normals[row].hashCode()*Double.hashCode(b.get(row));
+        return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
     }
     private int hashCode;
 
-    public void setHashCode() {
+    private void setHashCode() {
         hashCode = 0;
         for(int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
     }

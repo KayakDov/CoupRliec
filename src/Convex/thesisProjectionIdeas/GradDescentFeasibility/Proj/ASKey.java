@@ -34,6 +34,9 @@ public class ASKey {
     public ASKey(ASNode as){
         hashCode = as.as.hashCode();
     }
+    public ASKey(ASFail asf){
+        this(asf.asNode);
+    }
 
     @Override
     public int hashCode() {

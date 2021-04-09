@@ -138,52 +138,29 @@ public class FeasibilityGradDescent extends Polytope {
         Partition part = new Partition(y, this);
         if (part.pointIsFeasible()) return y;
 
-//        LocalPolyhedralCone cone = new LocalPolyhedralCone(part);//TODO:this old method seems to be faster than the newer method
-        ProjPolytopeManager cone = new ProjPolytopeManager(part);//TODO: this is the newer method, it should be faster but isn't.
-
-        Point start = y;      //TODO remove
+        ProjPolytopeManager cone = new ProjPolytopeManager(part);
 
         for (int i = 0; i <= size() + 1; i++) {
 
             try {
-//                System.out.println(y);
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
-                PointD oldY = new PointD(y);//TODO: remove from final code
-
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
-
-                if (oldY.d(y) < epsilon)
-                    System.out.println("The new point is too close to the old point.  oldY = "
-                            + oldY);
-
-                if (!cone.hasElement(y, epsilon * 100)) {
-                    throw new FailedDescentException("This point is outside the previouse cone. distMoved = "
-                            + oldY.d(y), start, y, part);
-                }
 
                 rollThroughSpaces(y, part);
 
                 part.enterSpace(rollToPlane);
 
-                if (!part.pointIsFeasible()) {
+                if (!part.pointIsFeasible()) 
                     cone.travelToNewLocalPolytope(rollToPlane, y);
-                } else {
-                    if (!hasElement(y, epsilon * 100)) //TODO:  once the algorithm works, this should be deleted.
-                        throw new FailedDescentException("The feasibility point "
-                                + "found is outside the polytope.", start, y, part);
-
-                    return y;
-                }
+                 else return y;
             } catch (EmptyPolytopeException epe) {
                 return new PointD(1).setAll(j -> Double.NaN);
-//            } catch (Exception nsee) {//TODO: remove once everything is working
-//                throw new FailedDescentException(nsee.getMessage(), start, y, part);
             }
 
         }
 
-        throw new FailedDescentException("Polytope fesibility is taking too long.", start, y, part);
+        throw new FailedDescentException("Polytope fesibility is taking too long.", PointD.oneD(Double.NaN), y, part);
 
     }
 

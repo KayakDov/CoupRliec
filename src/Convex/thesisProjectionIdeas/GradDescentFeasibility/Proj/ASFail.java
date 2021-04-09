@@ -61,7 +61,7 @@ public class ASFail {
 
     @Override
     public String toString() {
-        return asNode.toString() + "\n" + failed;
+        return asNode.toString();
     }
 
     private boolean asHasFailElement(int outPlane, Point lowerFail) {
@@ -86,6 +86,12 @@ public class ASFail {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
+            if(oneDownI == null){
+                System.out.println("\n\n\n null \n\n\n");
+                System.out.println("" + asNode.as.toString() + "\n" +
+                        lowerLevel.toString());
+            }
+            
             if (oneDownI.mightContProj) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
                 Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed : oneDownI.asNode.getProj(preProj);

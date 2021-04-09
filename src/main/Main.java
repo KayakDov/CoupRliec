@@ -7,8 +7,10 @@ import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKey;
 import Matricies.Point;
 import java.io.IOException;
+import java.util.HashMap;
 import listTools.ChoosePlanes;
 
 public class Main {
@@ -22,7 +24,6 @@ public class Main {
             
             FeasibilityGradDescent poly = empty? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim)):
                     new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
-            
             
             poly.setEpsilon(epsilon);
 
@@ -88,8 +89,15 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         
-        polytopeFeasabilityTest(15,100,1, false);
+        polytopeFeasabilityTest(15,100,10, false);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
+
+
+//    AffineSpace as = new AffineSpace(new PointD[]{new PointD(1,1)}, new PointD(1));
+//    
+//        System.out.println(as);
+        
+
     }
 
 }
