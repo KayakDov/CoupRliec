@@ -82,18 +82,10 @@ public class ASNode {
     public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
 
         ASKey key = new ASKey(planeList);
-        
+
         ASNode asn;
-        if (map.containsKey(key)) {
-             asn =  map.get(key).setIndex(index);
-            if(as.equals(asn.as)) {
-//                System.out.println("recylcing");
-                return asn;
-            }else {
-//                System.out.println("failing to recylce.  Searching for\n" + as + "\nfound\n" + asn.as);
-            }
-        }
-        
+        if (map.containsKey(key)) return map.get(key).setIndex(index);
+            
         asn = new ASNode(index, map);
         asn.as = as;
         asn.planeSet = Set.of(planeList);

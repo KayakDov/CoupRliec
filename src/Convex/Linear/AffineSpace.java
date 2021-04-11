@@ -183,21 +183,8 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        return p.plus(linearSpace().proj(x.minus(p())));
-    }
-
-    /**
-     * p must be set before this function is called.
-     *
-     * @param x
-     * @return
-     */
-    public Point proj(Matrix projFunc, Point x) {
-        if (isAllSpace()) return x;
-        linearSpace.projFunc = projFunc;
-        if (p == null)
-            throw new RuntimeException("You need to give this affinespace a point.");
-        return p.plus(projFunc.mult(x.minus(p())));
+        if(!hasProjFunc()) projFunc = new ProjectionFunction(linearSpace(), p, epsilon);
+        return projFunc.apply(x);
     }
 
     /**
@@ -228,8 +215,9 @@ public class AffineSpace implements ConvexSet {
         return linearSpace;
     }
 
+    private ProjectionFunction projFunc = null;
     public boolean hasProjFunc() {
-        return linearSpace.hasProjFunction();
+        return projFunc != null;
     }
 
     @Override

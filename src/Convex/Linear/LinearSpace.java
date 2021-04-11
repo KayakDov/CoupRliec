@@ -41,7 +41,7 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public boolean equals(LinearSpace ls) {
-       return Arrays.equals(normals, ls.normals);
+        return Arrays.equals(normals, ls.normals);
     }
 
     public LinearSpace(Point[] normals) {
@@ -161,15 +161,22 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public MatrixDense colSpaceMatrix() {
+        return colSpaceMatric(matrix());
+    }
 
-        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(matrix());
+    /**
+     * Returns the column space matrix for the given null space matrix.
+     * @param nullSpaceMatrix
+     * @return 
+     */
+    public static MatrixDense colSpaceMatric(Matrix nullSpaceMatrix) {
+        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullSpaceMatrix);
 
         MatrixDense IMinus = MatrixDense.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
 
         if (rre.noFreeVariable()) return new PointD(rre.numRows);
 
         return MatrixDense.subMatrixFromCols(rre.freeVariables(), IMinus);
-
     }
 
     @Override
@@ -183,16 +190,12 @@ public class LinearSpace implements ConvexSet {
         return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
     }
 
-    public Matrix projFunc = null;
+    public ProjectionFunction projFunc = null;
 
-    public Matrix getProjFunc() {
-        if (projFunc == null) {
+    public ProjectionFunction getProjFunc() {
+        if (projFunc == null)
+            projFunc = new ProjectionFunction(this, null, epsilon);
 
-            Matrix A = colSpaceMatrix();
-
-            if (!A.isZero(epsilon)) projFunc = A.mult(A.pseudoInverse());
-            else throw new NoProjFuncExists();
-        }
         return projFunc;
     }
 
@@ -208,7 +211,7 @@ public class LinearSpace implements ConvexSet {
     public Point proj(Point p) {
         if (isAllSpace()) return p;
 
-        return getProjFunc().mult(p);
+        return getProjFunc().apply(p);
 
     }
 

@@ -57,20 +57,20 @@ public class ProjPolytope {
         ////////////////////////////////////////////////////////////
         ASFail nextLevel[] = Arrays.stream(lowerLevel)//.parallel()
                 .flatMap(asf -> {
-                    System.out.println(asf.asNode.lastIndex());
+//                    System.out.println(asf.asNode.lastIndex());
 
                     return IntStream.range(asf.asNode.lastIndex() + 1, planes.size()).mapToObj(i -> {
                         ASFail asftemp = new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, projectionFunctions);
-                        System.out.println("\t" + asftemp.asNode.lastIndex());
+//                        System.out.println("\t" + asftemp.asNode.lastIndex());
                         return asftemp;
                     });
                 }
                 ).toArray(ASFail[]::new);
 
-        Arrays.stream(nextLevel).forEach(asf -> System.out.print(asf.asNode.lastIndex() + " "));
+//        Arrays.stream(nextLevel).forEach(asf -> System.out.print(asf.asNode.lastIndex() + " "));
 
-        System.out.println("lower level length = " + lowerLevel.length);
-        System.out.println(planes.size() + " choose " + (lowerLevel[0].asNode.planeList.length + 1) + " = " + (ChoosePlanes.choose(planes.size(), lowerLevel[0].asNode.planeList.length + 1) + "==" + nextLevel.length));
+//        System.out.println("lower level length = " + lowerLevel.length);
+//        System.out.println(planes.size() + " choose " + (lowerLevel[0].asNode.planeList.length + 1) + " = " + (ChoosePlanes.choose(planes.size(), lowerLevel[0].asNode.planeList.length + 1) + "==" + nextLevel.length));
 
         if (Arrays.stream(nextLevel).anyMatch(asf -> asf == null)) {
             Arrays.stream(nextLevel).forEach(asft -> System.out.println(asft));
@@ -83,7 +83,7 @@ public class ProjPolytope {
 //        System.out.println();
 //      
 
-        System.out.println("");
+//        System.out.println("");
 
         return nextLevel;
 
