@@ -7,7 +7,7 @@ import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKey;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Matricies.Point;
 import java.io.IOException;
 import java.util.HashMap;
@@ -89,7 +89,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         
-        polytopeFeasabilityTest(5,100,10, false);
+        polytopeFeasabilityTest(5,100,100, false);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
 
 

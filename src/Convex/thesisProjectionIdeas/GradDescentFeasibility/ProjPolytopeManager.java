@@ -2,6 +2,8 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
 import Convex.HalfSpace;
 import Convex.Linear.AffineSpace;
+import Convex.Linear.Plane;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASProj;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
 import Matricies.Point;
@@ -22,13 +24,13 @@ public class ProjPolytopeManager extends ProjPolytope {
      * this function
      */
 
-    public AffineSpace travelThrough;
+    public ASNode travelThrough;
 
     public ProjPolytopeManager(Partition part) {
         super(part.getGradient().dim());
         this.part = part;
         this.gradInBounds = part.getGradient();
-        travelThrough = AffineSpace.allSpace(gradInBounds.dim());
+        travelThrough = new ASNode.AllSpace(gradInBounds.dim());
     }
 
     /**
@@ -44,11 +46,11 @@ public class ProjPolytopeManager extends ProjPolytope {
 
         Point preProj = y.minus(part.getGradient());
 
-        planes.add(arrivalHS.boundary());
+        add(arrivalHS.boundary());
 
         ASProj asProj = proj(preProj, y);
 
-        travelThrough = asProj.as;
+        travelThrough = asProj.asn;
 
         if (asProj.proj.equals(y)) {
             throw new EmptyPolytopeException();
@@ -61,4 +63,5 @@ public class ProjPolytopeManager extends ProjPolytope {
     public Point grad() {
         return gradInBounds;
     }
+    
 }

@@ -1,13 +1,16 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.EmptyPolytopeException;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 import listTools.ChoosePlanes;
@@ -22,8 +25,8 @@ import listTools.ChoosePlanes;
  */
 public class ProjPolytope {
 
-    public ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
-    public List<Plane> planes;
+    private ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
+    private List<Plane> planes;
 
     public ProjPolytope(int dim) {
         this.planes = new ArrayList<>(dim);
@@ -100,7 +103,7 @@ public class ProjPolytope {
 
     public ASProj proj(Point preProj, Point y) {
         if (hasElementParallel(preProj))
-            return new ASProj(preProj, AffineSpace.allSpace(preProj.dim()));
+            return new ASProj(preProj, new ASNode.AllSpace(preProj.dim()));
 
         ASFail currentLevel[] = new ASFail[planes.size()];
         Arrays.setAll(currentLevel, i -> new ASFail(planes.get(i), i, projectionFunctions));
@@ -116,7 +119,7 @@ public class ProjPolytope {
 
             lowerLevel.clear();
 
-            Arrays.stream(currentLevel).parallel().forEach(asf -> lowerLevel.put(new ASKey(asf), asf));
+            Arrays.stream(currentLevel).parallel().forEach(asf -> lowerLevel.put(new ASKeyAS(asf), asf));
             currentLevel = nextLevel(currentLevel, y);
 
             proj = projOnLevel(preProj, currentLevel, lowerLevel);
@@ -149,23 +152,36 @@ public class ProjPolytope {
         return true;
     }
 
-    public void removeExcept(AffineSpace as) {
+    public void removeExcept(ASNode as) {
 
-        if (as.isAllSpace()) {
+        
+        if (as.as.isAllSpace()) {
             projectionFunctions.clear();
             planes.clear();
             return;
         }
+        
+        System.out.println("befroe removing: " + planes.size());
 
-        HashSet<Plane> planesToBePreserved = as.intersectingPlanesSet();
+        Set<Plane> planesToBePreserved = as.planeSet;
 
-        planes.parallelStream()
-                .filter(plane -> !planesToBePreserved.contains(plane))
-                .forEach(plane -> projectionFunctions.entrySet()
-                .removeIf(asnMap -> asnMap.getValue().planeSet.contains(plane)));
+//        planes.parallelStream()
+//                .filter(plane -> !planesToBePreserved.contains(plane))
+//                .forEach(plane -> projectionFunctions.entrySet()
+//                    .removeIf(asnMap -> asnMap.getValue().planeSet.contains(plane)));
 
+        projectionFunctions.entrySet().removeIf(entry -> !planesToBePreserved.containsAll(entry.getValue().planeSet));
+        
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));
+        
+        System.out.println("after removing: " + planes.size());
 
+    }
+    
+    
+    public void add(Plane plane){
+        if(planes.contains(plane)) throw new RuntimeException("This plane has already been added to ProjPolytope and has index " + planes.indexOf(plane) + " out of " + planes.size() + ".");//TODO: remove
+        planes.add(plane);
     }
 
 }

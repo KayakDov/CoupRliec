@@ -2,7 +2,8 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Convex.Polytope;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKey;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -296,7 +297,8 @@ public class AffineSpace implements ConvexSet {
                 && linearSpace().colSpaceMatrix().colStream()
                         .allMatch(col -> containing.hasElement(col.plus(p())));
     }
-
+    
+    
     /**
      * Is the given space a subset of this space
      *
@@ -373,7 +375,7 @@ public class AffineSpace implements ConvexSet {
 
     
 
-    private int hashRow(int row){
+    public int hashRow(int row){
         return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
     }
     private int hashCode;
@@ -393,14 +395,14 @@ public class AffineSpace implements ConvexSet {
      * @return the keys for the afformentioned affine spaces
      */
     
-    public ASKey[] oneDownKeys(){
+    public ASKeyRI[] oneDownKeys(){
         int numRows = linearSpace.getNormals().length;
 
         if (numRows == 1)
             throw new RuntimeException("oneDown may not be called on planes.");
 
-        ASKey[] oneDownArray = new ASKey[numRows];
-        Arrays.setAll(oneDownArray, i -> new ASKey(hashCode - hashRow(i), i));
+        ASKeyRI[] oneDownArray = new ASKeyRI[numRows];
+        Arrays.setAll(oneDownArray, i -> new ASKeyRI(this, i));
         return oneDownArray;
     }
     /**

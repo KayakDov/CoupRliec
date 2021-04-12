@@ -5,9 +5,12 @@
  */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
 import Matricies.Point;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,7 +59,7 @@ public class ASNode {
         else {
 //            try{
             if (!as.hasProjFunc())
-                projectionFunctions.put(new ASKey(planeList), this);
+                projectionFunctions.put(new ASKeyPlanes(planeList), this);
 //            }catch(OutOfMemoryError er){
 //                projectionFunctions.clear();
 //            }
@@ -81,14 +84,21 @@ public class ASNode {
 
     public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
 
-        ASKey key = new ASKey(planeList);
+        ASKeyPlanes key = new ASKeyPlanes(planeList);
 
         ASNode asn;
-        if (map.containsKey(key)) return map.get(key).setIndex(index);
-            
+        if (map.containsKey(key)) {
+            return map.get(key).setIndex(index);
+        }
+
         asn = new ASNode(index, map);
         asn.as = as;
-        asn.planeSet = Set.of(planeList);
+        try {
+            asn.planeSet = Set.of(planeList);
+        } catch (IllegalArgumentException iae) {
+            System.out.println(Arrays.toString(planeList));
+            throw iae;
+        }
         asn.planeList = planeList;
 
         return asn;
@@ -103,4 +113,12 @@ public class ASNode {
         return asn;
     }
 
+    public static class AllSpace extends ASNode{
+
+        public AllSpace(int dim) {
+            super(0, null);
+            as = AffineSpace.allSpace(dim);
+        }
+        
+    }
 }

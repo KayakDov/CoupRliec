@@ -5,8 +5,10 @@
  */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,11 +80,11 @@ public class ASFail {
         if (lowerLevel == null)
             return mightContProj = asNode.planeList[0].below(preProj);
 
-        ASKey[] oneDown = asNode.as.oneDownKeys();
+        ASKeyRI[] oneDown = asNode.as.oneDownKeys();
 
         boolean allFacesContainPreProj = true;
 
-        for (ASKey oneDownAS : oneDown) {
+        for (ASKeyRI oneDownAS : oneDown) {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
@@ -95,12 +97,12 @@ public class ASFail {
             if (oneDownI.mightContProj) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
                 Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed : oneDownI.asNode.getProj(preProj);
-                if (asHasFailElement(oneDownAS.removeIndex, proj))
+                if (asHasFailElement(oneDownAS.removeIndex(), proj))
                     return fail(proj);
 
             } else if (oneDownI.failed != null) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
-                if (!checked.add(oneDownI.failed) && asHasFailElement(oneDownAS.removeIndex, oneDownI.failed))
+                if (!checked.add(oneDownI.failed) && asHasFailElement(oneDownAS.removeIndex(), oneDownI.failed))
                     return fail(oneDownI.failed);
             }
         }

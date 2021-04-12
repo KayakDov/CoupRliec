@@ -1,6 +1,5 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility;
 
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
 import Convex.HalfSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
@@ -153,7 +152,9 @@ public class FeasibilityGradDescent extends Polytope {
 
                 if (!part.pointIsFeasible()) 
                     cone.travelToNewLocalPolytope(rollToPlane, y);
+                
                  else return y;
+                
             } catch (EmptyPolytopeException epe) {
                 return new PointD(1).setAll(j -> Double.NaN);
             }
