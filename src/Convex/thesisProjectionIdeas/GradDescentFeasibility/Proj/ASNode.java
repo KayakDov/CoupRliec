@@ -50,8 +50,9 @@ public class ASNode {
     }
 
     public boolean localHasElement(Point x) {
-        return planeSet.stream()
-                .allMatch(plane -> plane.aboveOrContains(x));
+        for(int i = 0; i < planeList.length; i++)
+            if(planeList[i].below(x)) return false;
+        return true;
     }
 
     public Point getProj(Point preProj) {
