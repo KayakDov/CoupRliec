@@ -89,7 +89,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         
-        polytopeFeasabilityTest(3,3,100, false);
+        polytopeFeasabilityTest(5,5,100000, false);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
 
 

@@ -5,11 +5,6 @@
  */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys;
 
-import Convex.Linear.AffineSpace;
-import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASFail;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
-
 /**
  *
  * @author dov
@@ -32,6 +27,9 @@ public abstract class ASKey {
         if (this == obj) return true;
         if (obj == null) return false;
         if (!(obj instanceof ASKey)) return false;
+        if(obj instanceof ASKeyAS) return equals((ASKeyAS)obj);
+        if(obj instanceof ASKeyPlanes) return equals((ASKeyPlanes)obj);
+        if(obj instanceof ASKeyRI) return equals((ASKeyRI)obj);
 
         return equals((ASKey) obj);
     }
@@ -41,8 +39,8 @@ public abstract class ASKey {
     }
     
     public abstract boolean equals(ASKeyAS askas);
-    public abstract boolean equals(ASKeyPlanes askas);
-    public abstract boolean equals(ASKeyRI askas);
+    public abstract boolean equals(ASKeyPlanes askp);
+    public abstract boolean equals(ASKeyRI askri);
     
     @Override
     public String toString() {

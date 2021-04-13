@@ -161,8 +161,6 @@ public class ProjPolytope {
             return;
         }
         
-        System.out.println("befroe removing: " + planes.size());
-
         Set<Plane> planesToBePreserved = as.planeSet;
 
 //        planes.parallelStream()
@@ -174,8 +172,6 @@ public class ProjPolytope {
         
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));
         
-        System.out.println("after removing: " + planes.size());
-
     }
     
     

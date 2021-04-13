@@ -88,6 +88,7 @@ public class ASNode {
 
         ASNode asn;//TODO: attach this lower down
         if (map.containsKey(key)) {
+            if(!map.get(key).as.equals(as)) throw new RuntimeException("bad retrival");
             return map.get(key).setIndex(index);
         }
 
