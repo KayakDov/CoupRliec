@@ -88,7 +88,7 @@ public class ASFail {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
 
-            if(oneDownI == null){
+            if(oneDownI == null){//TODO:remove this
                 System.out.println("\n\n\n null \n\n\n");
                 System.out.println("" + asNode.as.toString() + "\n" +
                         lowerLevel.toString());
@@ -96,7 +96,7 @@ public class ASFail {
             
             if (oneDownI.mightContProj) {
                 if (allFacesContainPreProj) allFacesContainPreProj = false;
-                Point proj = oneDownI.asNode.planeList.length > 1 ? oneDownI.failed : oneDownI.asNode.getProj(preProj);
+                Point proj = oneDownI.failed;
                 if (asHasFailElement(oneDownAS.removeIndex(), proj))
                     return fail(proj);
 

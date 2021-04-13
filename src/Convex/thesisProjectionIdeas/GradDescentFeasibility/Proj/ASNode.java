@@ -86,14 +86,14 @@ public class ASNode {
 
         ASKeyPlanes key = new ASKeyPlanes(planeList);
 
-        ASNode asn;
+        ASNode asn;//TODO: attach this lower down
         if (map.containsKey(key)) {
             return map.get(key).setIndex(index);
         }
 
         asn = new ASNode(index, map);
         asn.as = as;
-        try {
+        try {//TODO: remove this try catch
             asn.planeSet = Set.of(planeList);
         } catch (IllegalArgumentException iae) {
             System.out.println(Arrays.toString(planeList));

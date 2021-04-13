@@ -13,7 +13,7 @@ import java.util.function.Function;
 public class ProjectionFunction implements Function<Point, Point> {
 
     private Matrix pm;
-    private PointD p;
+    private Point p;
 
     public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
 
@@ -21,7 +21,8 @@ public class ProjectionFunction implements Function<Point, Point> {
 
         if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
         else throw new NoProjFuncExists();
-
+        
+        this.p = p;
     }
 
     public static ProjectionFunction ID(){

@@ -113,7 +113,7 @@ public class ProjPolytope {
         int size = ChoosePlanes.choose(y.dim(), y.dim() / 2);
         ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
 
-        for (int i = 2; i < y.dim(); i++) {
+        for (int i = 2; i < Math.max(y.dim(), planes.size()); i++) {
 
             if (proj != null) return proj;
 

@@ -134,10 +134,11 @@ public class AffineSpace implements ConvexSet {
     }
 
     /**
-     * This method is unprotected. It is on the caller to make sure that the
-     * given point is in the affine space.
+     * This method is unprotected.It is on the caller to make sure that the
+ given point is in the affine space.
      *
      * @param p
+     * @return 
      */
     public AffineSpace setP(Point p) {
         this.p = p;
