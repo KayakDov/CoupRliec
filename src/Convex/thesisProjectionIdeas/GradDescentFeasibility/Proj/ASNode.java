@@ -8,6 +8,7 @@ package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
+import Convex.Linear.ProjectionFunction;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
 import Matricies.Point;
 import java.util.Arrays;
@@ -21,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author dov
  */
 public class ASNode {
+
+    public static boolean memoryAvailable = true;
 
     public AffineSpace as;
     public Set<Plane> planeSet;
@@ -50,21 +53,21 @@ public class ASNode {
     }
 
     public boolean localHasElement(Point x) {
-        for(int i = 0; i < planeList.length; i++)
-            if(planeList[i].below(x)) return false;
+        for (int i = 0; i < planeList.length; i++)
+            if (planeList[i].below(x)) return false;
         return true;
     }
 
     public Point getProj(Point preProj) {
         if (planeSet.size() == 1) return somePlane().proj(preProj);
-        else {
-//            try{
-            if (!as.hasProjFunc())
-                projectionFunctions.put(new ASKeyPlanes(planeList), this);
-//            }catch(OutOfMemoryError er){
-//                projectionFunctions.clear();
-//            }
+
+        if (memoryAvailable && !as.hasProjFunc())
+            projectionFunctions.put(new ASKeyPlanes(planeList), this);
+        try {
             return as.proj(preProj);
+        } catch (ProjectionFunction.NoProjFuncExists ex) {
+//            System.out.println("catching " + ex);
+            return null;
         }
 
     }
@@ -89,18 +92,16 @@ public class ASNode {
 
         ASNode asn;//TODO: attach this lower down
         if (map.containsKey(key)) {
-            if(!map.get(key).as.equals(as)) throw new RuntimeException("bad retrival");
+            if (!map.get(key).as.equals(as))
+                throw new RuntimeException("bad retrival");
             return map.get(key).setIndex(index);
         }
 
         asn = new ASNode(index, map);
         asn.as = as;
-        try {//TODO: remove this try catch
-            asn.planeSet = Set.of(planeList);
-        } catch (IllegalArgumentException iae) {
-            System.out.println(Arrays.toString(planeList));
-            throw iae;
-        }
+
+        asn.planeSet = Set.of(planeList);
+
         asn.planeList = planeList;
 
         return asn;
@@ -115,12 +116,12 @@ public class ASNode {
         return asn;
     }
 
-    public static class AllSpace extends ASNode{
+    public static class AllSpace extends ASNode {
 
         public AllSpace(int dim) {
             super(0, null);
             as = AffineSpace.allSpace(dim);
         }
-        
+
     }
 }

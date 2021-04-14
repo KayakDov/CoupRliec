@@ -20,7 +20,7 @@ public class ProjectionFunction implements Function<Point, Point> {
         Matrix A = ls.colSpaceMatrix();
 
         if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
-        else throw new NoProjFuncExists();
+        else throw new NoProjFuncExists(ls);
         
         this.p = p;
     }
@@ -46,10 +46,10 @@ public class ProjectionFunction implements Function<Point, Point> {
         return p.plus(pm.mult(x.minus(p)));
     }
 
-    public class NoProjFuncExists extends RuntimeException {
+    public static class NoProjFuncExists extends RuntimeException {
 
-        public NoProjFuncExists() {
-            super("There is no projection function for this linear space.");
+        public NoProjFuncExists(LinearSpace ls) {
+            super("There is no projection function for this linear space.\nlinear space is " + ls);
         }
 
     }

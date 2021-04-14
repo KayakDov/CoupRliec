@@ -70,11 +70,10 @@ public class AffineSpace implements ConvexSet {
      */
     public AffineSpace(LinearSpace ls, Point onSpace) {
         linearSpace = ls;
-        if (!ls.isAllSpace()){
+        if (!ls.isAllSpace()) {
             b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
             setHashCode();
-        }
-        else hashCode = 0;
+        } else hashCode = 0;
         p = onSpace;
     }
 
@@ -135,10 +134,10 @@ public class AffineSpace implements ConvexSet {
 
     /**
      * This method is unprotected.It is on the caller to make sure that the
- given point is in the affine space.
+     * given point is in the affine space.
      *
      * @param p
-     * @return 
+     * @return
      */
     public AffineSpace setP(Point p) {
         this.p = p;
@@ -158,15 +157,16 @@ public class AffineSpace implements ConvexSet {
 
         if (nullMatrix().isSquare() && rre.hasFullRank())
             return p = nullMatrix().solve(b);
-
-        boolean isSparse = linearSpace.getNormals()[0].isSparse();
-        Matrix append = Matrix.fromRows(
-                rre.getFreeVariables().map(i -> new PointD(rre.numCols).set(i, 1)).toArray(PointD[]::new)
-        );
-
-        Point b2 = b.concat(new PointSparse(append.rows()));
-
         try {
+            Matrix append = Matrix.fromRows(
+                    rre.getFreeVariables().map(i -> {
+                        Point row = new PointD(rre.numCols);
+                        row.set(i, 1);
+                        return row;
+                    }).toArray(PointD[]::new)
+            );
+
+            Point b2 = b.concat(new PointSparse(append.rows()));
 
             return p = nullMatrix().rowConcat(append).solve(b2);
 
@@ -185,7 +185,12 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        if(!hasProjFunc()) projFunc = new ProjectionFunction(linearSpace(), p, epsilon);
+        try{
+        if (!hasProjFunc())
+            projFunc = new ProjectionFunction(linearSpace(), p(), epsilon);
+        }catch(NoSuchElementException nse){
+            throw new ProjectionFunction.NoProjFuncExists(linearSpace);
+        }
         return projFunc.apply(x);
     }
 
@@ -218,6 +223,7 @@ public class AffineSpace implements ConvexSet {
     }
 
     private ProjectionFunction projFunc = null;
+
     public boolean hasProjFunc() {
         return projFunc != null;
     }
@@ -285,8 +291,6 @@ public class AffineSpace implements ConvexSet {
         return nullMatrix().cols();
     }
 
-
-
     /**
      * is this space a subset of the given space
      *
@@ -298,8 +302,7 @@ public class AffineSpace implements ConvexSet {
                 && linearSpace().colSpaceMatrix().colStream()
                         .allMatch(col -> containing.hasElement(col.plus(p())));
     }
-    
-    
+
     /**
      * Is the given space a subset of this space
      *
@@ -374,20 +377,16 @@ public class AffineSpace implements ConvexSet {
 
     }
 
-    
-
-    public int hashRow(int row){
+    public int hashRow(int row) {
         return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
     }
     private int hashCode;
 
     private void setHashCode() {
         hashCode = 0;
-        for(int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
+        for (int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
     }
-    
-    
-    
+
     /**
      * If this affine space is defined by the set of solutions to Ax=b, then
      * this function returns the set of A'x = b, where A' is A with one row
@@ -395,8 +394,7 @@ public class AffineSpace implements ConvexSet {
      *
      * @return the keys for the afformentioned affine spaces
      */
-    
-    public ASKeyRI[] oneDownKeys(){
+    public ASKeyRI[] oneDownKeys() {
         int numRows = linearSpace.getNormals().length;
 
         if (numRows == 1)
@@ -406,6 +404,7 @@ public class AffineSpace implements ConvexSet {
         Arrays.setAll(oneDownArray, i -> new ASKeyRI(this, i));
         return oneDownArray;
     }
+
     /**
      * The planes that intersect to make this affine space
      *

@@ -8,6 +8,8 @@ import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
+import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
 import Matricies.Point;
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,16 +17,18 @@ import listTools.ChoosePlanes;
 
 public class Main {
 
-    public static void polytopeFeasabilityTest(int dim, int numFaces, int numRuns, boolean empty) {
+    public static void polytopeFeasabilityTest(int dim, int numFaces, int numRuns, boolean empty, boolean memory) {
 
         double epsilon = 1e-7;
 
+        ASNode.memoryAvailable = memory;
+
         for (int i = 0; i < numRuns; i++) {
             System.out.println("i = " + i);
-            
-            FeasibilityGradDescent poly = empty? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim)):
-                    new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
-            
+
+            FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim))
+                    : new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+
             poly.setEpsilon(epsilon);
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
@@ -86,17 +90,32 @@ public class Main {
 
     }
 
+    public static void cubeTest() {
+        Point a = new PointD(1, 1, 1);
+        Point b = new PointD(2, 2, 2);
+        Polytope cube = new Polytope(new HalfSpace[]{
+            new HalfSpace(a, new PointD(-1, 0, 0)),
+            new HalfSpace(a, new PointD(0, -1, 0)),
+            new HalfSpace(a, new PointD(0, 0, -1)),
+            new HalfSpace(b, new PointD(1, 0, 0)),
+            new HalfSpace(b, new PointD(0, 1, 0)),
+            new HalfSpace(b, new PointD(0, 0, 1))
+        });
+
+        FeasibilityGradDescent fgd = new FeasibilityGradDescent(cube);
+
+        ProjPolytope pp = new ProjPolytope(cube);
+
+        System.out.println(pp.proj(new PointD(6,6,6)));
+
+//        System.out.println(fgd.fesibility(new PointD(1.5, 1.5, 1.5)));
+    }
+
     public static void main(String[] args) throws IOException {
 
-        
-        polytopeFeasabilityTest(15,100,100, false);
+        polytopeFeasabilityTest(10,1000,10, false, false);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
-
-
-//    AffineSpace as = new AffineSpace(new PointD[]{new PointD(1,1)}, new PointD(1));
-//    
-//        System.out.println(as);
-        
+//        cubeTest();
 
     }
 

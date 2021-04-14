@@ -90,7 +90,7 @@ public class ASFail {
 
             ASFail oneDownI = lowerLevel.get(oneDownAS);
     
-            if (oneDownI.mightContProj) {
+            if (oneDownI.mightContProj && oneDownI.failed != null) {
                 Point proj = oneDownI.failed;
                 if (asHasFailElement(oneDownAS.removeIndex(), proj))
                     return fail(proj);

@@ -47,7 +47,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public Point getP() {
-        return p;
+        return p();
     }
 
     /**
@@ -142,7 +142,7 @@ public class Plane extends AffineSpace {
      * @return true if the two planes are equal.
      */
     public boolean equals(Plane plane, double epsilon) {
-        return onPlane(plane.p, epsilon)
+        return onPlane(plane.p(), epsilon)
                 && normal().equals(plane.normal());
     }
 
@@ -154,7 +154,7 @@ public class Plane extends AffineSpace {
      */
     @Override
     public Point proj(Point x) {
-        return x.minus(normal().mult((x.minus(p)).dot(normal())));
+        return x.minus(normal().mult((x.minus(p())).dot(normal())));
     }
 
     public static boolean printEasyRead = true;
@@ -184,7 +184,7 @@ public class Plane extends AffineSpace {
      */
     @Override
     public double d(Point x) {
-        return Math.abs((x.minus(p)).dot(normal()));
+        return Math.abs((x.minus(p())).dot(normal()));
     }
 
     /**
@@ -194,7 +194,7 @@ public class Plane extends AffineSpace {
      * @return
      */
     public Plane flipNormal() {
-        return new Plane(p, normal().mult(-1));
+        return new Plane(p(), normal().mult(-1));
     }
 
     /**
