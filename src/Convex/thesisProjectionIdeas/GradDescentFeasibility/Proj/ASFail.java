@@ -58,7 +58,7 @@ public class ASFail {
     }
 
     private Plane somePlane() {
-        return asNode.somePlane();
+        return asNode.plane();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class ASFail {
 
     public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
         if (lowerLevel == null)
-            return mightContProj = asNode.planeList[0].below(preProj);
+            return mightContProj = asNode.plane().below(preProj);
         
         if(asNode.as.hasProjFunc()) return mightContProj = true;
         
@@ -87,9 +87,9 @@ public class ASFail {
         ASKeyRI[] oneDown = asNode.as.oneDownKeys();
 
         for (ASKeyRI oneDownAS : oneDown) {
-
+           
             ASFail oneDownI = lowerLevel.get(oneDownAS);
-    
+                
             if (oneDownI.mightContProj && oneDownI.failed != null) {
                 Point proj = oneDownI.failed;
                 if (asHasFailElement(oneDownAS.removeIndex(), proj))
@@ -107,4 +107,5 @@ public class ASFail {
     public void clearFailures() {
         failed = null;
     }
+    
 }

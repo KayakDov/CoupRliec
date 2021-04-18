@@ -17,10 +17,16 @@ public class ProjectionFunction implements Function<Point, Point> {
 
     public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
 
-        Matrix A = ls.colSpaceMatrix();
+        Matrix nullSpaceMatrix = ls.matrix();
+        Matrix A = LinearSpace.colSpaceMatric(nullSpaceMatrix);
 
         if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
-        else throw new NoProjFuncExists(ls);
+        else{
+            if(A.asDense().rank() == A.asDense().numCols) {
+                if(p == null)p =  new PointD(nullSpaceMatrix.rows());
+                pm = null;
+            }else throw new NoProjFuncExists(ls);
+        }
         
         this.p = p;
     }
@@ -42,6 +48,7 @@ public class ProjectionFunction implements Function<Point, Point> {
     }
     @Override
     public Point apply(Point x) {
+        if(pm == null) return p;
         if(p == null) return pm.mult(x);
         return p.plus(pm.mult(x.minus(p)));
     }

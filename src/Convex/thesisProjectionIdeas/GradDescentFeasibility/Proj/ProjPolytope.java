@@ -51,28 +51,31 @@ public class ProjPolytope {
     private ASFail[] nextLevel(ASFail[] lowerLevel, Point y) {
 
         return Arrays.stream(lowerLevel).parallel()
-                .flatMap(asf -> 
-                    IntStream.range(asf.asNode.lastIndex() + 1, planes.size()).mapToObj(i -> 
-                         new ASFail(concat(asf.asNode.planeList, planes.get(i)), y, i, projectionFunctions)
-                    )
-                ).toArray(ASFail[]::new);
+                .flatMap(asf -> IntStream.range(asf.asNode.lastIndex() + 1, planes.size())
+                        .mapToObj(i -> 
+                                new ASFail(concat(asf.asNode.planeList, planes.get(i)), 
+                                    y, 
+                                    i, 
+                                    projectionFunctions
+                                    )
+                )).toArray(ASFail[]::new);
 
     }
 
     private ASProj projOnLevel(Point preProj, ASFail[] level, ConcurrentHashMap<ASKey, ASFail> ll) {
-        return Arrays.stream(level).parallel()
+        return Arrays.stream(level)//.parallel()
                 .filter(asf -> asf.mightContainProj(ll, preProj))
                 .map(asFail -> new ASNProj(preProj, asFail))
-                .filter(p -> p.proj != null)
+                .filter(p -> p.asn.spaceIsNonEmpty())
                 .filter(p -> hasElement(p))
                 .findAny()
                 .orElse(null);
     }
 
-    public Point proj(Point y){
+    public Point proj(Point y) {
         return proj(y, null).proj;
     }
-    
+
     public ASProj proj(Point preProj, Point y) {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, new ASNode.AllSpace(preProj.dim()));
@@ -85,7 +88,7 @@ public class ProjPolytope {
         int size = ChoosePlanes.choose(preProj.dim(), preProj.dim() / 2);
         ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
 
-        for (int i = 2; i < Math.max(preProj.dim(), planes.size()); i++) {
+        for (int i = 2; i <= Math.min(preProj.dim(), planes.size()); i++) {
 
             if (proj != null) return proj;
 
@@ -93,7 +96,7 @@ public class ProjPolytope {
 
             Arrays.stream(currentLevel).parallel().forEach(asf -> lowerLevel.put(new ASKeyAS(asf), asf));
             currentLevel = nextLevel(currentLevel, y);
-
+                        
             proj = projOnLevel(preProj, currentLevel, lowerLevel);
 
         }

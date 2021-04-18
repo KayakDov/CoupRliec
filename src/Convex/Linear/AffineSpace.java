@@ -157,22 +157,26 @@ public class AffineSpace implements ConvexSet {
 
         if (nullMatrix().isSquare() && rre.hasFullRank())
             return p = nullMatrix().solve(b);
+
+        Matrix append = Matrix.fromRows(
+                rre.getFreeVariables().map(i -> {
+                    Point row = new PointD(rre.numCols);
+                    row.set(i, 1);
+                    return row;
+                }).toArray(PointD[]::new)
+        );
+
+        Point b2 = b.concat(new PointSparse(append.rows()));
         try {
-            Matrix append = Matrix.fromRows(
-                    rre.getFreeVariables().map(i -> {
-                        Point row = new PointD(rre.numCols);
-                        row.set(i, 1);
-                        return row;
-                    }).toArray(PointD[]::new)
-            );
-
-            Point b2 = b.concat(new PointSparse(append.rows()));
-
             return p = nullMatrix().rowConcat(append).solve(b2);
 
         } catch (Exception ex) {
-
-            throw new NoSuchElementException("This affine space is empty." + this);
+            System.out.println("Convex.Linear.AffineSpace.p()");
+            System.out.println(nullMatrix().rowConcat(append));
+            System.out.println(this);
+            System.out.println("rre = \n" + rre);
+            throw ex;
+//            throw new NoSuchElementException("This affine space is empty." + this);
         }
     }
 
@@ -185,10 +189,10 @@ public class AffineSpace implements ConvexSet {
     @Override
     public Point proj(Point x) {
         if (isAllSpace()) return x;
-        try{
-        if (!hasProjFunc())
-            projFunc = new ProjectionFunction(linearSpace(), p(), epsilon);
-        }catch(NoSuchElementException nse){
+        try {
+            if (!hasProjFunc())
+                projFunc = new ProjectionFunction(linearSpace(), p(), epsilon);
+        } catch (NoSuchElementException nse) {
             throw new ProjectionFunction.NoProjFuncExists(linearSpace);
         }
         return projFunc.apply(x);

@@ -17,7 +17,6 @@ import org.ejml.data.DMatrixSparse;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.interfaces.decomposition.QRDecomposition;
-import org.ejml.ops.ConvertDMatrixStruct;
 import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.DecompositionFactory_DSCC;
@@ -334,7 +333,7 @@ public class MatrixSparse implements Matrix {
      */
     protected MatrixSparse setFromTrip(DMatrixSparseTriplet trip) {
         ejmlSparse = new DMatrixSparseCSC(trip.numRows, trip.numCols, trip.getNonZeroLength());
-        ConvertDMatrixStruct.convert(trip, ejmlSparse);
+//        ConvertDMatrixStruct.convert(trip, ejmlSparse);TODO:This function needs to be fixed
         return this;
     }
 

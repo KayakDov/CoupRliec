@@ -21,7 +21,7 @@ public interface ReducedRowEchelon extends Matrix {
     
     default void setFreeVariables(){
         for(int i = 0, j = 0; j < cols(); j++)
-            if(i < rows() && get(i, j) == 1) i++;
+            if(i < rows() && get(i, j) != 0) i++;
             else freeVariables().add(j);
     }
     

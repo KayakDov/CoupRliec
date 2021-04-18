@@ -48,8 +48,8 @@ public class ASNode {
         return false;
     }
 
-    public Plane somePlane() {
-        return planeSet.iterator().next();
+    public Plane plane() {
+        return planeList[0];
     }
 
     public boolean localHasElement(Point x) {
@@ -57,9 +57,22 @@ public class ASNode {
             if (planeList[i].below(x)) return false;
         return true;
     }
-
+    
+    private boolean spaceIsEmpty = false;
+    
+    public boolean spaceIsNonEmpty(){
+        return !spaceIsEmpty;
+    }
+    public boolean spaceIsEmpty(){
+        return spaceIsEmpty;
+    }
+    
+    public void setSpaceAsEmpty(){
+        spaceIsEmpty = true;
+    }
+    
     public Point getProj(Point preProj) {
-        if (planeSet.size() == 1) return somePlane().proj(preProj);
+        if (planeList.length == 1) return plane().proj(preProj);
 
         if (memoryAvailable && !as.hasProjFunc())
             projectionFunctions.put(new ASKeyPlanes(planeList), this);
@@ -67,6 +80,7 @@ public class ASNode {
             return as.proj(preProj);
         } catch (ProjectionFunction.NoProjFuncExists ex) {
 //            System.out.println("catching " + ex);
+            setSpaceAsEmpty();
             return null;
         }
 
