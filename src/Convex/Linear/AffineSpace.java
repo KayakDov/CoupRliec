@@ -2,7 +2,6 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Convex.Polytope;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
@@ -19,14 +18,30 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
+ * This is an affine space, represented internally as the solution Ax=b with the
+ * option of the additional representation of the linear null space A and a
+ * point p in the affine space.
  *
  * @author Dov Neimand
  */
 public class AffineSpace implements ConvexSet {
 
+    /**
+     * The linear space underlying the affine space. If the affine space is Ax =
+     * b then this linear space is Ax = 0.
+     */
     protected LinearSpace linearSpace;
+
+    /**
+     * The vector that has Ax=b.
+     */
     public Point b;
 
+    /**
+     * The vector that has Ax = b.
+     *
+     * @return
+     */
     public Point getB() {
         return b;
     }
@@ -58,6 +73,11 @@ public class AffineSpace implements ConvexSet {
         setHashCode();
     }
 
+    /**
+     * The matrix A with Ax = b.
+     *
+     * @return
+     */
     public Matrix nullMatrix() {
         return linearSpace.matrix();
     }
@@ -77,6 +97,12 @@ public class AffineSpace implements ConvexSet {
         p = onSpace;
     }
 
+    /**
+     * A constructor
+     *
+     * @param intersectingPlanes the planes that intersect to form this affine
+     * space.
+     */
     public AffineSpace(Set<Plane> intersectingPlanes) {
 
         Iterator<Plane> iter = intersectingPlanes.iterator();
@@ -93,6 +119,11 @@ public class AffineSpace implements ConvexSet {
         setHashCode();
     }
 
+    /**
+     * The constructor.
+     *
+     * @param planes The planes that intersect to form this affine space.
+     */
     public AffineSpace(Plane[] planes) {
         Point[] normals = new Point[planes.length];
         Arrays.setAll(normals, i -> planes[i].normal());
@@ -101,6 +132,12 @@ public class AffineSpace implements ConvexSet {
         setHashCode();
     }
 
+    /**
+     * A constructor
+     *
+     * @param intersectingPlanes planes that intersect to form this affine
+     * space.
+     */
     public AffineSpace(List<Plane> intersectingPlanes) {
 
         Point[] normals = new PointD[intersectingPlanes.size()];
@@ -126,8 +163,16 @@ public class AffineSpace implements ConvexSet {
         return nullMatrix().mult(x).equals(b, epsilon);
     }
 
+    /**
+     * A point in this affine space.
+     */
     protected Point p = null;
 
+    /**
+     * Has a point in this affine space been found and saved.
+     *
+     * @return
+     */
     public boolean hasAPoint() {
         return p != null;
     }
@@ -145,7 +190,8 @@ public class AffineSpace implements ConvexSet {
     }
 
     /**
-     * A point in the affine space
+     * A point in the affine space. If on has not previously been found or set,
+     * then it is computed.
      *
      * @return
      */
@@ -181,10 +227,11 @@ public class AffineSpace implements ConvexSet {
     }
 
     /**
-     * p must be set before this function is called.
+     * The projection onto this affine space. After this function is called the
+     * first time, the projection function generated is saved for future use.
      *
-     * @param x
-     * @return
+     * @param x the point being projected
+     * @return the projection onto this space.
      */
     @Override
     public Point proj(Point x) {
@@ -212,22 +259,47 @@ public class AffineSpace implements ConvexSet {
 
     }
 
+    /**
+     * The intersections of the given affine spaces
+     *
+     * @param space
+     * @return a new affine space
+     */
     public static AffineSpace intersection(AffineSpace[] space) {
         if (space.length == 0)
             throw new RuntimeException("Empty intersection?");
         return intersection(Arrays.stream(space));
     }
 
+    /**
+     * The intersections of the given affine spaces
+     *
+     * @param space
+     * @return a new affine space
+     */
     public static AffineSpace intersection(Stream<? extends AffineSpace> space) {
         return space.map(as -> (AffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
     }
 
+    /**
+     * The underlying linear space. If Ax = b the this returns Null(A).
+     *
+     * @return
+     */
     public LinearSpace linearSpace() {
         return linearSpace;
     }
 
+    /**
+     * The projection function used to find the projection onto this space.
+     */
     private ProjectionFunction projFunc = null;
 
+    /**
+     * Has a projection function been found in the past?
+     *
+     * @return
+     */
     public boolean hasProjFunc() {
         return projFunc != null;
     }
@@ -375,17 +447,34 @@ public class AffineSpace implements ConvexSet {
         return other.linearSpace.equals(linearSpace) && other.b.equals(b);
     }
 
+    /**
+     * Is this affine space equal to the given affine space.
+     *
+     * @param obj
+     * @return
+     */
     public boolean equals(AffineSpace obj) {
 
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
 
     }
 
+    /**
+     * The has value for just one row.
+     * @param row the row
+     * @return the hash value of the hyperplane the row represents.
+     */
     public int hashRow(int row) {
         return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
     }
+    /**
+     * The hash value for this function.
+     */
     private int hashCode;
 
+    /**
+     * Sets and saves the hashcode.
+     */
     private void setHashCode() {
         hashCode = 0;
         for (int i = 0; i < b.dim(); i++) hashCode += hashRow(i);

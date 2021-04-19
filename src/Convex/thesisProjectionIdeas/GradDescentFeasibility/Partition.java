@@ -13,18 +13,39 @@ import java.util.stream.Stream;
 
 /**
  *
- * Variouse partitions of the polytope.  Halfspaces visited vs not visited, half spaces containing the point vs those not containing the point, etc...
+ * Various partitions of the polytope.  Halfspaces visited vs not visited, 
+ * half spaces containing the point vs those not containing the point, etc...
  * @author Dov Neimand
  */
 public class Partition {
 
+    /**
+     * The underlying polytope
+     */
     private FeasibilityGradDescent poly;
+    /**
+     * all the halfspaces containing the point
+     */
     private ArrayList<HalfSpace> containing;
+    /**
+     * All the half spaces excluding the point
+     */
     private Set<HalfSpace> excluding;
+    /**
+     * all the half spaces the point has visited.
+     */
     private HashSet<HalfSpace> visited;
 
+    /**
+     * The gradient for the point pointing toward the polytope.
+     */
     private PointD gradient;
 
+    /**
+     * The constructor
+     * @param y the point all the partitions are around
+     * @param poly the polytope whose half spaces are to be partitioned.
+     */
     public Partition(Point y, FeasibilityGradDescent poly) {
         this.poly = poly;
         containing = new ArrayList<>(poly.size());
@@ -45,7 +66,7 @@ public class Partition {
     }
 
     /**
-     * To be callsed if the iteration point arrives at this spot
+     * To be called if the iteration point arrives at this spot
      *
      * @param hs
      */
@@ -67,6 +88,10 @@ public class Partition {
             gradient.addToMe(hs.normal().dir().mult(-1));
         }
     }
+    /**
+     * The point passes through the list of halfspaces, changing this partition.
+     * @param moveThrough 
+     */
     public void passThroughSpaces(List<HalfSpace> moveThrough){
         if(moveThrough.isEmpty()) return;
         
@@ -80,28 +105,52 @@ public class Partition {
                         .mult(-1));
     }
 
+    /**
+     * All the halfspaces containing the point.
+     * @return 
+     */
     public Stream<HalfSpace> containing() {
         return containing.parallelStream();
     }
 
+    /**
+     * All the half spaces containing the point.
+     * @return 
+     */
     public ArrayList<HalfSpace> containingSet() {
         return containing;
     }
     
-    
-
+    /**
+     * ALl the half spaces excluding the point.
+     * @return 
+     */
     public Set<HalfSpace> excludingSet() {
         return excluding;
     }
 
+    /**
+     * All the half spaces excluding the point.
+     * @return 
+     */
     public Stream<HalfSpace> excluding() {
         return excluding.parallelStream();
     }
 
+    /**
+     * Is the point inside the polytope.
+     * @return 
+     */
     boolean pointIsFeasible() {
-        return excluding.size() == 0;
+        return excluding.isEmpty();
     }
 
+    /**
+     * All the half spaces downhill, in the direction of the gradient, that contain the point y.
+     * @param grad
+     * @param epsilon
+     * @return 
+     */
     public Stream<HalfSpace> downhillContaining(Point grad, double epsilon) {
         return containing().filter(hs -> /*!visited.contains(hs) &&*/ hs.normal().dot(grad) < -epsilon);
     }
@@ -110,7 +159,7 @@ public class Partition {
      * Everything that's downhill, not yet visited, and excludes the current
      * point
      *
-     * @param grad
+     * @param grad the uphill direction from the point
      * @param epsilon
      * @return
      */
@@ -118,6 +167,12 @@ public class Partition {
         return excluding().filter(hs -> hs.normal().dot(grad) > epsilon);
     }
 
+    /**
+     * All the half spaced downhill of the point
+     * @param grad the uphill direction fromthe point.
+     * @param epsilon
+     * @return 
+     */
     public Stream<HalfSpace> downHill(PointD grad, double epsilon) {
         return Stream.concat(downhillContaining(grad, epsilon),
                 downhillExcluding(grad, epsilon));
@@ -143,15 +198,23 @@ public class Partition {
         
     }
 
+    /**
+     * All of the downhill spaces between the point and goTo that exclude the point.
+     * @param grad the uphill direction
+     * @param goTo the other end of the line.
+     * @param epsilon
+     * @return 
+     */
     public Stream<HalfSpace> excludingSpacesBetweenHereAndThere(Point grad, Point goTo, double epsilon) {
         return downhillExcluding(grad, epsilon).filter(hs -> hs.hasElement(goTo, epsilon));
     }
 
-    
+    /**
+     * The gradient.
+     * @return 
+     */
     public PointD getGradient() {
         return gradient;
     }
     
-    
-
 }

@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * An child class of polytope with a faster feasibility algorithm.
@@ -30,6 +29,11 @@ public class FeasibilityGradDescent extends Polytope {
     public FeasibilityGradDescent() {
     }
 
+    /**
+     * If the feasibility function crashes, then it should save the polytope to an error file.
+     * That error file can be loaded here.
+     * @throws IOException 
+     */
     public static void loadFromErrorFile() throws IOException {
         Path errorFile = Path.of("error.txt");
         PointD start = new PointD(Files.lines(errorFile).findFirst().get());
@@ -58,9 +62,11 @@ public class FeasibilityGradDescent extends Polytope {
     }
 
     /**
-     * The sum of the distances of the point from all the half spaces
-     *
-     * @param y
+     * The sum of the distances of the point from all the half spaces.
+     * This function is not actually called as part of the  feasibility algorithm.
+     *This is the sum of the distances of all the half spaces to the given point
+     * 
+     * @param y the point distant from all the half spaces.
      * @return
      */
     public double sumDist(Point y) {
@@ -68,29 +74,25 @@ public class FeasibilityGradDescent extends Polytope {
     }
 
     /**
-     * The gradient of the sumDist is the sum of all the normals. The point must
-     * be outside the polytope or an element not found exception will be thrown.
+     * The gradient of the sumDist is the sum of all the normals with half
+     * spaces that exclude y. The point must be outside the polytope or an 
+     * element not found exception will be thrown.
+     * This function is also never called.  Instead the algorithm tracks the 
+     * gradient as the iteration point moves into more half spaces.
      *
-     * @param y
+     * @param y 
      * @return
      */
     public Point gradSumDist(PointD y) {
 
-        return gradSumDist(y, stream().parallel().filter(hs -> !hs.hasElement(y)));
-
-    }
-
-    public Point gradSumDist(PointD y, Stream<HalfSpace> containing) {
-        return containing.map(hs -> hs.normal().dir())
+        return stream().parallel().filter(hs -> !hs.hasElement(y)).map(hs -> hs.normal().dir())
                 .reduce((a, b) -> a.plus(b)).get();
     }
 
+
     /**
      * Finds the next half space intersection from y in the given direction
-     * TODO: instead of moving to the neares plane, move to the farthest
-     * halfspace that does not include y without leaving any half spaces that do
-     * include y so as to be in as many half spaces as possible. It may be
-     * necessary to organize the intersections into a list.
+     * TODO: Can the adjustments to the partition be incorporated into this function?
      *
      * @param y the start point
      * @param grad the direction to look for an intersection in.
@@ -117,6 +119,12 @@ public class FeasibilityGradDescent extends Polytope {
 
     }
 
+    /**
+     * Updates to partition to y's new location.
+     * @param rollToPoint the point y is moving to
+     * @param part the partition - keeping track of the half spaces y is inside 
+     * of and those it is outside of.
+     */
     private void rollThroughSpaces(Point rollToPoint, Partition part) {
 
         part.passThroughSpaces(
@@ -176,8 +184,19 @@ public class FeasibilityGradDescent extends Polytope {
 
     }
 
+    /**
+     * This exception is thrown if the descent failed for whatever reason.
+     * It creates an error log recording the polytope that failed.
+     */
     public class FailedDescentException extends RuntimeException {
 
+        /**
+         * The constructor.
+         * @param message
+         * @param start the starting point of the iterative process.
+         * @param y the location of the iteration at the time of failure.
+         * @param part the partition.s
+         */
         public FailedDescentException(String message, Point start, Point y, Partition part) {
             super(message + "\nThe starting point was: "
                     + start

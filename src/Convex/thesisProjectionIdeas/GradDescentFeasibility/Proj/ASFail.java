@@ -89,7 +89,7 @@ public class ASFail {
      * @return true if the projection is inside this affine space's personal polytope, false otherwise.
      */
     private boolean asHasFailElement(int outPlane, Point lowerFail) {
-        return asNode.planeList[outPlane].above(lowerFail);
+        return asNode.planeArray[outPlane].above(lowerFail);
     }
 
     /**
@@ -115,11 +115,11 @@ public class ASFail {
         if (lowerLevel == null)
             return mightContProj = plane().below(preProj);
         
-        if(asNode.as.hasProjFunc()) return mightContProj = true;
+        if(asNode.as().hasProjFunc()) return mightContProj = true;
         
         if(asNode.localHasElement(preProj)) return mightContProj = false;
 
-        ASKeyRI[] oneDown = asNode.as.oneDownKeys();
+        ASKeyRI[] oneDown = asNode.as().oneDownKeys();
 
         for (ASKeyRI oneDownAS : oneDown) {
            

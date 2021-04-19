@@ -7,7 +7,7 @@ import Matricies.PointD;
 import java.util.NoSuchElementException;
 
 /**
- *
+ * A hyperplane.
  * @author Dov Neimand
  */
 public class Plane extends AffineSpace {
@@ -117,10 +117,21 @@ public class Plane extends AffineSpace {
         return normal().dot(x) < b.get(0);
     }
 
+    /**
+     * Is this plane above or does it contain the given point.
+     * @param x
+     * @return 
+     */
     public boolean aboveOrContains(Point x) {
         return normal().dot(x) <= b.get(0) + epsilon;
     }
     
+    /**
+     * Is this plane above or does it contain the the given point.
+     * @param x
+     * @param epsilon
+     * @return 
+     */
     public boolean aboveOrContains(Point x, double epsilon) {
         return normal().dot(x) <= b.get(0) + epsilon;
     }

@@ -1,11 +1,10 @@
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys;
 
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.Plane;
 import java.util.Arrays;
 
 /**
- *
+ *This 
  * @author dov
  */
 public class ASKeyPlanes extends ASKey{

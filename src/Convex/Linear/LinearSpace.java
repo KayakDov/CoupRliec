@@ -9,7 +9,6 @@ import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 /**
  * An object that describes a linear/vector space
@@ -18,11 +17,18 @@ import java.util.stream.IntStream;
  */
 public class LinearSpace implements ConvexSet {
 
+    /**
+     * Has a projection function been found for this space.
+     *
+     * @return
+     */
     public boolean hasProjFunction() {
         return projFunc != null;
     }
 
-//    private final Matrix nullSpace;
+    /**
+     * The rows of the the matrix Ax = 0.
+     */
     public Point[] normals;
 
     @Override
@@ -34,8 +40,8 @@ public class LinearSpace implements ConvexSet {
     }
 
     /**
-     * note, the normals of two affine spaces must be in the same order to be
-     * equals. This checks if the normal lines are == and not .equal.
+     * Are these two affine spaces equal? Note, the normals of two affine spaces
+     * must be in the same order to be equals.
      *
      * @param ls
      * @return
@@ -44,22 +50,24 @@ public class LinearSpace implements ConvexSet {
         return Arrays.equals(normals, ls.normals);
     }
 
+    /**
+     * Constructor
+     *
+     * @param normals the rows of Ax = 0
+     */
     public LinearSpace(Point[] normals) {
         this.normals = normals;
     }
 
+    /**
+     * The rows of Ax = 0.
+     *
+     * @return
+     */
     public Point[] getNormals() {
         return normals;
     }
 
-    /**
-     * The constructor
-     *
-     * @param nullSpace a matrix whose null space describes this linear space
-     */
-//    protected LinearSpace(Matrix nullSpace) {
-//        this.nullSpace = nullSpace;
-//    }
     /**
      * A small number used for thresholds
      */
@@ -110,20 +118,6 @@ public class LinearSpace implements ConvexSet {
 
         });
         return new LinearSpace(nullMatrix.rowsArray());
-
-//    An old way of doing it.    
-//        Matrix basisRows = basis.independentColumns(epsilon).T();        
-//        
-//        if(basisRows.rows == basisRows.cols) 
-//            return allSpace(basis.rows);
-//
-//        Matrix outSides = linearIndependentPoints(basisRows);
-//                
-//        return IntStream.range(0, outSides.rows).parallel()
-//                .mapToObj(i -> new Matrix(outSides.rows - 1, outSides.cols)
-//                     .setRows(j -> j < i? outSides.row(j): outSides.row(j + 1)))
-//                .map(pointsRowMat -> LinearSpace.plane(basisRows.rowConcat(pointsRowMat).T()))
-//                .reduce((ls1, ls2) -> ls1.intersection(ls2)).get();
     }
 
     /**
@@ -135,6 +129,11 @@ public class LinearSpace implements ConvexSet {
         return colSpace(matrix().T());
     }
 
+    /**
+     * Is this space equal to Rn
+     *
+     * @return
+     */
     public boolean isAllSpace() {
         return normals.length == 0;
     }
@@ -150,11 +149,16 @@ public class LinearSpace implements ConvexSet {
         else return MatrixSparse.fromRows(normals);
     }
 
+    /**
+     * The matrix with Ax = 0.
+     * @return 
+     */
     public Matrix nullSpaceMatrix() {
         return Matrix.fromRows(normals);
     }
 
     /**
+     * The matrix who's span is this linea space.
      * TODO: Can this be sparse, I don't think so. A new matrix whose column
      * space defines this linear space
      *
@@ -166,8 +170,9 @@ public class LinearSpace implements ConvexSet {
 
     /**
      * Returns the column space matrix for the given null space matrix.
+     *
      * @param nullSpaceMatrix
-     * @return 
+     * @return
      */
     public static MatrixDense colSpaceMatric(Matrix nullSpaceMatrix) {
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullSpaceMatrix);
@@ -190,8 +195,15 @@ public class LinearSpace implements ConvexSet {
         return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
     }
 
+    /**
+     * The function that projects onto this linear space.
+     */
     public ProjectionFunction projFunc = null;
 
+    /**
+     * The function that projects onto this linear space.
+     * @return 
+     */
     public ProjectionFunction getProjFunc() {
         if (projFunc == null)
             projFunc = new ProjectionFunction(this, null, epsilon);
@@ -199,6 +211,10 @@ public class LinearSpace implements ConvexSet {
         return projFunc;
     }
 
+    /**
+     * An exception to be thrown if this linear space can't be projected onto with
+     * the current method.
+     */
     public class NoProjFuncExists extends RuntimeException {
 
         public NoProjFuncExists() {
@@ -215,6 +231,9 @@ public class LinearSpace implements ConvexSet {
 
     }
 
+    /**
+     * Throws out the projection function.
+     */
     public void clearProjFunc() {
         projFunc = null;
     }
@@ -234,18 +253,21 @@ public class LinearSpace implements ConvexSet {
         return LinearSpace.colSpace(colSpaceMatrix().rowConcat(ls.colSpaceMatrix()));
     }
 
+    /**
+     * Creates a linear space equal to Rn.
+     * @param dim
+     * @return 
+     */
     public static LinearSpace allSpace(int dim) {
         return new LinearSpace(new Point[0]);
     }
 
     /**
-     * The dimension of the subspace.
+     * The dimension of the space.
      *
      * @return
      */
     public long subSpaceDim() {
-//        System.out.println(colSpaceMatrix());
-
         return colSpaceMatrix().rank();
 
     }

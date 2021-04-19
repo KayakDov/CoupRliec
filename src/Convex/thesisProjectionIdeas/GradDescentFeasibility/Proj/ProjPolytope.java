@@ -19,29 +19,40 @@ import java.util.stream.IntStream;
 import listTools.ChoosePlanes;
 
 /**
- * What does this polytope need to do: 1: Save any projection functions that
- * might be used again. 2: A failed point for a polyhedral cone is a projection
- * onto one of the affine spaces of that cone that is contained in that cone.
- * failed points need to be past up to higher level intersections.
- *
+ * A class for finding the projection onto a polytope.
  * @author dov
  */
 public class ProjPolytope {
 
-    private ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
-    private List<Plane> planes;
+    /**
+     * All the saved affine space projection functions.
+     */
+    private final ConcurrentHashMap<ASKey, ASNode> projectionFunctions;
+    /**
+     * All the planes that are boundaries of half spaces who intersect to form the polytope.
+     * The planes intersection is p dot x is less than or equal to b for each plane.
+     */
+    private final List<Plane> planes;
 
+    /**
+     * The constructor
+     * @param dim the n for R^n.
+     */
     public ProjPolytope(int dim) {
         this.planes = new ArrayList<>(dim);
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, dim));
     }
 
+    /**
+     * The constructor
+     * @param p A polytope that is going to be projected onto.
+     */
     public ProjPolytope(Polytope p) {
         this.planes = p.planes().collect(Collectors.toList());
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, planes.size()));
     }
 
-    public Plane[] concat(Plane[] a, Plane b) {
+    private Plane[] concat(Plane[] a, Plane b) {
         Plane[] arrayOfPlanes = new Plane[a.length + 1];
         System.arraycopy(a, 0, arrayOfPlanes, 0, a.length);
         arrayOfPlanes[a.length] = b;
@@ -53,7 +64,7 @@ public class ProjPolytope {
         return Arrays.stream(lowerLevel).parallel()
                 .flatMap(asf -> IntStream.range(asf.asNode.lastIndex() + 1, planes.size())
                         .mapToObj(i -> 
-                                new ASFail(concat(asf.asNode.planeList, planes.get(i)), 
+                                new ASFail(concat(asf.asNode.planeArray, planes.get(i)), 
                                     y, 
                                     i, 
                                     projectionFunctions
@@ -122,7 +133,7 @@ public class ProjPolytope {
 
     public boolean hasElement(ASNProj p) {
         for (Plane plane : planes)
-            if (!p.asn.planeSet.contains(plane) && !plane.aboveOrContains(p.proj))
+            if (!p.asn.planeSet().contains(plane) && !plane.aboveOrContains(p.proj))
                 return false;
         return true;
     }
@@ -135,11 +146,11 @@ public class ProjPolytope {
             return;
         }
 
-        Set<Plane> planesToBePreserved = as.planeSet;
+        Set<Plane> planesToBePreserved = as.planeSet();
 
 //        projectionFunctions.entrySet().removeIf(entry -> !planesToBePreserved.containsAll(entry.getValue().planeSet));
         projectionFunctions.entrySet().parallelStream()
-                .filter(entry -> !planesToBePreserved.containsAll(entry.getValue().planeSet))
+                .filter(entry -> !planesToBePreserved.containsAll(entry.getValue().planeSet()))
                 .forEach(needsRemoval -> projectionFunctions.remove(needsRemoval.getKey()));
 
         planes.removeIf(hs -> !planesToBePreserved.contains(hs));

@@ -9,7 +9,7 @@ import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
 import Matricies.Point;
 
 /**
- *
+ * Manages the projection polytope for use by the feasibility algorithm.
  * @author dov
  */
 public class ProjPolytopeManager extends ProjPolytope {
@@ -26,6 +26,10 @@ public class ProjPolytopeManager extends ProjPolytope {
 
     public ASNode travelThrough;
 
+    /**
+     * The constructor
+     * @param part a partition of the polytope
+     */
     public ProjPolytopeManager(Partition part) {
         super(part.getGradient().dim());
         this.part = part;
@@ -50,16 +54,20 @@ public class ProjPolytopeManager extends ProjPolytope {
 
         ASProj asProj = proj(preProj, y);
 
-        travelThrough = asProj.asn;
+        travelThrough = asProj.asn();
 
-        if (asProj.proj.equals(y)) {
+        if (asProj.proj().equals(y)) {
             throw new EmptyPolytopeException();
         }
 
-        gradInBounds = y.minus(asProj.proj);
+        gradInBounds = y.minus(asProj.proj());
 
     }
 
+    /**
+     * The gradient without leaving the local containing polytope.
+     * @return 
+     */
     public Point grad() {
         return gradInBounds;
     }

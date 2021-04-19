@@ -30,7 +30,14 @@ import listTools.ChoosePlanes;
  */
 public class Polytope implements ConvexSet {
 
+    /**
+     * The half spaces whos intersection is this polytope
+     */
     protected ArrayList<HalfSpace> halfSpaces;
+
+    /**
+     * The half spaces whos intersection is this polytope
+     */
     private Set<HalfSpace> halfSpaceSet;
 
     /**
@@ -55,37 +62,42 @@ public class Polytope implements ConvexSet {
         }
     }
 
-    private void reInit() {
-        lastProjectionSource = null;
-        lastProjection = null;
-    }
-
+    /**
+     * sets this polytope to the intersection of this polytope and the given
+     * half space.
+     *
+     * @param hs
+     */
     public void add(HalfSpace hs) {
         if (halfSpaceSet.add(hs)) {
             halfSpaces.add(hs);
-            reInit();
         }
     }
 
+    /**
+     * Removes the given half space from the list of those half spaces
+     * intersecting to form this polytope.
+     *
+     * @param hs
+     */
     public void remove(HalfSpace hs) {
         if (halfSpaceSet.remove(hs)) {
             halfSpaces.remove(hs);
-            reInit();
         }
 
     }
 
+    /**
+     * removes all the halfspaces from the intersection list that meet the given
+     * requirement.
+     *
+     * @param pred
+     */
     public void removeIf(Predicate<HalfSpace> pred) {
         halfSpaces.removeIf(pred);
         halfSpaceSet.removeIf(pred);
-        reInit();
     }
 
-    public void removeAll(Collection<HalfSpace> colec) {
-        halfSpaces.removeAll(colec);
-        halfSpaceSet.removeAll(colec);
-        reInit();
-    }
     /**
      * All the vertices of the polytope. be sure to call with getVertices().
      */
@@ -114,11 +126,22 @@ public class Polytope implements ConvexSet {
         this.halfSpaces = new ArrayList<>(halfSpaceSet);
     }
 
+    /**
+     * Constructor
+     *
+     * @param hsStream a stream of half spaces to intersect to make this
+     * polytope.
+     */
     public Polytope(Stream<HalfSpace> hsStream) {
         this(hsStream.collect(Collectors.toList()));
 
     }
 
+    /**
+     * Constructor
+     *
+     * @param toClone a polytope to clone
+     */
     public Polytope(Polytope toClone) {
         this(toClone.halfSpaces);
     }
@@ -138,6 +161,9 @@ public class Polytope implements ConvexSet {
         halfSpaceSet.addAll(halfSpaces);
     }
 
+    /**
+     * A constructor
+     */
     public Polytope() {
         this(new ArrayList<HalfSpace>());
     }
@@ -152,6 +178,12 @@ public class Polytope implements ConvexSet {
         removeIf(face -> !face.onSurface(x, epsilon));
     }
 
+    /**
+     * Sets this polytope equal to the smallest polytope containing the given
+     * point from the planes that intersect to make this polytope.
+     *
+     * @param y
+     */
     public void removeFacesNotFacing(Point y) {
         removeIf(f -> f.hasElement(y));
     }
@@ -162,16 +194,14 @@ public class Polytope implements ConvexSet {
      * @param p
      */
     public Polytope addFace(HalfSpace p) {
-        halfSpaces.add(p);
-        lastProjectionSource = null;
-        lastProjection = null;
+        if (halfSpaceSet.add(p))
+            halfSpaces.add(p);
         return this;
     }
 
     public Polytope addFaces(Polytope p) {
         halfSpaces.addAll(p.halfSpaces);
-        lastProjectionSource = null;
-        lastProjection = null;
+        halfSpaceSet.addAll(p.halfSpaces);
         return this;
     }
 
@@ -185,24 +215,38 @@ public class Polytope implements ConvexSet {
     }
 
     @Override
-    public boolean hasElement(Point p) {//TODO: make this paralel
-        return stream().allMatch((HalfSpace hs) -> hs.hasElement(p, epsilon));
+    public boolean hasElement(Point p) {
+        return stream().parallel().allMatch((HalfSpace hs) -> hs.hasElement(p, epsilon));
     }
 
-    private Point lastProjectionSource = null, lastProjection = null;
-
-    public boolean hasHalfSpaces() {
+    /**
+     * Is this polytope Rn
+     *
+     * @return
+     */
+    public boolean isAllSpace() {
         return halfSpaces.isEmpty();
     }
 
-    public double epsilon = 1e-9;//1e-9;
+    /**
+     * A small number used to check if two floating point values are equal
+     */
+    public double epsilon = 1e-9;
 
+    /**
+     * Sets espilon, a small number used to check if floating point values are
+     * equal.
+     *
+     * @param epsilon
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
+    /**
+     * Sets this polytope equal to Rn
+     */
     public void clearFaces() {
-        reInit();
         halfSpaces.clear();
         halfSpaceSet.clear();
     }
@@ -240,6 +284,10 @@ public class Polytope implements ConvexSet {
         return halfSpaces.size();
     }
 
+    /**
+     * The n in Rn.
+     * @return 
+     */
     public int dim() {
         if (halfSpaces.isEmpty()) {
             return 0;
@@ -247,6 +295,10 @@ public class Polytope implements ConvexSet {
         return halfSpaces.get(0).dim();
     }
 
+    /**
+     * A stream of the half spaces that intersect to form this polytope.
+     * @return 
+     */
     public Stream<HalfSpace> stream() {
         return halfSpaces.stream();
     }
@@ -256,39 +308,6 @@ public class Polytope implements ConvexSet {
         return stream().allMatch(halfSpace -> halfSpace.hasElement(x, epsilon));
     }
 
-    /**
-     * TODO fix this. Use feasabilityPoint
-     *
-     * Does the affine space given have a non empty intersection with this
-     * polytope.
-     *
-     * @param as the affine space that may or may not intersect this polytope.
-     * @return true if there is a nonempty intersection, false otherwise.
-     */
-    public boolean hasNonEmptyIntersection(AffineSpace as) {
-
-        try {
-            return intersect(as.asPolytope()).feasibilityPoint().isReal();
-        } catch (NoSuchElementException ex) {
-            return false;
-        }
-    }
-
-    /**
-     * Checks if two halfspaces are adjacent O(n+dim^3) where n is the number of
-     * faces. Ever facet is adjacent to itself.
-     *
-     * @param a a half space that should be in this polytope
-     * @param b a half space that should be in this polytope
-     * @return true if a is adjacent to b.
-     */
-    public boolean adjacent(HalfSpace a, HalfSpace b) {
-        try {
-            return hasNonEmptyIntersection(a.boundary().intersection(b.boundary()));
-        } catch (ArithmeticException ex) {
-            return false;
-        }
-    }
 
     /**
      * the planes that make up the boundary of this polytope.
@@ -403,10 +422,10 @@ public class Polytope implements ConvexSet {
         return IntStream
                 .rangeClosed(1, maxHSPerIntersection)
                 .mapToObj(i -> i)
-                .flatMap(i -> 
-                        new ChoosePlanes(planes().collect(Collectors.toList()),i)
-                                .chooseStream())
-                        .map(planeArray -> new AffineSpace(planeArray));
+                .flatMap(i
+                        -> new ChoosePlanes(planes().collect(Collectors.toList()), i)
+                        .chooseStream())
+                .map(planeArray -> new AffineSpace(planeArray));
 
     }
 
@@ -420,6 +439,11 @@ public class Polytope implements ConvexSet {
         return new Polytope(stream().filter(hs -> hs.boundary().hasElement(x)));
     }
 
+    /**
+     * Are the two polytopes equal.
+     * @param poly
+     * @return 
+     */
     public boolean equals(Polytope poly) {
         return new HashSet<>(halfSpaces).equals(new HashSet<>(poly.halfSpaces));
     }
@@ -434,6 +458,10 @@ public class Polytope implements ConvexSet {
         return halfSpaces;
     }
 
+    /**
+     * The set of halfspaces that intersect to make this polytope.
+     * @return 
+     */
     public Set<HalfSpace> getHalfSpaceSet() {
         return halfSpaceSet;
     }
@@ -443,21 +471,35 @@ public class Polytope implements ConvexSet {
         return bruteForceProjection(p);
     }
 
+    /**
+     * A random non empty polytope that contains the given sphere centered at the origin
+     * @param numFaces
+     * @param radius
+     * @param dim
+     * @return 
+     */
     public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
 
         Polytope poly = new Polytope();
         IntStream.range(0, numFaces).forEach(i -> {
-            
+
             PointD random = PointD.uniformRand(new PointD(dim), radius);
-            
+
             random.multMe(radius / random.magnitude());
-                        
+
             poly.add(new HalfSpace(random, random));
         });
 
         return poly;
     }
 
+    /**
+     * A random possibly empty polytope
+     * @param numFaces
+     * @param radius
+     * @param dim
+     * @return 
+     */
     public static Polytope random(int numFaces, double radius, int dim) {
 
         Polytope poly = new Polytope();

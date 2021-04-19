@@ -22,7 +22,11 @@ public class HalfSpace implements ConvexSet{
     }
 
     
-    
+    /**
+     * The constructor
+     * @param normal a vector normal to the plane
+     * @param b normal dot x \<= b
+     */
     public HalfSpace(Point normal, double b){
         border = new Plane(normal, b);
     }

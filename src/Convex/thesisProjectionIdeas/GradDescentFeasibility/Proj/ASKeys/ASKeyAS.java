@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys;
 
 import Convex.Linear.AffineSpace;
@@ -23,7 +18,7 @@ public class ASKeyAS extends ASKey{
     }
      
     public ASKeyAS(ASNode as){
-        this(as.as);
+        this(as.as());
     }
     public ASKeyAS(ASFail asf){
         this(asf.asNode);
