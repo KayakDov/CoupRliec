@@ -34,7 +34,7 @@ public class ASFail {
 
     /**
      * The constructor
-     *
+     *mightContProj
      * @param asNode The affine node to be checked to meet the necessary
      * conditions
      */
