@@ -19,6 +19,6 @@ public class ASNProj extends ASProj {
     public ASNProj(Point preProj, ASFail asf) {
         super(asf.asNode.getProj(preProj), asf.asNode);
         asn = asf.asNode;
-        if (asf.mightContProj) asf.failed = proj;
+        if (asf.mightContProj) asf.projOntoPersoanlPoly = proj;
     }
 }

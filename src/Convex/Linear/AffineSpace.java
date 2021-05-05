@@ -487,7 +487,7 @@ public class AffineSpace implements ConvexSet {
      *
      * @return the keys for the afformentioned affine spaces
      */
-    public ASKeyRI[] oneDownKeys() {
+    public ASKeyRI[] immidiateSuperKeys() {
         int numRows = linearSpace.getNormals().length;
 
         if (numRows == 1)

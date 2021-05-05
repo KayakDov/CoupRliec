@@ -109,14 +109,14 @@ public class Main {
 
         System.out.println(pp.proj(new PointD(-6, 10, 10)));
 
-//        System.out.println(fgd.fesibility(new PointD(1.5, 1.5, 1.5)));
+        System.out.println(fgd.fesibility(new PointD(5, 0, 3)));
     }
 
     public static void main(String[] args) throws IOException {
 
-        polytopeFeasabilityTest(15,100,100, false, true);
+//        polytopeFeasabilityTest(15,100,100, false, true);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
-//        cubeTest();
+        cubeTest();
 
     }
 
