@@ -124,7 +124,7 @@ public class ASNode {
      * @param x
      * @return 
      */
-    public boolean localHasElement(Point x) {
+    public boolean personalPolyHasElement(Point x) {
         for (int i = 0; i < planeArray.length; i++)
             if (planeArray[i].below(x)) return false;
         return true;

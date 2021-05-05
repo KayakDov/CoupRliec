@@ -75,7 +75,7 @@ public class ProjPolytope {
 
     private ASProj projOnLevel(Point preProj, ASFail[] level, ConcurrentHashMap<ASKey, ASFail> ll) {
         return Arrays.stream(level)//.parallel()
-                .filter(asf -> asf.mightContainProj(ll, preProj))
+                .filter(asf -> asf.meetsNecesaryCriteria(ll, preProj))
                 .map(asFail -> new ASNProj(preProj, asFail))
                 .filter(p -> p.asn.spaceIsNonEmpty())
                 .filter(p -> hasElement(p))

@@ -111,13 +111,13 @@ public class ASFail {
      * @param preProj the point that is being projected.
      * @return true if the underlying affine space is a candidate, and false otherwise.
      */
-    public boolean mightContainProj(Map<ASKey, ASFail> lowerLevel, Point preProj) {
+    public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> lowerLevel, Point preProj) {
         if (lowerLevel == null)
             return mightContProj = plane().below(preProj);
         
         if(asNode.as().hasProjFunc()) return mightContProj = true;
         
-        if(asNode.localHasElement(preProj)) return mightContProj = false;
+        if(asNode.personalPolyHasElement(preProj)) return mightContProj = false;
 
         ASKeyRI[] oneDown = asNode.as().oneDownKeys();
 
