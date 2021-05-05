@@ -114,9 +114,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-//        polytopeFeasabilityTest(15,100,100, false, true);
+        polytopeFeasabilityTest(15,100,100, false, true);
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
-        cubeTest();
+//        cubeTest();
 
     }
 

@@ -30,7 +30,7 @@ public class ASFail {
     /**
      * Does this affine space meet the necessary conditions.
      */
-    public boolean mightContProj;
+    public boolean mightContProj; //TODO: Check if I can safely remove this.
 
     /**
      * The constructor
@@ -95,7 +95,7 @@ public class ASFail {
      * polytope, false otherwise.
      */
     private boolean personalPolyContainesSuperProj(int outPlane, Point lowerFail) {
-        return asNode.planeArray[outPlane].above(lowerFail);
+        return lowerFail != null && asNode.planeArray[outPlane].above(lowerFail);
     }
 
     /**
@@ -122,7 +122,7 @@ public class ASFail {
 
             Point projSuperPP = immidiateSuperSpaces.get(immidiateSuperKey).projOntoPersoanlPoly;
 
-            if (projSuperPP != null && personalPolyContainesSuperProj(immidiateSuperKey.removeIndex(), projSuperPP)) {
+            if (personalPolyContainesSuperProj(immidiateSuperKey.removeIndex(), projSuperPP)) {
                 projOntoPersoanlPoly = projSuperPP;
                 return mightContProj = false;
             }
