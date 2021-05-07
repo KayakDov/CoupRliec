@@ -127,6 +127,15 @@ public class Plane extends AffineSpace {
     }
     
     /**
+     * Is this below above or does it contain the given point.
+     * @param x
+     * @return 
+     */
+    public boolean belowOrContains(Point x) {
+        return normal().dot(x) >= b.get(0) - epsilon;
+    }
+    
+    /**
      * Is this plane above or does it contain the the given point.
      * @param x
      * @param epsilon

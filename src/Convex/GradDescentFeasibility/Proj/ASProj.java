@@ -1,5 +1,5 @@
 
-package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
+package Convex.GradDescentFeasibility.Proj;
 
 import Convex.Linear.AffineSpace;
 import Matricies.Point;

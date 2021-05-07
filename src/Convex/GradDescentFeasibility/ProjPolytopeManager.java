@@ -1,11 +1,9 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility;
+package Convex.GradDescentFeasibility;
 
 import Convex.HalfSpace;
-import Convex.Linear.AffineSpace;
-import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASProj;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
+import Convex.GradDescentFeasibility.Proj.ASNode;
+import Convex.GradDescentFeasibility.Proj.ASProj;
+import Convex.GradDescentFeasibility.Proj.ProjPolytope;
 import Matricies.Point;
 
 /**

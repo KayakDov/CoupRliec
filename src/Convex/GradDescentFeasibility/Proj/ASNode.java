@@ -1,15 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
 
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
+package Convex.GradDescentFeasibility.Proj;
+
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Linear.ProjectionFunction;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
 import Matricies.Point;
 import java.util.HashSet;
 import java.util.Set;

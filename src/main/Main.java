@@ -6,9 +6,9 @@ import Matricies.PointD;
 import Convex.HalfSpace;
 import Convex.Linear.LinearSpace;
 import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.FeasibilityGradDescent;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ProjPolytope;
+import Convex.GradDescentFeasibility.FeasibilityGradDescent;
+import Convex.GradDescentFeasibility.Proj.ASNode;
+import Convex.GradDescentFeasibility.Proj.ProjPolytope;
 import Matricies.Point;
 import java.io.IOException;
 

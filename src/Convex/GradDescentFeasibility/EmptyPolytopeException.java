@@ -1,4 +1,4 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility;
+package Convex.GradDescentFeasibility;
 
 import java.util.NoSuchElementException;
 

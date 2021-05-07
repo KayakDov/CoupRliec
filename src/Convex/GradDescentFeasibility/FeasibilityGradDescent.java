@@ -1,4 +1,4 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility;
+package Convex.GradDescentFeasibility;
 
 import Convex.HalfSpace;
 import Convex.Linear.Plane;

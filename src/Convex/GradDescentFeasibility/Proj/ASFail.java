@@ -1,9 +1,9 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
+package Convex.GradDescentFeasibility.Proj;
 
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Point;
 import java.util.HashSet;
 import java.util.Map;
@@ -95,7 +95,7 @@ public class ASFail {
      * polytope, false otherwise.
      */
     private boolean personalPolyContainesSuperProj(int outPlane, Point lowerFail) {
-        return lowerFail != null && asNode.planeArray[outPlane].above(lowerFail);
+        return asNode.planeArray[outPlane].above(lowerFail);
     }
 
     /**
@@ -108,13 +108,13 @@ public class ASFail {
      * otherwise.
      */
     public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> immidiateSuperSpaces, Point preProj) {
-        if (immidiateSuperSpaces == null)
-            return mightContProj = plane().below(preProj);
+        if (immidiateSuperSpaces == null){
+            boolean below = plane().below(preProj);
+            projOntoPersoanlPoly = below? asNode.getProj(preProj):preProj;
+            return mightContProj = below;
+        }
 
         if (asNode.as().hasProjFunc()) return mightContProj = true;
-
-        if (asNode.personalPolyHasElement(preProj))
-            return mightContProj = false;
 
         ASKeyRI[] immidiateSuperKeys = asNode.as().immidiateSuperKeys();
 

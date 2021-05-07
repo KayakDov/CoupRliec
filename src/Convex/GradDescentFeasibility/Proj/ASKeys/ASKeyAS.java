@@ -1,9 +1,9 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys;
+package Convex.GradDescentFeasibility.Proj.ASKeys;
 
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASFail;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASNode;
+import Convex.GradDescentFeasibility.Proj.ASFail;
+import Convex.GradDescentFeasibility.Proj.ASNode;
 
 /**
  *

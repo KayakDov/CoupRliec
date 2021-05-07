@@ -1,11 +1,11 @@
-package Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj;
+package Convex.GradDescentFeasibility.Proj;
 
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
 import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.EmptyPolytopeException;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
+import Convex.GradDescentFeasibility.EmptyPolytopeException;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class ProjPolytope {
     }
 
     private ASProj projOnLevel(Point preProj, ASFail[] level, ConcurrentHashMap<ASKey, ASFail> ll) {
-        return Arrays.stream(level)//.parallel()
+        return Arrays.stream(level).parallel()
                 .filter(asf -> asf.meetsNecesaryCriteria(ll, preProj))
                 .map(asFail -> new ASNProj(preProj, asFail))
                 .filter(p -> p.asn.spaceIsNonEmpty())

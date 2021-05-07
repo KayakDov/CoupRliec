@@ -2,7 +2,7 @@ package Convex.Linear;
 
 import Convex.ConvexSet;
 import Convex.Polytope;
-import Convex.thesisProjectionIdeas.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
+import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
