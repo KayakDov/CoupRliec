@@ -5,7 +5,6 @@ import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Point;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,11 +29,11 @@ public class ASFail {
     /**
      * Does this affine space meet the necessary conditions.
      */
-    public boolean mightContProj; //TODO: Check if I can safely remove this.
+    public boolean afSpMightContProj; //TODO: Check if I can safely remove this.
 
     /**
-     * The constructor
-     *mightContProj
+     * The constructor mightContProj
+     *
      * @param asNode The affine node to be checked to meet the necessary
      * conditions
      */
@@ -69,15 +68,6 @@ public class ASFail {
         this(ASNode.factory(new AffineSpace(planes).setP(y), planes, index, map));
     }
 
-    /**
-     * A plane in the affine space
-     *
-     * @return a plane containing the affine space.
-     */
-    private Plane plane() {
-        return asNode.plane();
-    }
-
     @Override
     public String toString() {
         return asNode.toString();
@@ -99,6 +89,19 @@ public class ASFail {
     }
 
     /**
+     * If the personal polytope is a halfspace.
+     *
+     * @param preProj
+     * @return true of the preprojection is outside of the halfspace, false
+     * otherwise.
+     */
+    private boolean singleHalfSpaceProj(Point preProj) {
+        boolean below = asNode.plane().below(preProj);
+        projOntoPersoanlPoly = below ? asNode.getProj(preProj) : preProj;
+        return afSpMightContProj = below;
+    }
+
+    /**
      * Determines if the underlying affine space is a candidate.
      *
      * @param immidiateSuperSpaces A set of all the affine spaces that are the
@@ -108,13 +111,8 @@ public class ASFail {
      * otherwise.
      */
     public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> immidiateSuperSpaces, Point preProj) {
-        if (immidiateSuperSpaces == null){
-            boolean below = plane().below(preProj);
-            projOntoPersoanlPoly = below? asNode.getProj(preProj):preProj;
-            return mightContProj = below;
-        }
-
-        if (asNode.as().hasProjFunc()) return mightContProj = true;
+        if (immidiateSuperSpaces == null) return singleHalfSpaceProj(preProj);
+        if (asNode.as().hasProjFunc()) return afSpMightContProj = true;
 
         ASKeyRI[] immidiateSuperKeys = asNode.as().immidiateSuperKeys();
 
@@ -124,11 +122,11 @@ public class ASFail {
 
             if (personalPolyContainesSuperProj(immidiateSuperKey.removeIndex(), projSuperPP)) {
                 projOntoPersoanlPoly = projSuperPP;
-                return mightContProj = false;
+                return afSpMightContProj = false;
             }
 
         }
-        return mightContProj = true;
+        return afSpMightContProj = true;
     }
 
     /**
