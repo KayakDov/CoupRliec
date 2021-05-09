@@ -27,11 +27,6 @@ public class ASFail {
     public Point projOntoPersoanlPoly;
 
     /**
-     * Does this affine space meet the necessary conditions.
-     */
-    public boolean afSpMightContProj; //TODO: Check if I can safely remove this.
-
-    /**
      * The constructor mightContProj
      *
      * @param asNode The affine node to be checked to meet the necessary
@@ -98,7 +93,18 @@ public class ASFail {
     private boolean singleHalfSpaceProj(Point preProj) {
         boolean below = asNode.plane().below(preProj);
         projOntoPersoanlPoly = below ? asNode.getProj(preProj) : preProj;
-        return afSpMightContProj = below;
+        return below;
+    }
+
+    /**
+     * If a projected point is not in the personal polytope then it is
+     * in the affine space.
+     * @param preProj
+     * @return 
+     */
+    private boolean meetsCriteria(Point preProj) {
+        projOntoPersoanlPoly = asNode.getProj(preProj);
+        return true;
     }
 
     /**
@@ -112,7 +118,7 @@ public class ASFail {
      */
     public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> immidiateSuperSpaces, Point preProj) {
         if (immidiateSuperSpaces == null) return singleHalfSpaceProj(preProj);
-        if (asNode.as().hasProjFunc()) return afSpMightContProj = true;
+        if (asNode.as().hasProjFunc()) return meetsCriteria(preProj);
 
         ASKeyRI[] immidiateSuperKeys = asNode.as().immidiateSuperKeys();
 
@@ -122,11 +128,11 @@ public class ASFail {
 
             if (personalPolyContainesSuperProj(immidiateSuperKey.removeIndex(), projSuperPP)) {
                 projOntoPersoanlPoly = projSuperPP;
-                return afSpMightContProj = false;
+                return false;
             }
 
         }
-        return afSpMightContProj = true;
+        return meetsCriteria(preProj);
     }
 
     /**

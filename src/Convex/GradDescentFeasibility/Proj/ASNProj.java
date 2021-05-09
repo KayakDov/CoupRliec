@@ -1,7 +1,6 @@
 
 package Convex.GradDescentFeasibility.Proj;
 
-import Convex.Linear.AffineSpace;
 import Matricies.Point;
 
 /**
@@ -17,8 +16,7 @@ public class ASNProj extends ASProj {
      * @param asf an affine space failure node that contains the desired affine space.
      */
     public ASNProj(Point preProj, ASFail asf) {
-        super(asf.asNode.getProj(preProj), asf.asNode);
+        super(asf.projOntoPersoanlPoly, asf.asNode);
         asn = asf.asNode;
-        if (asf.afSpMightContProj) asf.projOntoPersoanlPoly = proj;
     }
 }

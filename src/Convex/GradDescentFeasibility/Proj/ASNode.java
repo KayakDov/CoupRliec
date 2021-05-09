@@ -165,6 +165,7 @@ public class ASNode {
 
         if (memoryAvailable && !as.hasProjFunc())
             projectionFunctions.put(new ASKeyPlanes(planeArray), this);
+        
         try {
             return as.proj(preProj);
         } catch (ProjectionFunction.NoProjFuncExists ex) {
