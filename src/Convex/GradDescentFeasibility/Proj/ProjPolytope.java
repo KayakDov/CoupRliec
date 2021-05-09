@@ -1,16 +1,13 @@
 package Convex.GradDescentFeasibility.Proj;
 
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
-import Convex.Linear.AffineSpace;
 import Convex.Linear.Plane;
 import Convex.Polytope;
 import Convex.GradDescentFeasibility.EmptyPolytopeException;
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
 import Matricies.Point;
-import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +49,12 @@ public class ProjPolytope {
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, planes.size()));
     }
 
+    /**
+     * Adds the plane b onto the array of planes a
+     * @param a
+     * @param b
+     * @return 
+     */
     private Plane[] concat(Plane[] a, Plane b) {
         Plane[] arrayOfPlanes = new Plane[a.length + 1];
         System.arraycopy(a, 0, arrayOfPlanes, 0, a.length);
@@ -59,6 +62,15 @@ public class ProjPolytope {
         return arrayOfPlanes;
     }
 
+    /**
+     * Generates the nexe level of affine spaces from the current level.  A level
+     * of affine spaces is all the affine spaces that are the intersection of
+     * level planes.
+     * @param lowerLevel the immediate superspaces of the spaces to be generated.
+     * @param y a point common to all the affine spaces.  If there is no such
+     * point, then pass null.
+     * @return 
+     */
     private ASFail[] nextLevel(ASFail[] lowerLevel, Point y) {
 
         return Arrays.stream(lowerLevel).parallel()
@@ -73,31 +85,67 @@ public class ProjPolytope {
 
     }
 
+    /**
+     * The projection onto this level of affine spaces, if it exists.  If it does not, then null is returned.
+     * @param preProj The point being projected
+     * @param level the level-affine spaces to be checked.  
+     * These spaces are the intersections of level number of hyperplanes.
+     * @param ll the level - 1 affine spaces that have already been checked.
+     * @return the projection if it exists, null otherwise.
+     */
     private ASProj projOnLevel(Point preProj, ASFail[] level, ConcurrentHashMap<ASKey, ASFail> ll) {
         return Arrays.stream(level).parallel()
-                .filter(asf -> asf.meetsNecesaryCriteria(ll, preProj))
-                .map(asFail -> new ASNProj(preProj, asFail))
-                .filter(p -> p.asn.spaceIsNonEmpty())
-                .filter(p -> hasElement(p))
+                .filter(asf -> asf.meetsNecesaryCriteria(ll, preProj))  
+                .filter(asf -> hasElement(asf))
                 .findAny()
+                .map(asFail -> new ASNProj(preProj, asFail))             
                 .orElse(null);
     }
 
+    /**
+     * The projection point of y onto this polytope
+     * @param y
+     * @return 
+     */
     public Point proj(Point y) {
         return proj(y, null).proj;
     }
+    
+    /**
+     * All the planes represented as ASFails.
+     * @return 
+     */
+    private ASFail[] oneAffineSpace(){
+        ASFail currentLevel[] = new ASFail[planes.size()];
+        Arrays.setAll(currentLevel, i -> new ASFail(planes.get(i), i, projectionFunctions));
+        return currentLevel;
+    }
+    
+    /** 
+     * An empty vestibule for holding the lower level of affine spaces.
+     * @return 
+     */
+    private ConcurrentHashMap<ASKey, ASFail> lowerLevel(Point preProj){
+        int size = ChoosePlanes.choose(preProj.dim(), preProj.dim() / 2);
+        return new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
+    }
 
+    /**
+     * the projection of y onto this polytope.
+     * @param preProj the point being projected.
+     * @param y a point common to all the affine spaces of this polytope.  
+     * This should be null if no such point exists.
+     * @return the projection of preproj onto this polytope
+     */
     public ASProj proj(Point preProj, Point y) {
         if (hasElementParallel(preProj))
             return new ASProj(preProj, new ASNode.AllSpace(preProj.dim()));
 
-        ASFail currentLevel[] = new ASFail[planes.size()];
-        Arrays.setAll(currentLevel, i -> new ASFail(planes.get(i), i, projectionFunctions));
+        ASFail currentLevel[] = oneAffineSpace();
 
         ASProj proj = projOnLevel(preProj, currentLevel, null);
 
-        int size = ChoosePlanes.choose(preProj.dim(), preProj.dim() / 2);
-        ConcurrentHashMap<ASKey, ASFail> lowerLevel = new ConcurrentHashMap<>(size > 0 ? size : Integer.MAX_VALUE);
+        ConcurrentHashMap<ASKey, ASFail> lowerLevel = lowerLevel(preProj);
 
         for (int i = 2; i <= Math.min(preProj.dim(), planes.size()); i++) {
 
@@ -116,6 +164,11 @@ public class ProjPolytope {
         throw new EmptyPolytopeException();
     }
 
+    /**
+     * Does this polytope have the element p
+     * @param p
+     * @return 
+     */
     public boolean hasElement(Point p) {
         for (Plane plane : planes)
             if (!plane.aboveOrContains(p)) return false;
@@ -123,21 +176,42 @@ public class ProjPolytope {
 
     }
 
+    /**
+     * Does this polytope have the element p.  The search will take place in
+     * parallel.
+     * @param p
+     * @return 
+     */
     public boolean hasElementParallel(Point p) {
         return planes.parallelStream().allMatch(hs -> hs.aboveOrContains(p));
     }
 
+    /**
+     * Checks to see if the point is within an epsilon distance of this polytope.
+     * @param p
+     * @param epsilon
+     * @return 
+     */
     public boolean hasElement(Point p, double epsilon) {
         return planes.stream().allMatch(hs -> hs.aboveOrContains(p, epsilon));
     }
 
-    public boolean hasElement(ASNProj p) {
+    /**
+     * Does this polytope contain the latest projection onto the given affine space.
+     * @param p
+     * @return 
+     */
+    public boolean hasElement(ASFail p) {
         for (Plane plane : planes)
-            if (!p.asn.planeSet().contains(plane) && !plane.aboveOrContains(p.proj))
+            if (!p.asNode.planeSet().contains(plane) && !plane.aboveOrContains(p.projOntoPersoanlPoly))
                 return false;
         return true;
     }
 
+    /**
+     * removes all of the hyperplanes that don't intersect to make the given affine space.
+     * @param as 
+     */
     public void removeExcept(ASNode as) {
 
         if (as.as.isAllSpace()) {
@@ -157,6 +231,11 @@ public class ProjPolytope {
 
     }
 
+    /**
+     * This polytope will now be the intersection of what this polytope was, and 
+     * the given plane.
+     * @param plane 
+     */
     public void add(Plane plane) {
         if (planes.contains(plane))
             throw new RuntimeException("This plane has already been added to ProjPolytope and has index " + planes.indexOf(plane) + " out of " + planes.size() + ".");//TODO: remove

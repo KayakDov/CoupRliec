@@ -110,21 +110,21 @@ public class ASFail {
     /**
      * Determines if the underlying affine space is a candidate.
      *
-     * @param immidiateSuperSpaces A set of all the affine spaces that are the
+     * @param containsImmidiateSuperSpaces A set of all the affine spaces that are the
      * intersection of one fewer planes than this affine space.
      * @param preProj the point that is being projected.
      * @return true if the underlying affine space is a candidate, and false
      * otherwise.
      */
-    public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> immidiateSuperSpaces, Point preProj) {
-        if (immidiateSuperSpaces == null) return singleHalfSpaceProj(preProj);
+    public boolean meetsNecesaryCriteria(Map<ASKey, ASFail> containsImmidiateSuperSpaces, Point preProj) {
+        if (containsImmidiateSuperSpaces == null) return singleHalfSpaceProj(preProj);
         if (asNode.as().hasProjFunc()) return meetsCriteria(preProj);
 
         ASKeyRI[] immidiateSuperKeys = asNode.as().immidiateSuperKeys();
 
         for (ASKeyRI immidiateSuperKey : immidiateSuperKeys) {
 
-            Point projSuperPP = immidiateSuperSpaces.get(immidiateSuperKey).projOntoPersoanlPoly;
+            Point projSuperPP = containsImmidiateSuperSpaces.get(immidiateSuperKey).projOntoPersoanlPoly;
 
             if (personalPolyContainesSuperProj(immidiateSuperKey.removeIndex(), projSuperPP)) {
                 projOntoPersoanlPoly = projSuperPP;
