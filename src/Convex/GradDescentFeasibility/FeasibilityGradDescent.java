@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -101,20 +102,14 @@ public class FeasibilityGradDescent extends Polytope {
     private HalfSpace targetPlane(Point y, Point grad, Partition part) {
 
         HalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
+        
+        Comparator<HalfSpace> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
 
         if (downhillFacing == null) {
-            return part.downhillExcluding(grad, epsilon)
-                    .max(Comparator.comparing(
-                            hs -> hs.boundary().lineIntersection(grad, y).d(y)
-                    )
-                    ).get();
+            return part.downhillExcluding(grad, epsilon).max(hsDistComp).get();
         } else {
             return part.excludingSpacesBetweenHereAndThere(grad, downhillFacing.boundary()
-                    .lineIntersection(grad, y), epsilon)
-                    .max(Comparator.comparing(
-                            hs -> hs.boundary().lineIntersection(grad, y).d(y)
-                    )
-                    ).orElse(downhillFacing);
+                    .lineIntersection(grad, y), epsilon).max(hsDistComp).orElse(downhillFacing);
         }
 
     }
@@ -145,10 +140,10 @@ public class FeasibilityGradDescent extends Polytope {
         Partition part = new Partition(y, this);
         if (part.pointIsFeasible()) return y;
 
-        ProjPolytopeManager cone = new ProjPolytopeManager(part);
+        ProjPolyManager cone = new ProjPolyManager(part);
 
-        for (int i = 0; i <= size() + 1; i++) {
-
+        for (int i = 0; i <= size()*dim(); i++) {
+            
             try {
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
@@ -159,7 +154,7 @@ public class FeasibilityGradDescent extends Polytope {
                 part.enterSpace(rollToPlane);
 
                 if (!part.pointIsFeasible()) 
-                    cone.travelToNewLocalPolytope(rollToPlane, y);
+                    cone.travelToNewLocalPoly(rollToPlane, y);
                 
                  else return y;
                 
@@ -219,6 +214,12 @@ public class FeasibilityGradDescent extends Polytope {
                 Logger.getLogger(FeasibilityGradDescent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        public FailedDescentException() {
+            super("Descent has failed.");
+        }
+        
+        
 
     }
 }

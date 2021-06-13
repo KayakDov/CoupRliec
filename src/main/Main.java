@@ -30,7 +30,7 @@ public class Main {
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
 
-//            System.out.println(feas);
+            if(feas.isReal() && !poly.hasElement(feas)) throw new RuntimeException("Point is not feasible.");
         }
 
     }
@@ -111,10 +111,28 @@ public class Main {
 
         System.out.println(fgd.fesibility(new PointD(5, 0, 3)));
     }
+    
+    public static void counterExample(){
+        
+        HalfSpace[] hs = new HalfSpace[5];
+        hs[0] = new HalfSpace(new PointD(2), new PointD(0,-1));
+        hs[1] = new HalfSpace(new PointD(0,1), new PointD(0,1));
+        hs[2] = new HalfSpace(new PointD(2), new PointD(-1,-1));
+        hs[3] = new HalfSpace(new PointD(7,0), new PointD(-1,.1));
+        hs[4] = new HalfSpace(new PointD(7,0), new PointD(1,1));
+        PointD start = new PointD(-10, -1);
+        
+        Point fp = new FeasibilityGradDescent(new Polytope(hs)).fesibility(start);
+        System.out.println(fp);
+        
+    }
 
     public static void main(String[] args) throws IOException {
 
-        polytopeFeasabilityTest(15,100,100, false, true);
+//        counterExample()
+
+        polytopeFeasabilityTest(2,4,100000, true, false);
+
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
 //        cubeTest();
 

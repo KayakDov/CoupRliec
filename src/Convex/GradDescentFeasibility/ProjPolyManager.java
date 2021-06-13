@@ -10,7 +10,7 @@ import Matricies.Point;
  * Manages the projection polytope for use by the feasibility algorithm.
  * @author dov
  */
-public class ProjPolytopeManager extends ProjPolytope {
+public class ProjPolyManager extends ProjPolytope {
 
     private Partition part;
     /**
@@ -28,7 +28,7 @@ public class ProjPolytopeManager extends ProjPolytope {
      * The constructor
      * @param part a partition of the polytope
      */
-    public ProjPolytopeManager(Partition part) {
+    public ProjPolyManager(Partition part) {
         super(part.getGradient().dim());
         this.part = part;
         this.gradInBounds = part.getGradient();
@@ -42,7 +42,7 @@ public class ProjPolytopeManager extends ProjPolytope {
      * @param arrivalHS the half space being added
      * @param y the value for y.
      */
-    public void travelToNewLocalPolytope(HalfSpace arrivalHS, Point y) {
+    public void travelToNewLocalPoly(HalfSpace arrivalHS, Point y) {
 
         removeExcept(travelThrough);
 
@@ -58,7 +58,7 @@ public class ProjPolytopeManager extends ProjPolytope {
             throw new EmptyPolytopeException();
         }
 
-        gradInBounds = y.minus(asProj.proj());
+        gradInBounds = y.minus(asProj.proj()).dir();
 
     }
 
