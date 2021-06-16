@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -479,13 +480,14 @@ public class Polytope implements ConvexSet {
      * @return 
      */
     public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
+        Random rand = new Random();
 
         Polytope poly = new Polytope();
         IntStream.range(0, numFaces).forEach(i -> {
 
             PointD random = PointD.uniformRand(new PointD(dim), radius);
 
-            random.multMe(radius / random.magnitude());
+            random.multMe(radius * (rand.nextDouble() + 1) / random.magnitude());
 
             poly.add(new HalfSpace(random, random));
         });

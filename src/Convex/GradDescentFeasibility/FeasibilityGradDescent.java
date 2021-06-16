@@ -31,9 +31,10 @@ public class FeasibilityGradDescent extends Polytope {
     }
 
     /**
-     * If the feasibility function crashes, then it should save the polytope to an error file.
-     * That error file can be loaded here.
-     * @throws IOException 
+     * If the feasibility function crashes, then it should save the polytope to
+     * an error file. That error file can be loaded here.
+     *
+     * @throws IOException
      */
     public static void loadFromErrorFile() throws IOException {
         Path errorFile = Path.of("error.txt");
@@ -63,10 +64,11 @@ public class FeasibilityGradDescent extends Polytope {
     }
 
     /**
-     * The sum of the distances of the point from all the half spaces.
-     * This function is not actually called as part of the  feasibility algorithm.
-     *This is the sum of the distances of all the half spaces to the given point
-     * 
+     * The sum of the distances of the point from all the half spaces. This
+     * function is not actually called as part of the feasibility algorithm.
+     * This is the sum of the distances of all the half spaces to the given
+     * point
+     *
      * @param y the point distant from all the half spaces.
      * @return
      */
@@ -76,12 +78,12 @@ public class FeasibilityGradDescent extends Polytope {
 
     /**
      * The gradient of the sumDist is the sum of all the normals with half
-     * spaces that exclude y. The point must be outside the polytope or an 
-     * element not found exception will be thrown.
-     * This function is also never called.  Instead the algorithm tracks the 
-     * gradient as the iteration point moves into more half spaces.
+     * spaces that exclude y. The point must be outside the polytope or an
+     * element not found exception will be thrown. This function is also never
+     * called. Instead the algorithm tracks the gradient as the iteration point
+     * moves into more half spaces.
      *
-     * @param y 
+     * @param y
      * @return
      */
     public Point gradSumDist(PointD y) {
@@ -90,10 +92,10 @@ public class FeasibilityGradDescent extends Polytope {
                 .reduce((a, b) -> a.plus(b)).get();
     }
 
-
     /**
      * Finds the next half space intersection from y in the given direction
-     * TODO: Can the adjustments to the partition be incorporated into this function?
+     * TODO: Can the adjustments to the partition be incorporated into this
+     * function?
      *
      * @param y the start point
      * @param grad the direction to look for an intersection in.
@@ -102,12 +104,13 @@ public class FeasibilityGradDescent extends Polytope {
     private HalfSpace targetPlane(Point y, Point grad, Partition part) {
 
         HalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
-        
+
         Comparator<HalfSpace> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
 
         if (downhillFacing == null) {
             return part.downhillExcluding(grad, epsilon).max(hsDistComp).get();
         } else {
+//            return downhillFacing;//TODO: change back to old way here?
             return part.excludingSpacesBetweenHereAndThere(grad, downhillFacing.boundary()
                     .lineIntersection(grad, y), epsilon).max(hsDistComp).orElse(downhillFacing);
         }
@@ -116,17 +119,20 @@ public class FeasibilityGradDescent extends Polytope {
 
     /**
      * Updates to partition to y's new location.
+     *
      * @param rollToPoint the point y is moving to
-     * @param part the partition - keeping track of the half spaces y is inside 
+     * @param part the partition - keeping track of the half spaces y is inside
      * of and those it is outside of.
      */
-    private void rollThroughSpaces(Point rollToPoint, Partition part) {
-
+    private void updatePartition(Point rollToPoint, Partition part, HalfSpace rollToHS) {
         part.passThroughSpaces(
                 part.excluding()
                         .filter(hs -> hs.hasElement(rollToPoint, epsilon))
                         .collect(Collectors.toList())
         );
+
+        part.enterSpace(rollToHS);
+
     }
 
     /**
@@ -138,26 +144,25 @@ public class FeasibilityGradDescent extends Polytope {
     public Point fesibility(Point y) {
 
         Partition part = new Partition(y, this);
-        if (part.pointIsFeasible()) return y;
+        if (part.pointIsFeasible())
+            return y;
 
         ProjPolyManager cone = new ProjPolyManager(part);
 
-        for (int i = 0; i <= size()*dim(); i++) {
-            
+        for (int i = 0; i <= size(); i++) {
+
             try {
                 HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
-                rollThroughSpaces(y, part);
-
-                part.enterSpace(rollToPlane);
-
-                if (!part.pointIsFeasible()) 
+                updatePartition(y, part, rollToPlane);
+                
+                if (!part.pointIsFeasible())
                     cone.travelToNewLocalPoly(rollToPlane, y);
-                
-                 else return y;
-                
+
+                else return y;
+
             } catch (EmptyPolytopeException epe) {
                 return new PointD(1).setAll(j -> Double.NaN);
             }
@@ -180,13 +185,14 @@ public class FeasibilityGradDescent extends Polytope {
     }
 
     /**
-     * This exception is thrown if the descent failed for whatever reason.
-     * It creates an error log recording the polytope that failed.
+     * This exception is thrown if the descent failed for whatever reason. It
+     * creates an error log recording the polytope that failed.
      */
     public class FailedDescentException extends RuntimeException {
 
         /**
          * The constructor.
+         *
          * @param message
          * @param start the starting point of the iterative process.
          * @param y the location of the iteration at the time of failure.
@@ -218,8 +224,6 @@ public class FeasibilityGradDescent extends Polytope {
         public FailedDescentException() {
             super("Descent has failed.");
         }
-        
-        
 
     }
 }

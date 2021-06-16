@@ -14,14 +14,15 @@ import java.io.IOException;
 
 public class Main {
 
-    public static void polytopeFeasabilityTest(int dim, int numFaces, int numRuns, boolean empty, boolean memory) {
+    public static void polytopeFeasabilityTest(int dim, int numFaces, int numRuns, boolean empty, boolean saveToMemory) {
 
         double epsilon = 1e-7;
 
-        ASNode.memoryAvailable = memory;
+        ASNode.memoryAvailable = saveToMemory;
 
         for (int i = 0; i < numRuns; i++) {
-            System.out.println("i = " + i);
+//            if (i % 100 == 0)
+                System.out.println("i = " + i);
 
             FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim))
                     : new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
@@ -30,7 +31,8 @@ public class Main {
 
             Point feas = poly.fesibility(PointD.uniformRand(new PointD(dim), 100));
 
-            if(feas.isReal() && !poly.hasElement(feas)) throw new RuntimeException("Point is not feasible.");
+            if (feas.isReal() && !poly.hasElement(feas))
+                throw new RuntimeException("Point is not feasible.");
         }
 
     }
@@ -91,12 +93,12 @@ public class Main {
         Point a = new PointD(1, 1, 1);
         Point b = new PointD(2, 2, 2);
         Polytope cube = new Polytope(new HalfSpace[]{
-                        new HalfSpace(a, new PointD(-1, 0, 0)),
-                        new HalfSpace(a, new PointD(0, -1, 0)),
-                        new HalfSpace(a, new PointD(0, 0, -1)),
-                        new HalfSpace(b, new PointD(1, 0, 0)),
-                        new HalfSpace(b, new PointD(0, 1, 0)),
-                        new HalfSpace(b, new PointD(0, 0, 1))
+            new HalfSpace(a, new PointD(-1, 0, 0)),
+            new HalfSpace(a, new PointD(0, -1, 0)),
+            new HalfSpace(a, new PointD(0, 0, -1)),
+            new HalfSpace(b, new PointD(1, 0, 0)),
+            new HalfSpace(b, new PointD(0, 1, 0)),
+            new HalfSpace(b, new PointD(0, 0, 1))
 //            new HalfSpace(b, new PointD(0, 1)),
 //            new HalfSpace(b, new PointD(1, 0)),
 //            new HalfSpace(a, new PointD(0, -1)),
@@ -111,31 +113,30 @@ public class Main {
 
         System.out.println(fgd.fesibility(new PointD(5, 0, 3)));
     }
-    
-    public static void counterExample(){
-        
+
+    public static void counterExample() {
+
         HalfSpace[] hs = new HalfSpace[5];
-        hs[0] = new HalfSpace(new PointD(2), new PointD(0,-1));
-        hs[1] = new HalfSpace(new PointD(0,1), new PointD(0,1));
-        hs[2] = new HalfSpace(new PointD(2), new PointD(-1,-1));
-        hs[3] = new HalfSpace(new PointD(7,0), new PointD(-1,.1));
-        hs[4] = new HalfSpace(new PointD(7,0), new PointD(1,1));
+        hs[0] = new HalfSpace(new PointD(2), new PointD(0, -1));
+        hs[1] = new HalfSpace(new PointD(0, 1), new PointD(0, 1));
+        hs[2] = new HalfSpace(new PointD(2), new PointD(-1, -1));
+        hs[3] = new HalfSpace(new PointD(7, 0), new PointD(-1, .1));
+        hs[4] = new HalfSpace(new PointD(7, 0), new PointD(1, 1));
         PointD start = new PointD(-10, -1);
-        
+
         Point fp = new FeasibilityGradDescent(new Polytope(hs)).fesibility(start);
         System.out.println(fp);
-        
+
     }
 
     public static void main(String[] args) throws IOException {
 
 //        counterExample()
-
-        polytopeFeasabilityTest(2,4,100000, true, false);
+        int i = 2;
+        polytopeFeasabilityTest(3, 4, 1000000, false, false);
 
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
 //        cubeTest();
-
     }
 
 }
