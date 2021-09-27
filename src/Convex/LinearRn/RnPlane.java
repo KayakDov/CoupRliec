@@ -1,7 +1,8 @@
-package Convex.Linear;
+package Convex.LinearRn;
 
-import Convex.HalfSpace;
-import Convex.Polytope;
+import Convex.HalfSpaceRn;
+import Convex.PolyhedronRn;
+import Hilbert.Vector;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.NoSuchElementException;
@@ -10,7 +11,7 @@ import java.util.NoSuchElementException;
  * A hyperplane.
  * @author Dov Neimand
  */
-public class Plane extends AffineSpace {
+public class RnPlane extends RnAffineSpace {
 
     /**
      * a vector normal to this plane. Not: this vector may not have length 1.
@@ -27,8 +28,8 @@ public class Plane extends AffineSpace {
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public Plane(Point p, Point normal) {
-        super(new LinearSpace(new Point[]{normal.dir()}), p);
+    public RnPlane(Point p, Point normal) {
+        super(new RnLinearSpace(new Point[]{normal.dir()}), p);
 
     }
 
@@ -37,7 +38,7 @@ public class Plane extends AffineSpace {
      *
      * @param p
      */
-    public Plane(Plane p) {
+    public RnPlane(RnPlane p) {
         this(p.p(), p.normal());
     }
 
@@ -57,7 +58,7 @@ public class Plane extends AffineSpace {
      * @return true if the point is above the plane.
      */
     public boolean below(Point x) {
-        return normal().dot(x) > b.get(0);
+        return normal().ip(x) > b.get(0);
     }
 
     /**
@@ -98,7 +99,7 @@ public class Plane extends AffineSpace {
      * @param normal a point normal to the plane.  It should have magnitude 1.
      * @param b the inner product of a point on the plane, and the normal vector
      */
-    public Plane(Point normal, double b) {
+    public RnPlane(Point normal, double b) {
         super(new Point[]{normal}, PointD.oneD(b));
         if(Math.abs(normal.magnitude() - 1) > epsilon){
             double mag = normal.magnitude();
@@ -161,7 +162,7 @@ public class Plane extends AffineSpace {
      * @param epsilon margin of error
      * @return true if the two planes are equal.
      */
-    public boolean equals(Plane plane, double epsilon) {
+    public boolean equals(RnPlane plane, double epsilon) {
         return onPlane(plane.p(), epsilon)
                 && normal().equals(plane.normal());
     }
@@ -202,9 +203,8 @@ public class Plane extends AffineSpace {
      * @param x the point in question
      * @return the distance to the point
      */
-    @Override
     public double d(Point x) {
-        return Math.abs((x.minus(p())).dot(normal()));
+        return x.d(proj(x));
     }
 
     /**
@@ -213,8 +213,8 @@ public class Plane extends AffineSpace {
      *
      * @return
      */
-    public Plane flipNormal() {
-        return new Plane(p(), normal().mult(-1));
+    public RnPlane flipNormal() {
+        return new RnPlane(p(), normal().mult(-1));
     }
 
     /**
@@ -243,10 +243,10 @@ public class Plane extends AffineSpace {
      *
      * @return a new polytope equal to this plane.
      */
-    public Polytope asPolytope() {
-        Polytope p = new Polytope();
-        p.addFace(new HalfSpace(this));
-        p.addFace(new HalfSpace(flipNormal()));
+    public PolyhedronRn asPolytope() {
+        PolyhedronRn p = new PolyhedronRn();
+        p.addFace(new HalfSpaceRn(this));
+        p.addFace(new HalfSpaceRn(flipNormal()));
         return p;
     }
 
@@ -259,7 +259,7 @@ public class Plane extends AffineSpace {
      * @return the point of intersection of this plane and a line, or an unreal
      * point if there is no intersection.
      */
-    public Point lineIntersection(AffineSpace line) {
+    public Point lineIntersection(RnAffineSpace line) {
         try {
             return (nullMatrix().rowConcat(line.nullMatrix())).solve(b.concat(line.b));
         } catch (NoSuchElementException | ArithmeticException nsee) {

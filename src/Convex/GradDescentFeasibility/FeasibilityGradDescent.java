@@ -1,8 +1,8 @@
 package Convex.GradDescentFeasibility;
 
-import Convex.HalfSpace;
-import Convex.Linear.Plane;
-import Convex.Polytope;
+import Convex.HalfSpaceRn;
+import Convex.LinearRn.RnPlane;
+import Convex.PolyhedronRn;
 import Matricies.Point;
 import Matricies.PointD;
 import java.io.BufferedWriter;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author Dov Neimand
  */
-public class FeasibilityGradDescent extends Polytope {
+public class FeasibilityGradDescent extends PolyhedronRn {
 
     /**
      * The constructor.
@@ -40,12 +40,12 @@ public class FeasibilityGradDescent extends Polytope {
         Path errorFile = Path.of("error.txt");
         PointD start = new PointD(Files.lines(errorFile).findFirst().get());
 
-        Polytope poly = new Polytope(
+        PolyhedronRn poly = new PolyhedronRn(
                 Files.lines(errorFile)
                         .filter(line -> line.startsWith("point"))
                         .map(line -> {
                             String[] pointStrings = line.replace("point ", "").split(" with normal ");
-                            return new HalfSpace(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
+                            return new HalfSpaceRn(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
                         })
         );
         System.out.println(poly);
@@ -58,7 +58,7 @@ public class FeasibilityGradDescent extends Polytope {
      *
      * @param p another polytope to be copied.
      */
-    public FeasibilityGradDescent(Polytope p) {
+    public FeasibilityGradDescent(PolyhedronRn p) {
         super(p);
 
     }
@@ -101,11 +101,11 @@ public class FeasibilityGradDescent extends Polytope {
      * @param grad the direction to look for an intersection in.
      * @return the nearest point where the ray from y hits a plane
      */
-    private HalfSpace targetPlane(Point y, Point grad, Partition part) {
+    private HalfSpaceRn targetPlane(Point y, Point grad, Partition part) {
 
-        HalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
+        HalfSpaceRn downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
 
-        Comparator<HalfSpace> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
+        Comparator<HalfSpaceRn> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
 
         if (downhillFacing == null) {
             return part.downhillExcluding(grad, epsilon).max(hsDistComp).get();
@@ -124,7 +124,7 @@ public class FeasibilityGradDescent extends Polytope {
      * @param part the partition - keeping track of the half spaces y is inside
      * of and those it is outside of.
      */
-    private void updatePartition(Point rollToPoint, Partition part, HalfSpace rollToHS) {
+    private void updatePartition(Point rollToPoint, Partition part, HalfSpaceRn rollToHS) {
         part.passThroughSpaces(
                 part.excluding()
                         .filter(hs -> hs.hasElement(rollToPoint, epsilon))
@@ -152,7 +152,7 @@ public class FeasibilityGradDescent extends Polytope {
         for (int i = 0; i <= size(); i++) {
 
             try {
-                HalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
+                HalfSpaceRn rollToPlane = targetPlane(y, cone.grad(), part);
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 
@@ -208,7 +208,7 @@ public class FeasibilityGradDescent extends Polytope {
                     + "\nwriting report to error.txt");
 
             try {
-                Plane.printEasyRead = false;
+                RnPlane.printEasyRead = false;
                 BufferedWriter bw = new BufferedWriter(new FileWriter(new File("error.txt")));
                 bw.write(start.toString());
                 bw.newLine();

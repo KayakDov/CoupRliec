@@ -1,6 +1,7 @@
-package Convex.Linear;
+package Convex.LinearRn;
 
 import Convex.ConvexSet;
+import Hilbert.Vector;
 import Matricies.Matrix;
 import Matricies.MatrixDense;
 import Matricies.MatrixSparse;
@@ -15,7 +16,7 @@ import java.util.Arrays;
  *
  * @author Dov Neimand
  */
-public class LinearSpace implements ConvexSet {
+public class RnLinearSpace implements ConvexSet<Point> {
 
     /**
      * Has a projection function been found for this space.
@@ -46,7 +47,7 @@ public class LinearSpace implements ConvexSet {
      * @param ls
      * @return
      */
-    public boolean equals(LinearSpace ls) {
+    public boolean equals(RnLinearSpace ls) {
         return Arrays.equals(normals, ls.normals);
     }
 
@@ -55,7 +56,7 @@ public class LinearSpace implements ConvexSet {
      *
      * @param normals the rows of Ax = 0
      */
-    public LinearSpace(Point[] normals) {
+    public RnLinearSpace(Point[] normals) {
         this.normals = normals;
     }
 
@@ -71,15 +72,15 @@ public class LinearSpace implements ConvexSet {
     /**
      * A small number used for thresholds
      */
-    private static double epsilon = 1e-8;
+    private static double tolerance = 1e-8;
 
     /**
-     * Sets the epsilon for this set
+     * Sets the tolerance for this set
      *
-     * @param epsilon a small number used for thresholds
+     * @param tolerance a small number used for thresholds
      */
-    public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
+    public void setTolerance(double tolerance) {
+        this.tolerance = tolerance;
     }
 
     /**
@@ -88,8 +89,8 @@ public class LinearSpace implements ConvexSet {
      * @param m the matrix whos null space we're creating
      * @return a new linear space that is the null space of the provided matrix.
      */
-    public static LinearSpace nullSpace(Matrix m) {
-        return new LinearSpace(m.rowsArray());
+    public static RnLinearSpace nullSpace(Matrix m) {
+        return new RnLinearSpace(m.rowsArray());
     }
 
     /**
@@ -100,7 +101,7 @@ public class LinearSpace implements ConvexSet {
      * basis vectors are the columns of the matrix provided here.
      * @return the column space of the given matrix
      */
-    public static LinearSpace colSpace(Matrix basis) {
+    public static RnLinearSpace colSpace(Matrix basis) {
 
         Matrix rcef = basis.T().reducedRowEchelon().T();
 
@@ -117,7 +118,7 @@ public class LinearSpace implements ConvexSet {
                 return (isDense ? new PointD(rows) : new PointSparse(rows)).setInit(i - basis.cols(), -1);
 
         });
-        return new LinearSpace(nullMatrix.rowsArray());
+        return new RnLinearSpace(nullMatrix.rowsArray());
     }
 
     /**
@@ -125,7 +126,7 @@ public class LinearSpace implements ConvexSet {
      *
      * @return a new space
      */
-    public LinearSpace OrhtogonalComplement() {
+    public RnLinearSpace OrhtogonalComplement() {
         return colSpace(matrix().T());
     }
 
@@ -165,7 +166,7 @@ public class LinearSpace implements ConvexSet {
      * @return
      */
     public MatrixDense colSpaceMatrix() {
-        return colSpaceMatric(matrix());
+        return colSpaceMatrix(matrix());
     }
 
     /**
@@ -174,7 +175,7 @@ public class LinearSpace implements ConvexSet {
      * @param nullSpaceMatrix
      * @return
      */
-    public static MatrixDense colSpaceMatric(Matrix nullSpaceMatrix) {
+    public static MatrixDense colSpaceMatrix(Matrix nullSpaceMatrix) {
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullSpaceMatrix);
 
         MatrixDense IMinus = MatrixDense.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
@@ -186,13 +187,13 @@ public class LinearSpace implements ConvexSet {
 
     @Override
     public boolean hasElement(Point x) {
-        return hasElement(x, epsilon);
+        return hasElement(x, tolerance);
     }
 
     @Override
-    public boolean hasElement(Point x, double epsilon) {
+    public boolean hasElement(Point x, double tolerance) {
         if (normals.length == 0) return true;
-        return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < epsilon);
+        return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < tolerance);
     }
 
     /**
@@ -206,10 +207,11 @@ public class LinearSpace implements ConvexSet {
      */
     public ProjectionFunction getProjFunc() {
         if (projFunc == null)
-            projFunc = new ProjectionFunction(this, null, epsilon);
+            projFunc = new ProjectionFunction(this, null, tolerance);
 
         return projFunc;
     }
+
 
     /**
      * An exception to be thrown if this linear space can't be projected onto with
@@ -249,8 +251,8 @@ public class LinearSpace implements ConvexSet {
      * @param ls the other vector space
      * @return a new vector space
      */
-    public LinearSpace lineaerSum(LinearSpace ls) {
-        return LinearSpace.colSpace(colSpaceMatrix().rowConcat(ls.colSpaceMatrix()));
+    public RnLinearSpace lineaerSum(RnLinearSpace ls) {
+        return RnLinearSpace.colSpace(colSpaceMatrix().rowConcat(ls.colSpaceMatrix()));
     }
 
     /**
@@ -258,8 +260,8 @@ public class LinearSpace implements ConvexSet {
      * @param dim
      * @return 
      */
-    public static LinearSpace allSpace(int dim) {
-        return new LinearSpace(new Point[0]);
+    public static RnLinearSpace allSpace(int dim) {
+        return new RnLinearSpace(new Point[0]);
     }
 
     /**
@@ -278,11 +280,11 @@ public class LinearSpace implements ConvexSet {
      * @param ls
      * @return
      */
-    public LinearSpace intersection(LinearSpace ls) {
+    public RnLinearSpace intersection(RnLinearSpace ls) {
         Point[] intersection = new Point[normals.length + ls.normals.length];
         System.arraycopy(normals, 0, intersection, 0, normals.length);
         System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
-        return new LinearSpace(intersection);
+        return new RnLinearSpace(intersection);
     }
 
 }

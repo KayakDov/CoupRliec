@@ -1,6 +1,6 @@
 package Convex.GradDescentFeasibility;
 
-import Convex.HalfSpace;
+import Convex.HalfSpaceRn;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.ArrayList;
@@ -26,15 +26,15 @@ public class Partition {
     /**
      * all the halfspaces containing the point
      */
-    private ArrayList<HalfSpace> containing;
+    private ArrayList<HalfSpaceRn> containing;
     /**
      * All the half spaces excluding the point
      */
-    private Set<HalfSpace> excluding;
+    private Set<HalfSpaceRn> excluding;
     /**
      * all the half spaces the point has visited.
      */
-    private HashSet<HalfSpace> visited;
+    private HashSet<HalfSpaceRn> visited;
 
     /**
      * The gradient for the point pointing toward the polytope.
@@ -53,7 +53,7 @@ public class Partition {
         gradient = new PointD(poly.dim());
         visited = new HashSet<>(poly.size());
 
-        Consumer<HalfSpace> sort = hs -> {
+        Consumer<HalfSpaceRn> sort = hs -> {
             if (hs.hasElement(y)) containing.add(hs);
             else {
                 excluding.add(hs);
@@ -70,7 +70,7 @@ public class Partition {
      *
      * @param hs
      */
-    public void enterSpace(HalfSpace hs) {
+    public void enterSpace(HalfSpaceRn hs) {
         passThroughSpace(hs);
         visited.add(hs);
     }
@@ -81,7 +81,7 @@ public class Partition {
      *
      * @param hs
      */
-    public void passThroughSpace(HalfSpace hs) {
+    public void passThroughSpace(HalfSpaceRn hs) {
         if (excluding.contains(hs)) {
             excluding.remove(hs);
             containing.add(hs);
@@ -92,7 +92,7 @@ public class Partition {
      * The point passes through the list of halfspaces, changing this partition.
      * @param moveThrough 
      */
-    public void passThroughSpaces(List<HalfSpace> moveThrough){
+    public void passThroughSpaces(List<HalfSpaceRn> moveThrough){
         if(moveThrough.isEmpty()) return;
         
         excludingSet().removeAll(moveThrough);
@@ -109,7 +109,7 @@ public class Partition {
      * All the halfspaces containing the point.
      * @return 
      */
-    public Stream<HalfSpace> containing() {
+    public Stream<HalfSpaceRn> containing() {
         return containing.parallelStream();
     }
 
@@ -117,7 +117,7 @@ public class Partition {
      * All the half spaces containing the point.
      * @return 
      */
-    public ArrayList<HalfSpace> containingSet() {
+    public ArrayList<HalfSpaceRn> containingSet() {
         return containing;
     }
     
@@ -125,7 +125,7 @@ public class Partition {
      * ALl the half spaces excluding the point.
      * @return 
      */
-    public Set<HalfSpace> excludingSet() {
+    public Set<HalfSpaceRn> excludingSet() {
         return excluding;
     }
 
@@ -133,7 +133,7 @@ public class Partition {
      * All the half spaces excluding the point.
      * @return 
      */
-    public Stream<HalfSpace> excluding() {
+    public Stream<HalfSpaceRn> excluding() {
         return excluding.parallelStream();
     }
 
@@ -151,7 +151,7 @@ public class Partition {
      * @param epsilon
      * @return 
      */
-    public Stream<HalfSpace> downhillContaining(Point grad, double epsilon) {
+    public Stream<HalfSpaceRn> downhillContaining(Point grad, double epsilon) {
         return containing().filter(hs -> /*!visited.contains(hs) &&*/ hs.normal().dot(grad) < -epsilon);
     }
 
@@ -163,7 +163,7 @@ public class Partition {
      * @param epsilon
      * @return
      */
-    public Stream<HalfSpace> downhillExcluding(Point grad, double epsilon) {
+    public Stream<HalfSpaceRn> downhillExcluding(Point grad, double epsilon) {
         return excluding().filter(hs -> hs.normal().dot(grad) > epsilon);
     }
 
@@ -173,7 +173,7 @@ public class Partition {
      * @param epsilon
      * @return 
      */
-    public Stream<HalfSpace> downHill(PointD grad, double epsilon) {
+    public Stream<HalfSpaceRn> downHill(PointD grad, double epsilon) {
         return Stream.concat(downhillContaining(grad, epsilon),
                 downhillExcluding(grad, epsilon));
     }
@@ -188,7 +188,7 @@ public class Partition {
      * @param epsilon
      * @return
      */
-    public HalfSpace nearestDownhillFaceContaining(Point y, Point grad, double epsilon) {
+    public HalfSpaceRn nearestDownhillFaceContaining(Point y, Point grad, double epsilon) {
 
         if(containing.isEmpty()) return null;
         return downhillContaining(grad, epsilon)
@@ -205,7 +205,7 @@ public class Partition {
      * @param epsilon
      * @return 
      */
-    public Stream<HalfSpace> excludingSpacesBetweenHereAndThere(Point grad, Point goTo, double epsilon) {
+    public Stream<HalfSpaceRn> excludingSpacesBetweenHereAndThere(Point grad, Point goTo, double epsilon) {
         return downhillExcluding(grad, epsilon).filter(hs -> hs.hasElement(goTo, epsilon));
     }
 

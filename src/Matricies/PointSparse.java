@@ -6,7 +6,7 @@
 package Matricies;
 
 import Convex.ConvexSet;
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
 import java.util.Arrays;
 import java.util.function.DoubleFunction;
 import java.util.function.IntToDoubleFunction;
@@ -32,7 +32,7 @@ public class PointSparse extends MatrixSparse implements Point{
     
 
     @Override
-    public boolean above(Plane plane) {
+    public boolean above(RnPlane plane) {
         return plane.below(this);
     }
 
@@ -58,7 +58,7 @@ public class PointSparse extends MatrixSparse implements Point{
     }
 
     @Override
-    public boolean below(Plane plane) {
+    public boolean below(RnPlane plane) {
         return plane.above(this);
     }
 
@@ -191,10 +191,6 @@ public class PointSparse extends MatrixSparse implements Point{
         return new PointD(super.plus(p).data);
     }
 
-    @Override
-    public Point proj(ConvexSet cs) {
-        return cs.proj(this);
-    }
 
     /**
      * Don't call this for repeated use.  It has to rebuild the entire matrix.

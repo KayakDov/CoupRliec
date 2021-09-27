@@ -6,7 +6,8 @@
 package Matricies;
 
 import Convex.ConvexSet;
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
+import Hilbert.Vector;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
@@ -17,7 +18,7 @@ import java.util.stream.DoubleStream;
  *
  * @author dov
  */
-public interface Point extends Matrix{
+public interface Point extends Matrix, Vector<Point>{
 
     public Matrix T();
 
@@ -27,7 +28,7 @@ public interface Point extends Matrix{
      * @param plane
      * @return
      */
-    public boolean above(Plane plane);
+    public boolean above(RnPlane plane);
 
     public Point addToMe(Point p);
 
@@ -44,7 +45,7 @@ public interface Point extends Matrix{
      * @param plane
      * @return
      */
-    public boolean below(Plane plane);
+    public boolean below(RnPlane plane);
 
     /**
      * concatenates this point and p in a new point
@@ -95,6 +96,18 @@ public interface Point extends Matrix{
      * @return
      */
     public double dot(Point p);
+
+    /**
+     * The inner product of the two vectors defaults to dot product.  
+     * @param v
+     * @return 
+     */
+    @Override
+    public default double ip(Point v) {
+        return dot(v);
+    }
+    
+    
 
     public Point dot(Matrix m);
 
@@ -151,14 +164,7 @@ public interface Point extends Matrix{
      */
     public Point minus(Point p);
 
-    /**
-     * scalar multiplication
-     *
-     * @param k
-     * @return
-     */
-    public Point mult(double k);
-
+    
     public Matrix mult(Matrix matrix);
 
     public Point multMe(double k);
@@ -171,14 +177,11 @@ public interface Point extends Matrix{
      */
     public Point plus(Point p);
 
-    /**
-     * The projection of this point onto a convex set.
-     *
-     * @param cs the convex set
-     * @return the projection of this point on the convex set
-     */
-    public Point proj(ConvexSet cs);
-
+    @Override
+    public default Point sum(Point v) {
+        return plus(v);
+    }
+    
     /**
      * Sets the value of the point
      *

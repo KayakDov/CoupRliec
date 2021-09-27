@@ -1,11 +1,11 @@
 package main;
 
-import Convex.Linear.AffineSpace;
-import Convex.Polytope;
+import Convex.LinearRn.RnAffineSpace;
+import Convex.PolyhedronRn;
 import Matricies.PointD;
-import Convex.HalfSpace;
-import Convex.Linear.LinearSpace;
-import Convex.Linear.Plane;
+import Convex.HalfSpaceRn;
+import Convex.LinearRn.RnLinearSpace;
+import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.FeasibilityGradDescent;
 import Convex.GradDescentFeasibility.Proj.ASNode;
 import Convex.GradDescentFeasibility.Proj.ProjPolytope;
@@ -24,8 +24,8 @@ public class Main {
 //            if (i % 100 == 0)
                 System.out.println("i = " + i);
 
-            FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(Polytope.random(numFaces, 1, dim))
-                    : new FeasibilityGradDescent(Polytope.randomNonEmpty(numFaces, 1, dim));
+            FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(PolyhedronRn.random(numFaces, 1, dim))
+                    : new FeasibilityGradDescent(PolyhedronRn.randomNonEmpty(numFaces, 1, dim));
 
             poly.setEpsilon(epsilon);
 
@@ -38,24 +38,24 @@ public class Main {
     }
 
     public static void testPolytopeFesibilitySpecifi() {
-        HalfSpace[] hs = new HalfSpace[3];
-        hs[0] = new HalfSpace(new PointD(2), new PointD(-1, 0));
-        hs[1] = new HalfSpace(new PointD(0, 1), new PointD(1, .1));
-        hs[2] = new HalfSpace(new PointD(2), new PointD(1, 1));
+        HalfSpaceRn[] hs = new HalfSpaceRn[3];
+        hs[0] = new HalfSpaceRn(new PointD(2), new PointD(-1, 0));
+        hs[1] = new HalfSpaceRn(new PointD(0, 1), new PointD(1, .1));
+        hs[2] = new HalfSpaceRn(new PointD(2), new PointD(1, 1));
 
         PointD y = new PointD(0, 1);
 
-        System.out.println(new FeasibilityGradDescent(new Polytope(hs)).fesibility(y));
+        System.out.println(new FeasibilityGradDescent(new PolyhedronRn(hs)).fesibility(y));
 
     }
 
     public static void testProjIntersection() {
 
-        Plane plane1 = new Plane(new PointD(3, 1, 6), new PointD(0, 1, 0));
+        RnPlane plane1 = new RnPlane(new PointD(3, 1, 6), new PointD(0, 1, 0));
 
-        Plane plane2 = new Plane(new PointD(3, 1, 6), new PointD(0, 0, 1));
+        RnPlane plane2 = new RnPlane(new PointD(3, 1, 6), new PointD(0, 0, 1));
 
-        AffineSpace as = plane1.intersection(plane2);
+        RnAffineSpace as = plane1.intersection(plane2);
 
         PointD a = new PointD(5, 2, 9);
 
@@ -68,8 +68,8 @@ public class Main {
 
         PointD inSpace = new PointD(3.0630593214837916, -3.307987161177735, 5.082094988792884);
 
-        Plane pl1 = new Plane(inSpace, p1);
-        Plane pl2 = new Plane(inSpace, p2);
+        RnPlane pl1 = new RnPlane(inSpace, p1);
+        RnPlane pl2 = new RnPlane(inSpace, p2);
 
         System.out.println(pl1);
         System.out.println(pl2);
@@ -78,7 +78,7 @@ public class Main {
 
         System.out.println("pp = " + pp);
 
-        LinearSpace ls = new LinearSpace(new Point[]{p1, p2});
+        RnLinearSpace ls = new RnLinearSpace(new Point[]{p1, p2});
 
         Point proj = ls.proj(pp);
 
@@ -92,13 +92,13 @@ public class Main {
     public static void cubeTest() {
         Point a = new PointD(1, 1, 1);
         Point b = new PointD(2, 2, 2);
-        Polytope cube = new Polytope(new HalfSpace[]{
-            new HalfSpace(a, new PointD(-1, 0, 0)),
-            new HalfSpace(a, new PointD(0, -1, 0)),
-            new HalfSpace(a, new PointD(0, 0, -1)),
-            new HalfSpace(b, new PointD(1, 0, 0)),
-            new HalfSpace(b, new PointD(0, 1, 0)),
-            new HalfSpace(b, new PointD(0, 0, 1))
+        PolyhedronRn cube = new PolyhedronRn(new HalfSpaceRn[]{
+            new HalfSpaceRn(a, new PointD(-1, 0, 0)),
+            new HalfSpaceRn(a, new PointD(0, -1, 0)),
+            new HalfSpaceRn(a, new PointD(0, 0, -1)),
+            new HalfSpaceRn(b, new PointD(1, 0, 0)),
+            new HalfSpaceRn(b, new PointD(0, 1, 0)),
+            new HalfSpaceRn(b, new PointD(0, 0, 1))
 //            new HalfSpace(b, new PointD(0, 1)),
 //            new HalfSpace(b, new PointD(1, 0)),
 //            new HalfSpace(a, new PointD(0, -1)),
@@ -116,15 +116,15 @@ public class Main {
 
     public static void counterExample() {
 
-        HalfSpace[] hs = new HalfSpace[5];
-        hs[0] = new HalfSpace(new PointD(2), new PointD(0, -1));
-        hs[1] = new HalfSpace(new PointD(0, 1), new PointD(0, 1));
-        hs[2] = new HalfSpace(new PointD(2), new PointD(-1, -1));
-        hs[3] = new HalfSpace(new PointD(7, 0), new PointD(-1, .1));
-        hs[4] = new HalfSpace(new PointD(7, 0), new PointD(1, 1));
+        HalfSpaceRn[] hs = new HalfSpaceRn[5];
+        hs[0] = new HalfSpaceRn(new PointD(2), new PointD(0, -1));
+        hs[1] = new HalfSpaceRn(new PointD(0, 1), new PointD(0, 1));
+        hs[2] = new HalfSpaceRn(new PointD(2), new PointD(-1, -1));
+        hs[3] = new HalfSpaceRn(new PointD(7, 0), new PointD(-1, .1));
+        hs[4] = new HalfSpaceRn(new PointD(7, 0), new PointD(1, 1));
         PointD start = new PointD(-10, -1);
 
-        Point fp = new FeasibilityGradDescent(new Polytope(hs)).fesibility(start);
+        Point fp = new FeasibilityGradDescent(new PolyhedronRn(hs)).fesibility(start);
         System.out.println(fp);
 
     }

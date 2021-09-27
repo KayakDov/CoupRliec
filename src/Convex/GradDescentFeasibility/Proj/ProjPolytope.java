@@ -1,8 +1,8 @@
 package Convex.GradDescentFeasibility.Proj;
 
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
-import Convex.Linear.Plane;
-import Convex.Polytope;
+import Convex.LinearRn.RnPlane;
+import Convex.PolyhedronRn;
 import Convex.GradDescentFeasibility.EmptyPolytopeException;
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
 import Matricies.Point;
@@ -31,7 +31,7 @@ public class ProjPolytope {
      * the polytope. The planes intersection is p dot x is less than or equal to
      * b for each plane.
      */
-    private final List<Plane> planes;
+    private final List<RnPlane> planes;
 
     /**
      * The constructor
@@ -48,7 +48,7 @@ public class ProjPolytope {
      *
      * @param p A polytope that is going to be projected onto.
      */
-    public ProjPolytope(Polytope p) {
+    public ProjPolytope(PolyhedronRn p) {
         this.planes = p.planes().collect(Collectors.toList());
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, planes.size()));
     }
@@ -60,8 +60,8 @@ public class ProjPolytope {
      * @param b
      * @return
      */
-    private Plane[] concat(Plane[] a, Plane b) {
-        Plane[] arrayOfPlanes = new Plane[a.length + 1];
+    private RnPlane[] concat(RnPlane[] a, RnPlane b) {
+        RnPlane[] arrayOfPlanes = new RnPlane[a.length + 1];
         System.arraycopy(a, 0, arrayOfPlanes, 0, a.length);
         arrayOfPlanes[a.length] = b;
         return arrayOfPlanes;
@@ -199,7 +199,7 @@ public class ProjPolytope {
      * @return
      */
     public boolean hasElement(Point p) {
-        for (Plane plane : planes) {
+        for (RnPlane plane : planes) {
             if (!plane.aboveOrContains(p)) {
                 return false;
             }
@@ -239,7 +239,7 @@ public class ProjPolytope {
      * @return
      */
     public boolean hasElement(ASFail p) {
-        for (Plane plane : planes) {
+        for (RnPlane plane : planes) {
             if (!p.asNode.planeSet().contains(plane) && !plane.aboveOrContains(p.projOntoPersoanlPoly)) {
                 return false;
             }
@@ -261,7 +261,7 @@ public class ProjPolytope {
             return;
         }
 
-        Set<Plane> planesToBePreserved = as.planeSet();
+        Set<RnPlane> planesToBePreserved = as.planeSet();
 
 //        projectionFunctions.entrySet().removeIf(entry -> !planesToBePreserved.containsAll(entry.getValue().planeSet));
         projectionFunctions.entrySet().parallelStream()
@@ -278,7 +278,7 @@ public class ProjPolytope {
      *
      * @param plane
      */
-    public void add(Plane plane) {
+    public void add(RnPlane plane) {
         if (planes.contains(plane)) {
             throw new RuntimeException("This plane has already been added to ProjPolytope and has index " + planes.indexOf(plane) + " out of " + planes.size() + ".");//TODO: remove
         }

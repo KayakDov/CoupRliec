@@ -1,4 +1,4 @@
-package Convex.Linear;
+package Convex.LinearRn;
 
 import Matricies.Matrix;
 import Matricies.MatrixDense;
@@ -28,10 +28,10 @@ public class ProjectionFunction implements Function<Point, Point> {
      * space is a linear space.
      * @param epsilon a small number
      */
-    public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
+    public ProjectionFunction(RnLinearSpace ls, Point p, double epsilon) {
 
         Matrix nullSpaceMatrix = ls.matrix();
-        Matrix A = LinearSpace.colSpaceMatric(nullSpaceMatrix);
+        Matrix A = RnLinearSpace.colSpaceMatrix(nullSpaceMatrix);
 
         if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
         else{
@@ -79,7 +79,7 @@ public class ProjectionFunction implements Function<Point, Point> {
          * The constructor.
          * @param ls 
          */
-        public NoProjFuncExists(LinearSpace ls) {
+        public NoProjFuncExists(RnLinearSpace ls) {
             super("There is no projection function for this linear space.\nlinear space is " + ls);
         }
 

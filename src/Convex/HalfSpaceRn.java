@@ -1,24 +1,24 @@
 
 package Convex;
 
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
 import Matricies.Point;
 
 /**
  *
  * @author Dov Neimand
  */
-public class HalfSpace implements ConvexSet{
+public class HalfSpaceRn implements ConvexSet<Point>{
 
-    private final Plane border;
+    private final RnPlane boundry;
     /**
      * The constructor for this class
      *
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public HalfSpace(Point p, Point normal) {
-        this(new Plane(p, normal));
+    public HalfSpaceRn(Point p, Point normal) {
+        this(new RnPlane(p, normal));
     }
 
     
@@ -27,28 +27,28 @@ public class HalfSpace implements ConvexSet{
      * @param normal a vector normal to the plane
      * @param b normal dot x \<= b
      */
-    public HalfSpace(Point normal, double b){
-        border = new Plane(normal, b);
+    public HalfSpaceRn(Point normal, double b){
+        boundry = new RnPlane(normal, b);
     }
     
     /**
      * The constructor
      * @param border 
      */
-    public HalfSpace(Plane border){
-        this.border = border;
+    public HalfSpaceRn(RnPlane border){
+        this.boundry = border;
     }
     
 
     @Override
     public Point proj(Point x) {
-        if(border.below(x))return border.proj(x); 
+        if(boundry.below(x))return boundry.proj(x); 
         else return x;
     }
     
     @Override
     public boolean hasElement(Point x){
-        return border.above(x) || border.hasElement(x);
+        return boundry.above(x) || boundry.hasElement(x);
     }
     
     /**
@@ -57,7 +57,7 @@ public class HalfSpace implements ConvexSet{
      * @return 
      */
     public boolean interiorHasElement(Point x){
-        return border.above(x);
+        return boundry.above(x);
     }
     
     /**
@@ -66,13 +66,13 @@ public class HalfSpace implements ConvexSet{
      * @return 
      */
     public boolean interiorHasElement(Point x, double epsilon){
-        return border.above(x, epsilon);
+        return boundry.above(x, epsilon);
     }
     
     
     @Override
     public boolean hasElement(Point x, double epsilon){
-        return border.above(x) || border.hasElement(x, epsilon);
+        return boundry.above(x) || boundry.hasElement(x, epsilon);
     }
     
     
@@ -80,8 +80,8 @@ public class HalfSpace implements ConvexSet{
      * the complement space
      * @return 
      */
-    public HalfSpace complement(){
-        return new HalfSpace(border.flipNormal());
+    public HalfSpaceRn complement(){
+        return new HalfSpaceRn(boundry.flipNormal());
     }
     
    /**
@@ -89,7 +89,7 @@ public class HalfSpace implements ConvexSet{
     * @return 
     */
     public Point normal(){
-        return border.normal();
+        return boundry.normal();
     }
     
     /**
@@ -99,7 +99,7 @@ public class HalfSpace implements ConvexSet{
      * @return 
      */
     public boolean onSurface(Point x, double epsilon){
-        return border.onPlane(x, epsilon);
+        return boundry.onPlane(x, epsilon);
     }
     
     /**
@@ -107,7 +107,7 @@ public class HalfSpace implements ConvexSet{
      * @return 
      */
     public Point surfacePoint(){
-        return border.p();
+        return boundry.p();
     }
     
     public int dim(){
@@ -115,7 +115,7 @@ public class HalfSpace implements ConvexSet{
     }
     
     public boolean hasBadSurface(){
-        return border.isBadPlane();
+        return boundry.isBadPlane();
     }
    
     /**
@@ -123,20 +123,23 @@ public class HalfSpace implements ConvexSet{
      * @returna  the plane that makes up the surface of this halfspace.
      * This is the actual plane, so mess with it at your peril.
      */
-    public Plane boundary(){
-        return border;
+    public RnPlane boundary(){
+        return boundry;
     }
 
     @Override
     public String toString() {
         return boundary().toString().replace("=", "<=");
-    }
-
-    @Override
-    public double d(Point x) {
-        if(border.above(x)) return 0;
-        return border.d(x);
-    }
+    }    
     
+    /**
+     * The distance from the given point to this halfspace.
+     * @param x
+     * @return 
+     */
+    public double d(Point x){
+        if(hasElement(x)) return 0;
+        return boundry.d(x);
+    }
     
 }

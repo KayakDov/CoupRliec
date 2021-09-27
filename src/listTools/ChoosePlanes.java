@@ -1,6 +1,6 @@
 package listTools;
 
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  */
 public class ChoosePlanes {
 
-    private final List<Plane> fromList;
+    private final List<RnPlane> fromList;
     private final int choose;
 
     /**
@@ -23,7 +23,7 @@ public class ChoosePlanes {
      * @param list
      * @param choose
      */
-    public ChoosePlanes(List<Plane> list, int choose) {
+    public ChoosePlanes(List<RnPlane> list, int choose) {
         this.fromList = list;
         this.choose = choose;
     }
@@ -45,7 +45,7 @@ public class ChoosePlanes {
      *
      * @return
      */
-    public Stream<Plane[]> chooseStream() {
+    public Stream<RnPlane[]> chooseStream() {
         return streamOfListsOfInts().parallel().map(al -> intsToList(al));
     }
 
@@ -55,9 +55,9 @@ public class ChoosePlanes {
      * @param ints the list of integers
      * @return a list of T's
      */
-    private Plane[] intsToList(int[] ints) {
+    private RnPlane[] intsToList(int[] ints) {
 
-        Plane[] planeArray = new Plane[ints.length];
+        RnPlane[] planeArray = new RnPlane[ints.length];
 
         Arrays.setAll(planeArray, i -> fromList.get(ints[i]));
         

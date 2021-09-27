@@ -1,7 +1,7 @@
 package Convex;
 
-import Convex.Linear.Plane;
-import Convex.Linear.AffineSpace;
+import Convex.LinearRn.RnPlane;
+import Convex.LinearRn.RnAffineSpace;
 import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
@@ -29,25 +29,25 @@ import listTools.ChoosePlanes;
  *
  * @author Dov Neimand
  */
-public class Polytope implements ConvexSet {
+public class PolyhedronRn implements ConvexSet<Point> {
 
     /**
      * The half spaces whos intersection is this polytope
      */
-    protected ArrayList<HalfSpace> halfSpaces;
+    protected ArrayList<HalfSpaceRn> halfSpaces;
 
     /**
      * The half spaces whos intersection is this polytope
      */
-    private Set<HalfSpace> halfSpaceSet;
+    private Set<HalfSpaceRn> halfSpaceSet;
 
     /**
      * Add a bunch of half spaces to this polytope
      *
      * @param adds
      */
-    public void addAll(Collection<HalfSpace> adds) {
-        for (HalfSpace add : adds) {
+    public void addAll(Collection<HalfSpaceRn> adds) {
+        for (HalfSpaceRn add : adds) {
             add(add);
         }
     }
@@ -57,8 +57,8 @@ public class Polytope implements ConvexSet {
      *
      * @param adds
      */
-    public void addAll(Polytope adds) {
-        for (HalfSpace add : adds.halfSpaces) {
+    public void addAll(PolyhedronRn adds) {
+        for (HalfSpaceRn add : adds.halfSpaces) {
             add(add);
         }
     }
@@ -69,7 +69,7 @@ public class Polytope implements ConvexSet {
      *
      * @param hs
      */
-    public void add(HalfSpace hs) {
+    public void add(HalfSpaceRn hs) {
         if (halfSpaceSet.add(hs)) {
             halfSpaces.add(hs);
         }
@@ -81,7 +81,7 @@ public class Polytope implements ConvexSet {
      *
      * @param hs
      */
-    public void remove(HalfSpace hs) {
+    public void remove(HalfSpaceRn hs) {
         if (halfSpaceSet.remove(hs)) {
             halfSpaces.remove(hs);
         }
@@ -94,7 +94,7 @@ public class Polytope implements ConvexSet {
      *
      * @param pred
      */
-    public void removeIf(Predicate<HalfSpace> pred) {
+    public void removeIf(Predicate<HalfSpaceRn> pred) {
         halfSpaces.removeIf(pred);
         halfSpaceSet.removeIf(pred);
     }
@@ -122,7 +122,7 @@ public class Polytope implements ConvexSet {
      *
      * @param faces of this polytope
      */
-    public Polytope(Collection<HalfSpace> faces) {
+    public PolyhedronRn(Collection<HalfSpaceRn> faces) {
         this.halfSpaceSet = new HashSet<>(faces);
         this.halfSpaces = new ArrayList<>(halfSpaceSet);
     }
@@ -133,7 +133,7 @@ public class Polytope implements ConvexSet {
      * @param hsStream a stream of half spaces to intersect to make this
      * polytope.
      */
-    public Polytope(Stream<HalfSpace> hsStream) {
+    public PolyhedronRn(Stream<HalfSpaceRn> hsStream) {
         this(hsStream.collect(Collectors.toList()));
 
     }
@@ -143,7 +143,7 @@ public class Polytope implements ConvexSet {
      *
      * @param toClone a polytope to clone
      */
-    public Polytope(Polytope toClone) {
+    public PolyhedronRn(PolyhedronRn toClone) {
         this(toClone.halfSpaces);
     }
 
@@ -153,10 +153,10 @@ public class Polytope implements ConvexSet {
      * @param normals a matrix of the normal vectors of the half spaces
      * @param b the right side of the defning inequality
      */
-    public Polytope(Matrix normals, Point b) {
+    public PolyhedronRn(Matrix normals, Point b) {
         this();
         halfSpaces.addAll(
-                IntStream.range(0, normals.rows()).mapToObj(i -> new HalfSpace(
+                IntStream.range(0, normals.rows()).mapToObj(i -> new HalfSpaceRn(
                 normals.row(i), b.get(i)))
                         .collect(Collectors.toList()));
         halfSpaceSet.addAll(halfSpaces);
@@ -165,8 +165,8 @@ public class Polytope implements ConvexSet {
     /**
      * A constructor
      */
-    public Polytope() {
-        this(new ArrayList<HalfSpace>());
+    public PolyhedronRn() {
+        this(new ArrayList<HalfSpaceRn>());
     }
 
     /**
@@ -194,13 +194,13 @@ public class Polytope implements ConvexSet {
      *
      * @param p
      */
-    public Polytope addFace(HalfSpace p) {
+    public PolyhedronRn addFace(HalfSpaceRn p) {
         if (halfSpaceSet.add(p))
             halfSpaces.add(p);
         return this;
     }
 
-    public Polytope addFaces(Polytope p) {
+    public PolyhedronRn addFaces(PolyhedronRn p) {
         halfSpaces.addAll(p.halfSpaces);
         halfSpaceSet.addAll(p.halfSpaces);
         return this;
@@ -211,13 +211,13 @@ public class Polytope implements ConvexSet {
      *
      * @param faces of this polytope
      */
-    public Polytope(HalfSpace[] faces) {
+    public PolyhedronRn(HalfSpaceRn[] faces) {
         this(Arrays.asList(faces));
     }
 
     @Override
     public boolean hasElement(Point p) {
-        return stream().parallel().allMatch((HalfSpace hs) -> hs.hasElement(p, epsilon));
+        return stream().parallel().allMatch((HalfSpaceRn hs) -> hs.hasElement(p, epsilon));
     }
 
     /**
@@ -300,7 +300,7 @@ public class Polytope implements ConvexSet {
      * A stream of the half spaces that intersect to form this polytope.
      * @return 
      */
-    public Stream<HalfSpace> stream() {
+    public Stream<HalfSpaceRn> stream() {
         return halfSpaces.stream();
     }
 
@@ -315,7 +315,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public Stream<Plane> planes() {
+    public Stream<RnPlane> planes() {
         return stream().map(half -> half.boundary());
     }
 
@@ -325,7 +325,7 @@ public class Polytope implements ConvexSet {
      * @param x the point we're looking for the closest plane to.
      * @return the closest plane.
      */
-    public HalfSpace closestTo(Point x) {
+    public HalfSpaceRn closestTo(Point x) {
         return stream().parallel().max(Comparator.comparing(plane -> plane.d(x))).get();
     }
 
@@ -347,8 +347,8 @@ public class Polytope implements ConvexSet {
      * @param poly
      * @return
      */
-    public Polytope intersect(Polytope poly) {
-        Polytope intersct = new Polytope();
+    public PolyhedronRn intersect(PolyhedronRn poly) {
+        PolyhedronRn intersct = new PolyhedronRn();
         intersct.addFaces(this);
         intersct.addFaces(poly);
         return intersct;
@@ -405,7 +405,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    public Stream<AffineSpace> affineSubSpaces() {
+    public Stream<RnAffineSpace> affineSubSpaces() {
 
         return affineSubSpaces(dim());
     }
@@ -418,7 +418,7 @@ public class Polytope implements ConvexSet {
      * intersection.
      * @return
      */
-    public Stream<AffineSpace> affineSubSpaces(int maxHSPerIntersection) {
+    public Stream<RnAffineSpace> affineSubSpaces(int maxHSPerIntersection) {
 
         return IntStream
                 .rangeClosed(1, maxHSPerIntersection)
@@ -426,7 +426,7 @@ public class Polytope implements ConvexSet {
                 .flatMap(i
                         -> new ChoosePlanes(planes().collect(Collectors.toList()), i)
                         .chooseStream())
-                .map(planeArray -> new AffineSpace(planeArray));
+                .map(planeArray -> new RnAffineSpace(planeArray));
 
     }
 
@@ -436,8 +436,8 @@ public class Polytope implements ConvexSet {
      * @param x a point on the surface of the polytope.
      * @return all the faces smallestContainingSubSpace x on their surface.
      */
-    private Polytope facesContaining(Point x) {
-        return new Polytope(stream().filter(hs -> hs.boundary().hasElement(x)));
+    private PolyhedronRn facesContaining(Point x) {
+        return new PolyhedronRn(stream().filter(hs -> hs.boundary().hasElement(x)));
     }
 
     /**
@@ -445,7 +445,7 @@ public class Polytope implements ConvexSet {
      * @param poly
      * @return 
      */
-    public boolean equals(Polytope poly) {
+    public boolean equals(PolyhedronRn poly) {
         return new HashSet<>(halfSpaces).equals(new HashSet<>(poly.halfSpaces));
     }
 
@@ -455,7 +455,7 @@ public class Polytope implements ConvexSet {
      *
      * @return
      */
-    protected ArrayList<HalfSpace> getHalfSpaces() {
+    protected ArrayList<HalfSpaceRn> getHalfSpaces() {
         return halfSpaces;
     }
 
@@ -463,7 +463,7 @@ public class Polytope implements ConvexSet {
      * The set of halfspaces that intersect to make this polytope.
      * @return 
      */
-    public Set<HalfSpace> getHalfSpaceSet() {
+    public Set<HalfSpaceRn> getHalfSpaceSet() {
         return halfSpaceSet;
     }
 
@@ -479,17 +479,17 @@ public class Polytope implements ConvexSet {
      * @param dim
      * @return 
      */
-    public static Polytope randomNonEmpty(int numFaces, double radius, int dim) {
+    public static PolyhedronRn randomNonEmpty(int numFaces, double radius, int dim) {
         Random rand = new Random();
 
-        Polytope poly = new Polytope();
+        PolyhedronRn poly = new PolyhedronRn();
         IntStream.range(0, numFaces).forEach(i -> {
 
             PointD random = PointD.uniformRand(new PointD(dim), radius);
 
             random.multMe(radius * (rand.nextDouble() + 1) / random.magnitude());
 
-            poly.add(new HalfSpace(random, random));
+            poly.add(new HalfSpaceRn(random, random));
         });
 
         return poly;
@@ -502,14 +502,14 @@ public class Polytope implements ConvexSet {
      * @param dim
      * @return 
      */
-    public static Polytope random(int numFaces, double radius, int dim) {
+    public static PolyhedronRn random(int numFaces, double radius, int dim) {
 
-        Polytope poly = new Polytope();
+        PolyhedronRn poly = new PolyhedronRn();
         IntStream.range(0, numFaces).forEach(i -> {
             PointD random1 = PointD.uniformRand(new PointD(dim), radius);
             PointD random2 = PointD.uniformRand(new PointD(dim), radius);
 
-            poly.add(new HalfSpace(random1.mult(radius), random2.mult(1 / random2.magnitude())));
+            poly.add(new HalfSpaceRn(random1.mult(radius), random2.mult(1 / random2.magnitude())));
         });
 
         return poly;

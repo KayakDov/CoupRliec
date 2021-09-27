@@ -1,6 +1,6 @@
 package Matricies;
 import Convex.ConvexSet;
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.DoubleStream;
@@ -261,7 +261,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     }
 
     public boolean equals(PointSparse ps) {
-        return IntStream.range(0, dim()).allMatch(i -> Math.abs(ps.get(i) - get(i)) <= epsilon);
+        return IntStream.range(0, dim()).allMatch(i -> Math.abs(ps.get(i) - get(i)) <= tolerance);
     }
 
     @Override
@@ -483,20 +483,10 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return cs.hasElement(this);
     }
 
-    public boolean isMember(ConvexSet cs, double epsilon) {
-        return cs.d(this) < epsilon;
+    public boolean isMember(ConvexSet cs, double tolerance) {
+        return cs.hasElement(this, tolerance);
     }
 
-    /**
-     * The projection of this point onto a convex set.
-     *
-     * @param cs the convex set
-     * @return the projection of this point on the convex set
-     */
-    @Override
-    public Point proj(ConvexSet cs) {
-        return cs.proj(this);
-    }
 
     /**
      * Is this point above the plane
@@ -505,7 +495,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @return
      */
     @Override
-    public boolean above(Plane plane) {
+    public boolean above(RnPlane plane) {
         return plane.below(this);
     }
 
@@ -516,7 +506,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @return
      */
     @Override
-    public boolean below(Plane plane) {
+    public boolean below(RnPlane plane) {
         return plane.above(this);
     }
 

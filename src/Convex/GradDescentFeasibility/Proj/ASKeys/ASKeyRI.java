@@ -1,6 +1,6 @@
 package Convex.GradDescentFeasibility.Proj.ASKeys;
 
-import Convex.Linear.AffineSpace;
+import Convex.LinearRn.RnAffineSpace;
 
 /**
  *
@@ -8,10 +8,10 @@ import Convex.Linear.AffineSpace;
  */
 public class ASKeyRI extends ASKey{
     
-    AffineSpace immidiateSubSpace;
+    RnAffineSpace immidiateSubSpace;
     int removeIndex;
     
-    public ASKeyRI(AffineSpace as, int removeIndex){
+    public ASKeyRI(RnAffineSpace as, int removeIndex){
         super(as.hashCode() - as.hashRow(removeIndex));
         this.removeIndex = removeIndex;
         immidiateSubSpace = as;

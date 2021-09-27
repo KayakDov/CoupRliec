@@ -1,6 +1,6 @@
 package Convex.GradDescentFeasibility.Proj.ASKeys;
 
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnPlane;
 import java.util.Arrays;
 
 /**
@@ -8,10 +8,10 @@ import java.util.Arrays;
  * @author dov
  */
 public class ASKeyPlanes extends ASKey{
-    Plane[] planes;
+    RnPlane[] planes;
     
-    public ASKeyPlanes(Plane[] planes) {
-        super(Arrays.stream(planes).mapToInt(Plane::hashCode).sum());
+    public ASKeyPlanes(RnPlane[] planes) {
+        super(Arrays.stream(planes).mapToInt(RnPlane::hashCode).sum());
         this.planes = planes;
     }
 

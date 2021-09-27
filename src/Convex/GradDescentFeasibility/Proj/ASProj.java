@@ -1,7 +1,7 @@
 
 package Convex.GradDescentFeasibility.Proj;
 
-import Convex.Linear.AffineSpace;
+import Convex.LinearRn.RnAffineSpace;
 import Matricies.Point;
 
 /**
@@ -11,7 +11,7 @@ import Matricies.Point;
 public class ASProj {
 
     protected Point proj;
-    protected AffineSpace as;
+    protected RnAffineSpace as;
     protected ASNode asn;
 
     /**
@@ -37,7 +37,7 @@ public class ASProj {
      * The affine space
      * @return 
      */
-    public AffineSpace as() {
+    public RnAffineSpace as() {
         return as;
     }
 

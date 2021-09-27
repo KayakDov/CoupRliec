@@ -1,8 +1,8 @@
 package Convex.GradDescentFeasibility.Proj;
 
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
-import Convex.Linear.AffineSpace;
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnAffineSpace;
+import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
 import Matricies.Point;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class ASFail {
      * ProjPolytope
      * @param map A set of all the affine space nodes that have been saved.
      */
-    public ASFail(Plane plane, int planeIndex, ConcurrentHashMap<ASKey, ASNode> map) {
+    public ASFail(RnPlane plane, int planeIndex, ConcurrentHashMap<ASKey, ASNode> map) {
         this(ASNode.factory(plane, planeIndex, map));
     }
 
@@ -59,8 +59,8 @@ public class ASFail {
      * cone
      * @param map a map that given a key returns the node for that key.
      */
-    public ASFail(Plane[] planes, Point y, int index, ConcurrentHashMap<ASKey, ASNode> map) {
-        this(ASNode.factory(new AffineSpace(planes).setP(y), planes, index, map));
+    public ASFail(RnPlane[] planes, Point y, int index, ConcurrentHashMap<ASKey, ASNode> map) {
+        this(ASNode.factory(new RnAffineSpace(planes).setP(y), planes, index, map));
     }
 
     @Override

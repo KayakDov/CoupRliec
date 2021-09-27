@@ -22,10 +22,10 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 
 public class MatrixDense extends DMatrixRMaj implements Matrix {
 
-    protected double epsilon = 1e-9;
+    protected double tolerance = 1e-9;
 
     public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
+        this.tolerance = epsilon;
     }
 
     /**
@@ -593,7 +593,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
     public boolean equals(Matrix obj) {
         if (obj.isSparse())
             return obj.asSparse().nonZeroes()
-                    .allMatch(coord -> Math.abs(coord.value - get(coord.row)) < epsilon);
+                    .allMatch(coord -> Math.abs(coord.value - get(coord.row)) < tolerance);
         return Arrays.equals(obj.asDense().data, data);
     }
 

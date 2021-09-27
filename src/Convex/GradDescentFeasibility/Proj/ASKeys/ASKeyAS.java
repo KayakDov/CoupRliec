@@ -1,7 +1,7 @@
 package Convex.GradDescentFeasibility.Proj.ASKeys;
 
-import Convex.Linear.AffineSpace;
-import Convex.Linear.Plane;
+import Convex.LinearRn.RnAffineSpace;
+import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.Proj.ASFail;
 import Convex.GradDescentFeasibility.Proj.ASNode;
 
@@ -11,8 +11,8 @@ import Convex.GradDescentFeasibility.Proj.ASNode;
  */
 public class ASKeyAS extends ASKey{
 
-    private AffineSpace as;
-    public ASKeyAS(AffineSpace as) {
+    private RnAffineSpace as;
+    public ASKeyAS(RnAffineSpace as) {
         super(as.hashCode());
         this.as = as;
     }

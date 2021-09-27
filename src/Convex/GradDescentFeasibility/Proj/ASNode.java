@@ -2,9 +2,9 @@
 package Convex.GradDescentFeasibility.Proj;
 
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
-import Convex.Linear.AffineSpace;
-import Convex.Linear.Plane;
-import Convex.Linear.ProjectionFunction;
+import Convex.LinearRn.RnAffineSpace;
+import Convex.LinearRn.RnPlane;
+import Convex.LinearRn.ProjectionFunction;
 import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
 import Matricies.Point;
 import java.util.HashSet;
@@ -26,15 +26,15 @@ public class ASNode {
     /**
      * the affine space contained
      */
-    protected AffineSpace as;
+    protected RnAffineSpace as;
     /**
      * The planes that intersect to make the affine space.
      */
-    private Set<Plane> planeSet;
+    private Set<RnPlane> planeSet;
     /**
      * The planes that intersect to make the affine space.
      */
-    protected Plane[] planeArray;
+    protected RnPlane[] planeArray;
     /**
      * The index of the last plane in the plane array from the ProjPolytope list of planes.
      * This plays a roll in generating the next level of i-affine spaces.
@@ -49,7 +49,7 @@ public class ASNode {
      * The affine space
      * @return 
      */
-    public AffineSpace as() {
+    public RnAffineSpace as() {
         return as;
     }
 
@@ -57,7 +57,7 @@ public class ASNode {
      * The set of planes that intersect to form the affine space.
      * @return 
      */
-    public Set<Plane> planeSet() {
+    public Set<RnPlane> planeSet() {
         return planeSet;
     }
 
@@ -65,7 +65,7 @@ public class ASNode {
      * The planes that intersect to form the affine space.
      * @return 
      */
-    public Plane[] planeArray() {
+    public RnPlane[] planeArray() {
         return planeArray;
     }
 
@@ -111,7 +111,7 @@ public class ASNode {
      * function is called, this plane will be the affine space.
      * @return 
      */
-    public Plane plane() {
+    public RnPlane plane() {
         return planeArray[0];
     }
 
@@ -202,7 +202,7 @@ public class ASNode {
      * @param map the projection functions that have been saved.
      * @return an affine space node containing the given affine space or one equal to it.
      */
-    public static ASNode factory(AffineSpace as, Plane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
+    public static ASNode factory(RnAffineSpace as, RnPlane[] planeList, int index, ConcurrentHashMap<ASKey, ASNode> map) {
 
         ASKeyPlanes key = new ASKeyPlanes(planeList);
 
@@ -230,12 +230,12 @@ public class ASNode {
      * @param map the saved projection functions.
      * @return an affine space node for the given plane.
      */
-    public static ASNode factory(Plane plane, int index, ConcurrentHashMap<ASKey, ASNode> map) {
+    public static ASNode factory(RnPlane plane, int index, ConcurrentHashMap<ASKey, ASNode> map) {
         ASNode asn = new ASNode(index, map);
         asn.as = plane;
-        asn.planeSet = new HashSet<Plane>(1);
+        asn.planeSet = new HashSet<RnPlane>(1);
         asn.planeSet.add(plane);
-        asn.planeArray = new Plane[]{plane};
+        asn.planeArray = new RnPlane[]{plane};
         return asn;
     }
 
@@ -250,7 +250,7 @@ public class ASNode {
          */
         public AllSpace(int dim) {
             super(0, null);
-            as = AffineSpace.allSpace(dim);
+            as = RnAffineSpace.allSpace(dim);
         }
 
     }
