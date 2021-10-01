@@ -23,11 +23,45 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     }
     
     public Vec normal(){
-        return linearSpace.nomralVectors[0];
+        return linearSpace.normals[0];
     }
     
     public double b(){
         return super.b.get(0);
     }
     
+    /**
+     * Is this halfspace above the given vector.  i.e. \<n, v\> \< b
+     * @param v
+     * @return 
+     */
+    public boolean above(Vec v){
+        return normal().ip(v) < b();
+    }
+    
+    /**
+     * Is this plane below the given point, i.e. \<n, v\> \> b.
+     * @param v
+     * @return 
+     */
+    public boolean below(Vec v){
+        return normal().ip(v) > b();
+    }
+    
+    public Plane<Vec> flipNormal(){
+        return new Plane<>(normal().mult(-1), -b());
+    }
+
+    @Override
+    public Vec proj(Vec x) {
+        return x.dif(normal().mult((x.dif(p())).ip(normal())));
+    }
+    
+    /**
+     * A point on this hyperplane.
+     * @return 
+     */
+    public Vec p(){
+        return normal().mult(b()/normal().normSq());
+    }
 }

@@ -56,7 +56,7 @@ public interface Vector<T extends Vector> {
      * The norm of this vector squared
      * @return 
      */
-    public default double normSquared(){
+    public default double normSq(){
         return ip((T)this);
     }
     
@@ -65,7 +65,7 @@ public interface Vector<T extends Vector> {
      * @return 
      */
     public default double norm(){
-        return Math.sqrt(normSquared());
+        return Math.sqrt(normSq());
     }
     
     /**
@@ -74,7 +74,7 @@ public interface Vector<T extends Vector> {
      * @return 
      */
     public default double distSquared(T v){
-        return dif(v).normSquared();
+        return dif(v).normSq();
     }
     
     /**

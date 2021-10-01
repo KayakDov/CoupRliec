@@ -3,6 +3,7 @@ package Hilbert;
 import Convex.GradDescentFeasibility.Proj.ASNode;
 import Matricies.Point;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * The class represents a linear subspace of a Hilbert Space, where this subspace
@@ -11,7 +12,7 @@ import java.util.Arrays;
  * @param <Vec> the elements of the Hilbert Space
  */
 public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Vec>{
-    Vec[] nomralVectors;
+    Vec[] normals;
 
     @Override
     public boolean equals(Object obj) {
@@ -19,7 +20,7 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final LinearSpace other = (LinearSpace) obj;
-        if (!Arrays.deepEquals(this.nomralVectors, other.nomralVectors))
+        if (!Arrays.deepEquals(this.normals, other.normals))
             return false;
         return true;
     }
@@ -28,8 +29,8 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
      * A list of vectors that are normal to the linear space.
      * @return 
      */
-    public Vec[] getNomrals() {
-        return nomralVectors;
+    public Vec[] getNormals() {
+        return normals;
     }
 
     /**
@@ -37,11 +38,11 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
      * @param nomralVectors the rows of the matrix for which this is the null space.
      */
     public LinearSpace(Vec[] nomralVectors) {
-        this.nomralVectors = nomralVectors;
+        this.normals = nomralVectors;
     }
 
     public boolean isAllSpace(){
-        return nomralVectors.length == 0;
+        return normals == null || normals.length == 0;
     }
     
     public double tolerance = 1e-8;
@@ -53,8 +54,8 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
 
     @Override
     public boolean hasElement(Vec x, double tolerance) {
-        if (nomralVectors.length == 0) return true;
-        return Arrays.stream(nomralVectors).allMatch(normal -> normal.ip(x) < tolerance);
+        if (normals.length == 0) return true;
+        return Arrays.stream(normals).allMatch(normal -> normal.ip(x) < tolerance);
     }
 
     @Override
@@ -62,4 +63,26 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    public Stream<Vec> stream(){
+        return Arrays.stream(normals);
+    }
+    
+    /**
+     * returns a linear space that is the intersection of this space and another.
+     * @param ls
+     * @return 
+     */
+    public LinearSpace<Vec> intersection(LinearSpace<Vec> ls){
+        Vec[] intersection = Arrays.copyOf(normals, normals.length + ls.normals.length);
+        System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
+        return new LinearSpace<>(intersection);
+    }
+    
+    private LinearSpace(){
+        
+    }
+    
+    public static <T extends Vector<T>> LinearSpace<T> allSpace(){
+        return new LinearSpace<T>();
+    }
 }
