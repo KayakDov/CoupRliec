@@ -1,5 +1,6 @@
 package Convex.LinearRn;
 
+import Hilbert.LinearSpace;
 import Matricies.Matrix;
 import Matricies.MatrixDense;
 import Matricies.Point;
@@ -28,9 +29,9 @@ public class ProjectionFunction implements Function<Point, Point> {
      * space is a linear space.
      * @param epsilon a small number
      */
-    public ProjectionFunction(RnLinearSpace ls, Point p, double epsilon) {
+    public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
 
-        Matrix nullSpaceMatrix = ls.matrix();
+        Matrix nullSpaceMatrix = new RnLinearSpace(ls).matrix();
         Matrix A = RnLinearSpace.colSpaceMatrix(nullSpaceMatrix);
 
         if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
@@ -79,7 +80,7 @@ public class ProjectionFunction implements Function<Point, Point> {
          * The constructor.
          * @param ls 
          */
-        public NoProjFuncExists(RnLinearSpace ls) {
+        public NoProjFuncExists(LinearSpace ls) {
             super("There is no projection function for this linear space.\nlinear space is " + ls);
         }
 

@@ -1,8 +1,10 @@
 package Convex.LinearRn;
 
-import Convex.HalfSpaceRn;
+import Convex.RnHalfSpace;
 import Convex.PolyhedronRn;
-import Hilbert.Vector;
+import Hilbert.AffineSpace;
+import Hilbert.Plane;
+import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
 import java.util.NoSuchElementException;
@@ -11,16 +13,8 @@ import java.util.NoSuchElementException;
  * A hyperplane.
  * @author Dov Neimand
  */
-public class RnPlane extends RnAffineSpace {
+public class RnPlane extends Plane<Point> {
 
-    /**
-     * a vector normal to this plane. Not: this vector may not have length 1.
-     *
-     * @return
-     */
-    public Point normal() {
-        return linearSpace.normals[0];
-    }
 
     /**
      * The constructor for this class
@@ -29,7 +23,7 @@ public class RnPlane extends RnAffineSpace {
      * @param normal a vector normal to the plane
      */
     public RnPlane(Point p, Point normal) {
-        super(new RnLinearSpace(new Point[]{normal.dir()}), p);
+        super(normal, normal.ip(p));
 
     }
 
@@ -52,27 +46,6 @@ public class RnPlane extends RnAffineSpace {
     }
 
     /**
-     * Is the plane below the given point.
-     *
-     * @param x Is this point above the plane.
-     * @return true if the point is above the plane.
-     */
-    public boolean below(Point x) {
-        return normal().ip(x) > b.get(0);
-    }
-
-    /**
-     * the plane is above the point by a distance of more than epsilon
-     *
-     * @param p
-     * @param epsilon
-     * @return
-     */
-    public boolean above(Point p, double epsilon) {
-        return normal().dot(p) < b.get(0) - epsilon;
-    }
-
-    /**
      * The plane is below the point by a distance of more than epsilon
      *
      * @param p
@@ -83,16 +56,6 @@ public class RnPlane extends RnAffineSpace {
         return normal().dot(p) > b.get(0) + epsilon;
     }
 
-    /**
-     * is the given point on this plane.
-     *
-     * @param x
-     * @param epsilon margin of error for double
-     * @return true if the point is on the plane.
-     */
-    public boolean onPlane(Point x, double epsilon) {
-        return Math.abs(x.dot(normal()) - b.get(0)) <= epsilon;
-    }
 
     /**
      * Constructor
@@ -100,32 +63,9 @@ public class RnPlane extends RnAffineSpace {
      * @param b the inner product of a point on the plane, and the normal vector
      */
     public RnPlane(Point normal, double b) {
-        super(new Point[]{normal}, PointD.oneD(b));
-        if(Math.abs(normal.magnitude() - 1) > epsilon){
-            double mag = normal.magnitude();
-            this.b.set(0, b/mag);
-            linearSpace.normals[0] = normal.mult(1/mag);
-        }
+        super(normal, b);
     }
 
-    /**
-     * is this plane above the point
-     *
-     * @param x the point that may be below the plane.
-     * @return true if the point is below the plane.
-     */
-    public boolean above(Point x) {
-        return normal().dot(x) < b.get(0);
-    }
-
-    /**
-     * Is this plane above or does it contain the given point.
-     * @param x
-     * @return 
-     */
-    public boolean aboveOrContains(Point x) {
-        return normal().dot(x) <= b.get(0) + epsilon;
-    }
     
     /**
      * Is this below above or does it contain the given point.
@@ -133,7 +73,7 @@ public class RnPlane extends RnAffineSpace {
      * @return 
      */
     public boolean belowOrContains(Point x) {
-        return normal().dot(x) >= b.get(0) - epsilon;
+        return normal().dot(x) >= b.get(0) - tolerance;
     }
     
     /**
@@ -163,7 +103,7 @@ public class RnPlane extends RnAffineSpace {
      * @return true if the two planes are equal.
      */
     public boolean equals(RnPlane plane, double epsilon) {
-        return onPlane(plane.p(), epsilon)
+        return hasElement(plane.p(), epsilon)
                 && normal().equals(plane.normal());
     }
 
@@ -207,15 +147,6 @@ public class RnPlane extends RnAffineSpace {
         return x.d(proj(x));
     }
 
-    /**
-     * returns a new plane identical to this one, but with a flipped normal
-     * vector.
-     *
-     * @return
-     */
-    public RnPlane flipNormal() {
-        return new RnPlane(p(), normal().mult(-1));
-    }
 
     /**
      * Is there something very wrong with this plane, i.e. normal == 0
@@ -226,12 +157,7 @@ public class RnPlane extends RnAffineSpace {
         return normal().magnitude() == 0 || !normal().isReal();
     }
 
-    private double epsilon = 1e-10;
 
-    @Override
-    public boolean hasElement(Point p) {
-        return hasElement(p, epsilon);
-    }
 
     @Override
     public boolean hasElement(Point p, double epsilon) {
@@ -241,12 +167,21 @@ public class RnPlane extends RnAffineSpace {
     /**
      * This plane represented by the intersection of two halfspaces.
      *
+     * @param as a plane that intersects with this one.
      * @return a new polytope equal to this plane.
+     */
+    public RnAffineSpace intersection(RnPlane as) {
+        return new RnAffineSpace(new RnPlane[]{this, as});
+    }
+
+    /**
+     * The Polytope that is the halfspace defined by this plane.
+     * @return 
      */
     public PolyhedronRn asPolytope() {
         PolyhedronRn p = new PolyhedronRn();
-        p.addFace(new HalfSpaceRn(this));
-        p.addFace(new HalfSpaceRn(flipNormal()));
+        p.addFace(new RnHalfSpace(this));
+        p.addFace(new RnHalfSpace(flipNormal()));
         return p;
     }
 
@@ -261,7 +196,12 @@ public class RnPlane extends RnAffineSpace {
      */
     public Point lineIntersection(RnAffineSpace line) {
         try {
-            return (nullMatrix().rowConcat(line.nullMatrix())).solve(b.concat(line.b));
+            Point[] rows = new Point[nullMatrixRows().length + line.nullMatrixRows().length];
+            System.arraycopy(nullMatrixRows(), 0, rows, 0, nullMatrixRows().length);
+            System.arraycopy(line.nullMatrixRows(), 0, rows, nullMatrixRows().length, line.nullMatrixRows().length);
+            
+            
+            return (Matrix.fromRows(rows)).solve(b.concat(line.b));
         } catch (NoSuchElementException | ArithmeticException nsee) {
             return new PointD(new double[]{Double.NaN});
         }

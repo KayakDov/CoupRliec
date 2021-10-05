@@ -27,7 +27,7 @@ abstract class GraphX implements Vector<GraphX> {
 
         };
 
-    private final StrictlyConvexFunction f;
+    private final StrictlyConvexFunction<GraphX> f;
     private double y;
     private Vector x;
     private boolean isSet;

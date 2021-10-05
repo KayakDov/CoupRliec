@@ -1,6 +1,6 @@
 package Convex.GradDescentFeasibility;
 
-import Convex.HalfSpaceRn;
+import Convex.RnHalfSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.PolyhedronRn;
 import Matricies.Point;
@@ -45,7 +45,7 @@ public class FeasibilityGradDescent extends PolyhedronRn {
                         .filter(line -> line.startsWith("point"))
                         .map(line -> {
                             String[] pointStrings = line.replace("point ", "").split(" with normal ");
-                            return new HalfSpaceRn(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
+                            return new RnHalfSpace(new PointD(pointStrings[0]), new PointD(pointStrings[1]));
                         })
         );
         System.out.println(poly);
@@ -101,11 +101,11 @@ public class FeasibilityGradDescent extends PolyhedronRn {
      * @param grad the direction to look for an intersection in.
      * @return the nearest point where the ray from y hits a plane
      */
-    private HalfSpaceRn targetPlane(Point y, Point grad, Partition part) {
+    private RnHalfSpace targetPlane(Point y, Point grad, Partition part) {
 
-        HalfSpaceRn downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
+        RnHalfSpace downhillFacing = part.nearestDownhillFaceContaining(y, grad, epsilon);
 
-        Comparator<HalfSpaceRn> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
+        Comparator<RnHalfSpace> hsDistComp = Comparator.comparing(hs -> hs.boundary().lineIntersection(grad, y).d(y));
 
         if (downhillFacing == null) {
             return part.downhillExcluding(grad, epsilon).max(hsDistComp).get();
@@ -124,7 +124,7 @@ public class FeasibilityGradDescent extends PolyhedronRn {
      * @param part the partition - keeping track of the half spaces y is inside
      * of and those it is outside of.
      */
-    private void updatePartition(Point rollToPoint, Partition part, HalfSpaceRn rollToHS) {
+    private void updatePartition(Point rollToPoint, Partition part, RnHalfSpace rollToHS) {
         part.passThroughSpaces(
                 part.excluding()
                         .filter(hs -> hs.hasElement(rollToPoint, epsilon))
@@ -152,7 +152,7 @@ public class FeasibilityGradDescent extends PolyhedronRn {
         for (int i = 0; i <= size(); i++) {
 
             try {
-                HalfSpaceRn rollToPlane = targetPlane(y, cone.grad(), part);
+                RnHalfSpace rollToPlane = targetPlane(y, cone.grad(), part);
 
                 y = rollToPlane.boundary().lineIntersection(cone.grad(), y);
 

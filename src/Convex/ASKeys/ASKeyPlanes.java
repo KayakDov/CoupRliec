@@ -1,6 +1,7 @@
-package Convex.GradDescentFeasibility.Proj.ASKeys;
+package Convex.ASKeys;
 
 import Convex.LinearRn.RnPlane;
+import Hilbert.Plane;
 import java.util.Arrays;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Arrays;
  * @author dov
  */
 public class ASKeyPlanes extends ASKey{
-    RnPlane[] planes;
+    Plane[] planes;
     
     public ASKeyPlanes(RnPlane[] planes) {
         super(Arrays.stream(planes).mapToInt(RnPlane::hashCode).sum());
@@ -29,10 +30,14 @@ public class ASKeyPlanes extends ASKey{
     public boolean equals(ASKeyRI askRI) {
        if(askRI.immidiateSubSpace.b.dim() != planes.length + 1) return false;
         for(int i = 0, j = 0; i < planes.length; i++, j++)
-            if(!planes[i].normal().equals(askRI.immidiateSubSpace.linearSpace().normals[j])
-                    || planes[i].b.get(0) !=  askRI.immidiateSubSpace.b.get(j)) 
+            if(!askRI.immidiateSubSpace.rowEquals(j, planes[i])) 
                 return false;
         return true;
+    }
+
+    @Override
+    public boolean equals(ASKeyPCo askaco) {
+        return askaco.equals(this);
     }
     
     

@@ -5,12 +5,9 @@
  */
 package Matricies;
 
-import Convex.ConvexSet;
 import Convex.LinearRn.RnPlane;
 import Hilbert.Vector;
-import java.util.List;
 import java.util.function.DoubleFunction;
-import java.util.function.Function;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.DoubleStream;
 

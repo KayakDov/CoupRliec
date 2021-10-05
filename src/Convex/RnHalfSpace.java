@@ -2,13 +2,14 @@
 package Convex;
 
 import Convex.LinearRn.RnPlane;
+import Hilbert.Plane;
 import Matricies.Point;
 
 /**
  *
  * @author Dov Neimand
  */
-public class HalfSpaceRn implements ConvexSet<Point>{
+public class RnHalfSpace implements ConvexSet<Point>{
 
     private final RnPlane boundry;
     /**
@@ -17,7 +18,7 @@ public class HalfSpaceRn implements ConvexSet<Point>{
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public HalfSpaceRn(Point p, Point normal) {
+    public RnHalfSpace(Point p, Point normal) {
         this(new RnPlane(p, normal));
     }
 
@@ -27,16 +28,24 @@ public class HalfSpaceRn implements ConvexSet<Point>{
      * @param normal a vector normal to the plane
      * @param b normal dot x \<= b
      */
-    public HalfSpaceRn(Point normal, double b){
+    public RnHalfSpace(Point normal, double b){
         boundry = new RnPlane(normal, b);
     }
     
     /**
      * The constructor
-     * @param border 
+     * @param boundary 
      */
-    public HalfSpaceRn(RnPlane border){
-        this.boundry = border;
+    public RnHalfSpace(RnPlane boundary){
+        this.boundry = boundary;
+    }
+    
+    /**
+     * The constructor
+     * @param boundary 
+     */
+    public RnHalfSpace(Plane<Point> boundary){
+        this.boundry = new RnPlane(boundary.normal(), boundary.b);
     }
     
 
@@ -80,8 +89,8 @@ public class HalfSpaceRn implements ConvexSet<Point>{
      * the complement space
      * @return 
      */
-    public HalfSpaceRn complement(){
-        return new HalfSpaceRn(boundry.flipNormal());
+    public RnHalfSpace complement(){
+        return new RnHalfSpace(boundry.flipNormal());
     }
     
    /**
@@ -95,11 +104,11 @@ public class HalfSpaceRn implements ConvexSet<Point>{
     /**
      * is the point epsilon-near the boundary of this half space
      * @param x
-     * @param epsilon
+     * @param tolerance
      * @return 
      */
-    public boolean onSurface(Point x, double epsilon){
-        return boundry.onPlane(x, epsilon);
+    public boolean onSurface(Point x, double tolerance){
+        return boundry.hasElement(x, tolerance);
     }
     
     /**

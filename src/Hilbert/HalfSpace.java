@@ -1,7 +1,7 @@
 package Hilbert;
 
 import Convex.ConvexSet;
-import Convex.HalfSpaceRn;
+import Convex.RnHalfSpace;
 import Convex.LinearRn.RnPlane;
 import Matricies.Point;
 

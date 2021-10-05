@@ -1,9 +1,9 @@
 package Convex.GradDescentFeasibility.Proj;
 
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.ASKeys.ASKey;
 import Convex.LinearRn.RnAffineSpace;
 import Convex.LinearRn.RnPlane;
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
+import Convex.ASKeys.ASKeyRI;
 import Matricies.Point;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,11 +1,11 @@
 
 package Convex.GradDescentFeasibility.Proj;
 
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.ASKeys.ASKey;
 import Convex.LinearRn.RnAffineSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.LinearRn.ProjectionFunction;
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyPlanes;
+import Convex.ASKeys.ASKeyPlanes;
 import Matricies.Point;
 import java.util.HashSet;
 import java.util.Set;
@@ -232,7 +232,7 @@ public class ASNode {
      */
     public static ASNode factory(RnPlane plane, int index, ConcurrentHashMap<ASKey, ASNode> map) {
         ASNode asn = new ASNode(index, map);
-        asn.as = plane;
+        asn.as = new RnAffineSpace(plane);
         asn.planeSet = new HashSet<RnPlane>(1);
         asn.planeSet.add(plane);
         asn.planeArray = new RnPlane[]{plane};

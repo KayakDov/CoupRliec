@@ -12,8 +12,12 @@ import java.util.stream.Stream;
  * @param <Vec> the elements of the Hilbert Space
  */
 public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Vec>{
-    Vec[] normals;
+    /**
+     * The set of vectors normal to the planes that intersect to form this space.
+     */
+    protected Vec[] normals;
 
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -29,7 +33,7 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
      * A list of vectors that are normal to the linear space.
      * @return 
      */
-    public Vec[] getNormals() {
+    public Vec[] normals() {
         return normals;
     }
 

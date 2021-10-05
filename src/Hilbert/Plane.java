@@ -1,5 +1,6 @@
 package Hilbert;
 
+import Matricies.Point;
 import Matricies.PointD;
 import java.lang.reflect.Array;
 
@@ -37,6 +38,27 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
      */
     public boolean above(Vec v){
         return normal().ip(v) < b();
+    }
+    
+    
+    /**
+     * the plane is above the point by a distance of more than epsilon
+     *
+     * @param p
+     * @param epsilon
+     * @return
+     */
+    public boolean above(Vec p, double epsilon) {
+        return normal().ip(p) < b() - epsilon;
+    }
+    
+    /**
+     * Is this plane above or does it contain the given point.
+     * @param x
+     * @return 
+     */
+    public boolean aboveOrContains(Vec x) {
+        return normal().ip(x) <= b() + tolerance;
     }
     
     /**

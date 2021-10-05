@@ -2,7 +2,12 @@ package Convex.LinearRn;
 
 import Convex.ConvexSet;
 import Convex.PolyhedronRn;
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyRI;
+import Convex.ASKeys.ASKeyRI;
+import Convex.LinearRn.ProjectionFunction;
+import Convex.LinearRn.RnLinearSpace;
+import Convex.RnHalfSpace;
+import Hilbert.AffineSpace;
+import Hilbert.Plane;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -10,7 +15,6 @@ import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -24,27 +28,14 @@ import java.util.stream.Stream;
  *
  * @author Dov Neimand
  */
-public class RnAffineSpace implements ConvexSet<Point> {
+public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point> {
 
-    /**
-     * The linear space underlying the affine space. If the affine space is Ax =
-     * b then this linear space is Ax = 0.
-     */
-    protected RnLinearSpace linearSpace;
 
     /**
      * The vector that has Ax=b.
      */
     public Point b;
 
-    /**
-     * The vector that has Ax = b.
-     *
-     * @return
-     */
-    public Point getB() {
-        return b;
-    }
 
     /**
      * A small number
@@ -68,9 +59,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @param b
      */
     public RnAffineSpace(Point[] normals, Point b) {
-        linearSpace = new RnLinearSpace(normals);
-        this.b = b;
-        setHashCode();
+        super(normals, b);
     }
 
     /**
@@ -79,7 +68,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @return
      */
     public Matrix nullMatrix() {
-        return linearSpace.matrix();
+        return Matrix.fromRows(linearSpace.normals());
     }
 
     /**
@@ -89,12 +78,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @param onSpace a point in the affine space
      */
     public RnAffineSpace(RnLinearSpace ls, Point onSpace) {
-        linearSpace = ls;
-        if (!ls.isAllSpace()) {
-            b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].dot(onSpace));
-            setHashCode();
-        } else hashCode = 0;
-        p = onSpace;
+        super(ls, onSpace);
     }
 
     /**
@@ -104,19 +88,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * space.
      */
     public RnAffineSpace(Set<RnPlane> intersectingPlanes) {
-
-        Iterator<RnPlane> iter = intersectingPlanes.iterator();
-        Point[] normals = new Point[intersectingPlanes.size()];
-        b = new PointD(intersectingPlanes.size());
-
-        for (int i = 0; i < intersectingPlanes.size(); i++) {
-            RnPlane p = iter.next();
-            normals[i] = p.normal();
-            b.set(i, p.b.get(0));
-        }
-
-        linearSpace = new RnLinearSpace(normals);
-        setHashCode();
+        super(intersectingPlanes);
     }
 
     /**
@@ -125,11 +97,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @param planes The planes that intersect to form this affine space.
      */
     public RnAffineSpace(RnPlane[] planes) {
-        Point[] normals = new Point[planes.length];
-        Arrays.setAll(normals, i -> planes[i].normal());
-        b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
-        linearSpace = new RnLinearSpace(normals);
-        setHashCode();
+        super(planes);
     }
 
     /**
@@ -139,29 +107,9 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * space.
      */
     public RnAffineSpace(List<RnPlane> intersectingPlanes) {
-
-        Point[] normals = new PointD[intersectingPlanes.size()];
-        b = new PointD(intersectingPlanes.size());
-
-        for (int i = 0; i < intersectingPlanes.size(); i++) {
-            b.set(i, intersectingPlanes.get(i).b.get(0));
-            normals[i] = intersectingPlanes.get(i).normal();
-        }
-
-        linearSpace = new RnLinearSpace(normals);
-        setHashCode();
+        super(intersectingPlanes);
     }
 
-    @Override
-    public boolean hasElement(Point x) {
-        return nullMatrix().mult(x).equals(b);
-    }
-
-    @Override
-    public boolean hasElement(Point x, double epsilon) {
-
-        return nullMatrix().mult(x).equals(b, epsilon);
-    }
 
     /**
      * A point in this affine space.
@@ -255,7 +203,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
         if (isAllSpace()) return as;
         if (as.isAllSpace()) return this;
 
-        return new RnAffineSpace(linearSpace.intersection(as.linearSpace).getNormals(), b.concat(as.b));
+        return new RnAffineSpace(linearSpace.intersection(as.linearSpace).normals(), b.concat(as.b));
 
     }
 
@@ -268,7 +216,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
     public static RnAffineSpace intersection(RnAffineSpace[] space) {
         if (space.length == 0)
             throw new RuntimeException("Empty intersection?");
-        return intersection(Arrays.stream(space));
+        return RnIntersection(Arrays.stream(space));
     }
 
     /**
@@ -277,7 +225,8 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @param space
      * @return a new affine space
      */
-    public static RnAffineSpace intersection(Stream<? extends RnAffineSpace> space) {
+    public static RnAffineSpace RnIntersection(Stream<? extends RnAffineSpace> space) {
+        
         return space.map(as -> (RnAffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
     }
 
@@ -286,8 +235,9 @@ public class RnAffineSpace implements ConvexSet<Point> {
      *
      * @return
      */
+    @Override
     public RnLinearSpace linearSpace() {
-        return linearSpace;
+        return new RnLinearSpace(linearSpace);
     }
 
     /**
@@ -318,7 +268,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      */
     public long subSpaceDim() {
         if (subSpaceDim != -2) return subSpaceDim;
-        if (nullMatrix().rows() == 0) return subSpaceDim = dim();
+        if (nullMatrixRows().length == 0) return subSpaceDim = dim();
         return subSpaceDim = linearSpace().subSpaceDim();
     }
 
@@ -349,12 +299,8 @@ public class RnAffineSpace implements ConvexSet<Point> {
      *
      * @return
      */
-    public PolyhedronRn asPolytope() {
-
-        return new PolyhedronRn(
-                nullMatrix().rowStream()
-                        .flatMap(row -> new RnPlane(p(), row)
-                        .asPolytope().stream()));
+    public PolyhedronRn asPolyhedron() {
+        return new PolyhedronRn(planeStream().map(pl -> new RnHalfSpace(pl)));
     }
 
     /**
@@ -363,8 +309,8 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @return
      */
     public int dim() {
-        if (nullMatrix().rows() == 0 && p != null) return p.dim();
-        return nullMatrix().cols();
+        if (nullMatrixRows().length == 0 && p != null) return p.dim();
+        return linearSpace.normals()[0].dim();
     }
 
     /**
@@ -412,26 +358,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
         return new RnAffineSpace(RnLinearSpace.colSpace(grad), a);
     }
 
-    /**
-     * Are all points in space in this affine space?
-     *
-     * @return
-     */
-    public boolean isAllSpace() {
-        return linearSpace.isAllSpace();
-    }
 
-    /**
-     * Will return a plane for which this affine space is a subset. If this
-     * affine space is the solution to Ax=b then this will give the solutions to
-     * row(A,i) dot x = b_i
-     *
-     * @param i
-     * @return
-     */
-    public RnPlane subsetOfPlane(int i) {
-        return new RnPlane(linearSpace.getNormals()[i], b.get(i));
-    }
 
     @Override
     public int hashCode() {
@@ -465,7 +392,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @return the hash value of the hyperplane the row represents.
      */
     public int hashRow(int row) {
-        return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
+        return linearSpace.normals()[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
     }
     /**
      * The hash value for this function.
@@ -488,7 +415,7 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @return the keys for the afformentioned affine spaces
      */
     public ASKeyRI[] immidiateSuperKeys() {
-        int numRows = linearSpace.getNormals().length;
+        int numRows = linearSpace.normals().length;
 
         if (numRows == 1)
             throw new RuntimeException("oneDown may not be called on planes.");
@@ -503,10 +430,10 @@ public class RnAffineSpace implements ConvexSet<Point> {
      *
      * @return
      */
-    public HashSet<RnPlane> intersectingPlanesSet() {
+    public HashSet<RnPlane> intersectingRnPlanesSet() {
         HashSet<RnPlane> planes = new HashSet<>(b.dim());
         for (int i = 0; i < b.dim(); i++)
-            planes.add(new RnPlane(linearSpace.normals[i], b.get(i)));
+            planes.add(new RnPlane(linearSpace.normals()[i], b.get(i)));
         return planes;
     }
 
@@ -516,6 +443,12 @@ public class RnAffineSpace implements ConvexSet<Point> {
      * @return
      */
     public Stream<RnPlane> intersectingPlanesStream() {
-        return IntStream.range(0, b.dim()).mapToObj(i -> new RnPlane(linearSpace.normals[i], b.get(i)));
+        return IntStream.range(0, b.dim()).mapToObj(i -> new RnPlane(linearSpace.normals()[i], b.get(i)));
     }
+
+    public RnAffineSpace(RnPlane p) {
+        super(new RnPlane[]{p});
+    }
+    
+    
 }

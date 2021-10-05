@@ -1,7 +1,7 @@
 package Convex.LinearRn;
 
 import Convex.ConvexSet;
-import Hilbert.Vector;
+import Hilbert.LinearSpace;
 import Matricies.Matrix;
 import Matricies.MatrixDense;
 import Matricies.MatrixSparse;
@@ -16,7 +16,7 @@ import java.util.Arrays;
  *
  * @author Dov Neimand
  */
-public class RnLinearSpace implements ConvexSet<Point> {
+public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point>  {
 
     /**
      * Has a projection function been found for this space.
@@ -27,6 +27,11 @@ public class RnLinearSpace implements ConvexSet<Point> {
         return projFunc != null;
     }
 
+    public RnLinearSpace(LinearSpace<Point> ls) {
+        super(ls.normals());
+    }
+
+    
     /**
      * The rows of the the matrix Ax = 0.
      */
@@ -57,31 +62,9 @@ public class RnLinearSpace implements ConvexSet<Point> {
      * @param normals the rows of Ax = 0
      */
     public RnLinearSpace(Point[] normals) {
-        this.normals = normals;
+        super(normals);
     }
 
-    /**
-     * The rows of Ax = 0.
-     *
-     * @return
-     */
-    public Point[] getNormals() {
-        return normals;
-    }
-
-    /**
-     * A small number used for thresholds
-     */
-    private static double tolerance = 1e-8;
-
-    /**
-     * Sets the tolerance for this set
-     *
-     * @param tolerance a small number used for thresholds
-     */
-    public void setTolerance(double tolerance) {
-        this.tolerance = tolerance;
-    }
 
     /**
      * a linear space factory method to create a null space
@@ -128,15 +111,6 @@ public class RnLinearSpace implements ConvexSet<Point> {
      */
     public RnLinearSpace OrhtogonalComplement() {
         return colSpace(matrix().T());
-    }
-
-    /**
-     * Is this space equal to Rn
-     *
-     * @return
-     */
-    public boolean isAllSpace() {
-        return normals.length == 0;
     }
 
     /**

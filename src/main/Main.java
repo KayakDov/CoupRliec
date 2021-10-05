@@ -3,7 +3,7 @@ package main;
 import Convex.LinearRn.RnAffineSpace;
 import Convex.PolyhedronRn;
 import Matricies.PointD;
-import Convex.HalfSpaceRn;
+import Convex.RnHalfSpace;
 import Convex.LinearRn.RnLinearSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.FeasibilityGradDescent;
@@ -38,10 +38,10 @@ public class Main {
     }
 
     public static void testPolytopeFesibilitySpecifi() {
-        HalfSpaceRn[] hs = new HalfSpaceRn[3];
-        hs[0] = new HalfSpaceRn(new PointD(2), new PointD(-1, 0));
-        hs[1] = new HalfSpaceRn(new PointD(0, 1), new PointD(1, .1));
-        hs[2] = new HalfSpaceRn(new PointD(2), new PointD(1, 1));
+        RnHalfSpace[] hs = new RnHalfSpace[3];
+        hs[0] = new RnHalfSpace(new PointD(2), new PointD(-1, 0));
+        hs[1] = new RnHalfSpace(new PointD(0, 1), new PointD(1, .1));
+        hs[2] = new RnHalfSpace(new PointD(2), new PointD(1, 1));
 
         PointD y = new PointD(0, 1);
 
@@ -92,13 +92,13 @@ public class Main {
     public static void cubeTest() {
         Point a = new PointD(1, 1, 1);
         Point b = new PointD(2, 2, 2);
-        PolyhedronRn cube = new PolyhedronRn(new HalfSpaceRn[]{
-            new HalfSpaceRn(a, new PointD(-1, 0, 0)),
-            new HalfSpaceRn(a, new PointD(0, -1, 0)),
-            new HalfSpaceRn(a, new PointD(0, 0, -1)),
-            new HalfSpaceRn(b, new PointD(1, 0, 0)),
-            new HalfSpaceRn(b, new PointD(0, 1, 0)),
-            new HalfSpaceRn(b, new PointD(0, 0, 1))
+        PolyhedronRn cube = new PolyhedronRn(new RnHalfSpace[]{
+            new RnHalfSpace(a, new PointD(-1, 0, 0)),
+            new RnHalfSpace(a, new PointD(0, -1, 0)),
+            new RnHalfSpace(a, new PointD(0, 0, -1)),
+            new RnHalfSpace(b, new PointD(1, 0, 0)),
+            new RnHalfSpace(b, new PointD(0, 1, 0)),
+            new RnHalfSpace(b, new PointD(0, 0, 1))
 //            new HalfSpace(b, new PointD(0, 1)),
 //            new HalfSpace(b, new PointD(1, 0)),
 //            new HalfSpace(a, new PointD(0, -1)),
@@ -116,12 +116,12 @@ public class Main {
 
     public static void counterExample() {
 
-        HalfSpaceRn[] hs = new HalfSpaceRn[5];
-        hs[0] = new HalfSpaceRn(new PointD(2), new PointD(0, -1));
-        hs[1] = new HalfSpaceRn(new PointD(0, 1), new PointD(0, 1));
-        hs[2] = new HalfSpaceRn(new PointD(2), new PointD(-1, -1));
-        hs[3] = new HalfSpaceRn(new PointD(7, 0), new PointD(-1, .1));
-        hs[4] = new HalfSpaceRn(new PointD(7, 0), new PointD(1, 1));
+        RnHalfSpace[] hs = new RnHalfSpace[5];
+        hs[0] = new RnHalfSpace(new PointD(2), new PointD(0, -1));
+        hs[1] = new RnHalfSpace(new PointD(0, 1), new PointD(0, 1));
+        hs[2] = new RnHalfSpace(new PointD(2), new PointD(-1, -1));
+        hs[3] = new RnHalfSpace(new PointD(7, 0), new PointD(-1, .1));
+        hs[4] = new RnHalfSpace(new PointD(7, 0), new PointD(1, 1));
         PointD start = new PointD(-10, -1);
 
         Point fp = new FeasibilityGradDescent(new PolyhedronRn(hs)).fesibility(start);

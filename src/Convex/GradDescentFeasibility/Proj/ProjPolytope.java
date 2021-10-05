@@ -1,10 +1,10 @@
 package Convex.GradDescentFeasibility.Proj;
 
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKey;
+import Convex.ASKeys.ASKey;
 import Convex.LinearRn.RnPlane;
 import Convex.PolyhedronRn;
 import Convex.GradDescentFeasibility.EmptyPolytopeException;
-import Convex.GradDescentFeasibility.Proj.ASKeys.ASKeyAS;
+import Convex.ASKeys.ASKeyAS;
 import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Arrays;

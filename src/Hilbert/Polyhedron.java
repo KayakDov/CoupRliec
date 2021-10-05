@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  */
 public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
 
-    private List<HalfSpace<Vec>> halfspaces;
+    public List<HalfSpace<Vec>> halfspaces;
 
     public Polyhedron(List<HalfSpace<Vec>> halfspaces) {
         this.halfspaces = halfspaces;
@@ -40,6 +40,15 @@ public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     @Override
     public Vec proj(Vec x) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    /**
+     * The half space of index i
+     * @param i
+     * @return 
+     */
+    public HalfSpace<Vec> getHS(int i){
+        return halfspaces.get(i);
     }
 
 }

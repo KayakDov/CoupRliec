@@ -1,6 +1,7 @@
 package Hilbert;
 
 import Convex.ConvexSet;
+import Matricies.Point;
 import Matricies.PointD;
 import java.lang.reflect.Array;
 import java.util.Arrays;
@@ -29,21 +30,21 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     /**
      * The vector that has Ax=b.
      */
-    public PointD b;
+    public Point b;
 
     /**
      * The vector that has Ax = b.
      *
      * @return
      */
-    public PointD getB() {
+    public Point getB() {
         return b;
     }
-
+    
     /**
      * A small number
      */
-    private double tolerance = 1e-8;
+    public double tolerance = 1e-8;
 
     /**
      * sets a zero threshold number
@@ -61,7 +62,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param normals
      * @param b
      */
-    public AffineSpace(Vec[] normals, PointD b) {
+    public AffineSpace(Vec[] normals, Point b) {
         linearSpace = new LinearSpace(normals);
         this.b = b;
         setHashCode();
@@ -72,7 +73,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      *
      * @return
      */
-    public Vec[] nullMatrix() {
+    public Vec[] nullMatrixRows() {
         return linearSpace.normals;
     }
 
@@ -85,7 +86,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     public AffineSpace(LinearSpace<Vec> ls, Vec onSpace) {
         linearSpace = ls;
         if (!ls.isAllSpace()) {
-            b = new PointD(ls.getNormals().length).setAll(i -> ls.getNormals()[i].ip(onSpace));
+            b = new PointD(ls.normals().length).setAll(i -> ls.normals()[i].ip(onSpace));
             setHashCode();
         } else hashCode = 0;
         p = onSpace;
@@ -97,7 +98,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param intersectingPlanes the planes that intersect to form this affine
      * space.
      */
-    public AffineSpace(Set<Plane<Vec>> intersectingPlanes) {
+    public AffineSpace(Set<? extends Plane<Vec>> intersectingPlanes) {
 
         this((Plane[]) (Array.newInstance(
                 intersectingPlanes.iterator().next().getClass(),
@@ -128,7 +129,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param intersectingPlanes planes that intersect to form this affine
      * space.
      */
-    public AffineSpace(List<Plane> intersectingPlanes) {
+    public AffineSpace(List<? extends Plane<Vec>> intersectingPlanes) {
         this((Plane[]) (Array.newInstance(
                 intersectingPlanes.get(0).getClass(),
                 intersectingPlanes.size()
@@ -235,12 +236,13 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     /**
      * An affine space that is all of the space.
      *
-     * @param dim
+     * @param <T> the type of vector space.
      * @return
      */
-    public static AffineSpace allSpace(int dim) {
-        return new AffineSpace();
+    public static <T extends Vector<T>> AffineSpace<T> allSpace() {
+        return new AffineSpace<T>();
     }
+    
 
     public boolean isAllSpace() {
         return linearSpace == null || linearSpace.isAllSpace();
@@ -251,9 +253,9 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      *
      * @return
      */
-    public Stream<Plane> planeStream() {
+    public Stream<Plane<Vec>> planeStream() {
         return IntStream.range(0, b.dim())
-                .mapToObj(i -> new Plane<Vec>(linearSpace.getNormals()[i], b.get(i)));
+                .mapToObj(i -> new Plane<Vec>(linearSpace.normals()[i], b.get(i)));
     }
 
     /**
@@ -278,7 +280,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @return
      */
     public Plane subsetOfPlane(int i) {
-        return new Plane(linearSpace.getNormals()[i], b.get(i));
+        return new Plane(linearSpace.normals()[i], b.get(i));
     }
 
     @Override
@@ -363,5 +365,24 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     public Vec proj(Vec x) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
+    /**
+     * Is the given row index of this affine spaces constraints equal to the given hyperplane.
+     * @param i the index of one of the constraints that make this affine space.
+     * @param p the plane that might be equal to the constraint.
+     * @return true if the constraint at the given index is equal to the hyperplane, false otherwise.
+     */
+    public boolean rowEquals(int i, Plane p){
+        return this.nullMatrixRows()[i].equals(p.normal()) && b.get(i) == p.b();
+    }
+    /**
+     *  are the given constraints equal
+     * @param i the i constraint in this affine space
+     * @param j the j constraint in the given affine space
+     * @param p the given affine space
+     * @return true if the i constraint in this affine space is equal to the j constraint in the given affine space.
+     */
+    public boolean rowEquals(int i, int j, AffineSpace<Vec> p){
+        return this.nullMatrixRows()[i].equals(p.nullMatrixRows()[j]) && b.get(i) == p.b.get(j);
+    }
 }

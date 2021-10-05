@@ -1,6 +1,6 @@
 package Convex.GradDescentFeasibility;
 
-import Convex.HalfSpaceRn;
+import Convex.RnHalfSpace;
 import Convex.GradDescentFeasibility.Proj.ASNode;
 import Convex.GradDescentFeasibility.Proj.ASProj;
 import Convex.GradDescentFeasibility.Proj.ProjPolytope;
@@ -42,7 +42,7 @@ public class ProjPolyManager extends ProjPolytope {
      * @param arrivalHS the half space being added
      * @param y the value for y.
      */
-    public void travelToNewLocalPoly(HalfSpaceRn arrivalHS, Point y) {
+    public void travelToNewLocalPoly(RnHalfSpace arrivalHS, Point y) {
 
         removeExcept(travelThrough);
 

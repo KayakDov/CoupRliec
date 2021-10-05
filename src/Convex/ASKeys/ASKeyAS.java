@@ -1,9 +1,10 @@
-package Convex.GradDescentFeasibility.Proj.ASKeys;
+package Convex.ASKeys;
 
 import Convex.LinearRn.RnAffineSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.Proj.ASFail;
 import Convex.GradDescentFeasibility.Proj.ASNode;
+import Hilbert.AffineSpace;
 
 /**
  *
@@ -11,8 +12,9 @@ import Convex.GradDescentFeasibility.Proj.ASNode;
  */
 public class ASKeyAS extends ASKey{
 
-    private RnAffineSpace as;
-    public ASKeyAS(RnAffineSpace as) {
+    AffineSpace as;
+    
+    public ASKeyAS(AffineSpace as) {
         super(as.hashCode());
         this.as = as;
     }
@@ -33,8 +35,7 @@ public class ASKeyAS extends ASKey{
     public boolean equals(ASKeyPlanes askp) {
         if(askp.planes.length != as.b.dim()) return false;
         for(int i = 0; i < as.b.dim(); i++)
-            if(!askp.planes[i].normal().equals(as.linearSpace().normals[i]) ||
-                    askp.planes[i].b.get(0) != as.b.get(i) ) return false;
+            if(!as.rowEquals(i, askp.planes[i])) return false;
         return true;
     }
 
@@ -43,9 +44,13 @@ public class ASKeyAS extends ASKey{
         if(askp.immidiateSubSpace.b.dim() != as.b.dim() + 1) return false;
         for(int i = 0, j = 0; i < as.b.dim(); i++, j++){
             if(j == askp.removeIndex) j++;
-            if(!askp.immidiateSubSpace.linearSpace().normals[j].equals(as.linearSpace().normals[i]) ||
-                    askp.immidiateSubSpace.b.get(j) != as.b.get(i) ) return false;
+            if(!askp.immidiateSubSpace.rowEquals(j, i, as)) return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean equals(ASKeyPCo askaco) {
+        return askaco.equals(this);
     }
 }
