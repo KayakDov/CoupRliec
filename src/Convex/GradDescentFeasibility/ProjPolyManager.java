@@ -3,14 +3,14 @@ package Convex.GradDescentFeasibility;
 import Convex.RnHalfSpace;
 import Convex.GradDescentFeasibility.Proj.ASNode;
 import Convex.GradDescentFeasibility.Proj.ASProj;
-import Convex.GradDescentFeasibility.Proj.ProjPolytope;
+import Convex.GradDescentFeasibility.Proj.ProjPolyhedron;
 import Matricies.Point;
 
 /**
  * Manages the projection polytope for use by the feasibility algorithm.
  * @author dov
  */
-public class ProjPolyManager extends ProjPolytope {
+public class ProjPolyManager extends ProjPolyhedron {
 
     private Partition part;
     /**

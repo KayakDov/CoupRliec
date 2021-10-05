@@ -20,7 +20,7 @@ import listTools.ChoosePlanes;
  *
  * @author dov
  */
-public class ProjPolytope {
+public class ProjPolyhedron {
 
     /**
      * All the saved affine space projection functions.
@@ -38,7 +38,7 @@ public class ProjPolytope {
      *
      * @param dim the n for R^n.
      */
-    public ProjPolytope(int dim) {
+    public ProjPolyhedron(int dim) {
         this.planes = new ArrayList<>(dim);
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, dim));
     }
@@ -48,7 +48,7 @@ public class ProjPolytope {
      *
      * @param p A polytope that is going to be projected onto.
      */
-    public ProjPolytope(PolyhedronRn p) {
+    public ProjPolyhedron(PolyhedronRn p) {
         this.planes = p.planes().collect(Collectors.toList());
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, planes.size()));
     }

@@ -2,6 +2,7 @@ package Hilbert;
 
 import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPConeRI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -33,6 +34,20 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec>{
         indexOfLastHS = i;
         this.f = f;
     }
+    
+    /**
+     * Creates a new polyhedron with the additional inequality constraint.
+     * @param addOn the inequality constraint being added
+     * @param lastIndex the index of addOn
+     * @return A new PCone at the intersection of these half spaces and the added one.
+     */
+    public PCone<Vec> concat(HalfSpace<Vec> addOn, int lastIndex){
+        ArrayList<HalfSpace<Vec>> concatHSList = new ArrayList(halfspaces.size()+1);
+        concatHSList.addAll(halfspaces);
+        concatHSList.add(addOn);
+        return new PCone<>(f, halfspaces, lastIndex);
+    }
+        
 
     
 
@@ -80,6 +95,9 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec>{
         return indexOfLastHS;
     }
     
+    public static<Vec extends Vector<Vec>> PCone<Vec> allSpace(StrictlyConvexFunction<Vec> f){
+        return new PCone<Vec>(f, new ArrayList<HalfSpace<Vec>>(0), -1);
+    }
     
 }
 

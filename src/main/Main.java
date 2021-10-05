@@ -8,7 +8,7 @@ import Convex.LinearRn.RnLinearSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.FeasibilityGradDescent;
 import Convex.GradDescentFeasibility.Proj.ASNode;
-import Convex.GradDescentFeasibility.Proj.ProjPolytope;
+import Convex.GradDescentFeasibility.Proj.ProjPolyhedron;
 import Matricies.Point;
 import java.io.IOException;
 
@@ -107,7 +107,7 @@ public class Main {
 
         FeasibilityGradDescent fgd = new FeasibilityGradDescent(cube);
 
-        ProjPolytope pp = new ProjPolytope(cube);
+        ProjPolyhedron pp = new ProjPolyhedron(cube);
 
         System.out.println(pp.proj(new PointD(-6, 10, 10)));
 
