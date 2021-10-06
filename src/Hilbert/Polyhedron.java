@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  */
 public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
 
-    public List<HalfSpace<Vec>> halfspaces;
+    protected List<HalfSpace<Vec>> halfspaces;
 
     public Polyhedron(List<HalfSpace<Vec>> halfspaces) {
         this.halfspaces = halfspaces;
@@ -41,14 +41,40 @@ public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     public Vec proj(Vec x) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    /**
+     * Is this polyhedron the entire Hilbert space?
+     * @return true if this is the Hilbert space, false if it is a strict subset
+     * of the Hilbert space.
+     */
+    public boolean isAllSpace(){
+        return halfspaces.isEmpty();
+    }
+
+    /**
+     * The number of halfspaces that intersect to form this polyhedron.
+     * @return 
+     */
+    public int numHalfSpaces(){
+        return halfspaces.size();
+    }
     
     /**
-     * The half space of index i
-     * @param i
+     * The halfspace with index i
+     * @param i the index of the desired halfsapce
      * @return 
      */
     public HalfSpace<Vec> getHS(int i){
         return halfspaces.get(i);
     }
 
+    /**
+     * The halfspaces that intersect to make the polyhedron.
+     * @return 
+     */
+    public List<HalfSpace<Vec>> getHalfspaces() {
+        return halfspaces;
+    }
+    
+    
 }

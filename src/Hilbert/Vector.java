@@ -85,4 +85,11 @@ public interface Vector<Vec extends Vector> {
     public default double dist(Vec v){
         return dif(v).norm();
     }
+    
+    /**
+     * The dimension of this vector.  A return value of Integer.maxValue is
+     * reserved for infinite dimensions.
+     * @return 
+     */
+    public int dim();
 }

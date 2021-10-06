@@ -1,8 +1,6 @@
 package Hilbert;
 
 import Convex.ConvexSet;
-import Convex.RnHalfSpace;
-import Convex.LinearRn.RnPlane;
 import Matricies.Point;
 
 /**
@@ -11,7 +9,7 @@ import Matricies.Point;
  * @param <Vec> The Hilbert Space
  */
 public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
-    private final Plane<Vec> boundry;
+    protected final Plane<Vec> boundry;
     
     
     /**
@@ -27,8 +25,12 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
      * The constructor
      * @param boundary 
      */
-    public HalfSpace(Plane boundary){
+    public HalfSpace(Plane<Vec> boundary){
         this.boundry = boundary;
+    }
+
+    public HalfSpace(Vec onPlane, Vec normal) {
+        this.boundry = new Plane<Vec>(normal, onPlane);
     }
     
 
@@ -110,5 +112,20 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         return boundry.proj(x);
     }
     
+        /**
+     * A point on the boundary of this halfspace
+     * @return 
+     */
+    public Vec surfacePoint(){
+        return boundry.p();
+    }
+    
+    /**
+     * The number of dimensions the halfspace lives in.
+     * @return 
+     */
+    public int dim(){
+        return normal().dim();
+    }
     
 }

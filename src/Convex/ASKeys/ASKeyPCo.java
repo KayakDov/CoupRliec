@@ -15,12 +15,12 @@ public class ASKeyPCo extends ASKey{
     int removeIndex;
 
     public ASKeyPCo(PCone aCone) {
-        this(aCone, aCone.halfspaces.size() + 1);
+        this(aCone, aCone.numHalfSpaces() + 1);
     }
     
      public ASKeyPCo(PCone aCone, int removeIndex) {
         super(aCone.hashCode());
-        this.halfspaces = aCone.halfspaces;
+        this.halfspaces = aCone.getHalfspaces();
         this.removeIndex = removeIndex;
     }
     

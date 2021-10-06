@@ -5,6 +5,7 @@ import Convex.ASKeys.ASKeyPConeRI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import listTools.Pair;
 
@@ -57,8 +58,8 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec>{
      * @param superCones a set containing all the possible super cones of this one whose halfspaces are halfspaces of the greater polyhedron.
      * @return the minimum over this cone.
      */
-    public SavedArgMin<Vec> min(HashMap<ASKey, PCone<Vec>> superCones) {
-        if(halfspaces.isEmpty()) return new SavedArgMin(f.argMinAffine(AffineSpace.<Vec>allSpace()), true);
+    public SavedArgMin<Vec> min(Map<ASKey, PCone<Vec>> superCones) {
+        if(isAllSpace()) return new SavedArgMin(f.argMinAffine(AffineSpace.<Vec>allSpace()), true);
                 
         return sam = IntStream.range(0, halfspaces.size())
                 .mapToObj(i -> {
@@ -95,10 +96,15 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec>{
         return indexOfLastHS;
     }
     
+    /**
+     * A polhedral cone with no half spaces, this is the entire hilbert space.
+     * @param <Vec>
+     * @param f
+     * @return 
+     */
     public static<Vec extends Vector<Vec>> PCone<Vec> allSpace(StrictlyConvexFunction<Vec> f){
-        return new PCone<Vec>(f, new ArrayList<HalfSpace<Vec>>(0), -1);
+        return new PCone<>(f, new ArrayList<>(0), -1);
     }
-    
 }
 
 /**

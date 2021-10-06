@@ -1,8 +1,8 @@
 package Convex.LinearRn;
 
-import Convex.RnHalfSpace;
-import Convex.PolyhedronRn;
+import Convex.RnPolyhedron;
 import Hilbert.AffineSpace;
+import Hilbert.HalfSpace;
 import Hilbert.Plane;
 import Matricies.Matrix;
 import Matricies.Point;
@@ -23,10 +23,13 @@ public class RnPlane extends Plane<Point> {
      * @param normal a vector normal to the plane
      */
     public RnPlane(Point p, Point normal) {
-        super(normal, normal.ip(p));
+        super(normal, normal);
 
     }
 
+    public RnPlane(Plane<Point> plane){
+        super(plane);
+    }
     /**
      * A copy constructor
      *
@@ -178,10 +181,10 @@ public class RnPlane extends Plane<Point> {
      * The Polytope that is the halfspace defined by this plane.
      * @return 
      */
-    public PolyhedronRn asPolytope() {
-        PolyhedronRn p = new PolyhedronRn();
-        p.addFace(new RnHalfSpace(this));
-        p.addFace(new RnHalfSpace(flipNormal()));
+    public RnPolyhedron asPolytope() {
+        RnPolyhedron p = new RnPolyhedron();
+        p.addFace(new HalfSpace<Point>(this));
+        p.addFace(new HalfSpace<Point>(flipNormal()));
         return p;
     }
 

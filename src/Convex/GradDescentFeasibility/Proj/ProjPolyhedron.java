@@ -2,7 +2,7 @@ package Convex.GradDescentFeasibility.Proj;
 
 import Convex.ASKeys.ASKey;
 import Convex.LinearRn.RnPlane;
-import Convex.PolyhedronRn;
+import Convex.RnPolyhedron;
 import Convex.GradDescentFeasibility.EmptyPolytopeException;
 import Convex.ASKeys.ASKeyAS;
 import Matricies.Point;
@@ -48,7 +48,7 @@ public class ProjPolyhedron {
      *
      * @param p A polytope that is going to be projected onto.
      */
-    public ProjPolyhedron(PolyhedronRn p) {
+    public ProjPolyhedron(RnPolyhedron p) {
         this.planes = p.planes().collect(Collectors.toList());
         this.projectionFunctions = new ConcurrentHashMap<>((int) Math.pow(2, planes.size()));
     }

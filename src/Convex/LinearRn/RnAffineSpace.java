@@ -1,13 +1,10 @@
 package Convex.LinearRn;
 
 import Convex.ConvexSet;
-import Convex.PolyhedronRn;
+import Convex.RnPolyhedron;
 import Convex.ASKeys.ASKeyRI;
-import Convex.LinearRn.ProjectionFunction;
-import Convex.LinearRn.RnLinearSpace;
-import Convex.RnHalfSpace;
 import Hilbert.AffineSpace;
-import Hilbert.Plane;
+import Hilbert.HalfSpace;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -30,26 +27,6 @@ import java.util.stream.Stream;
  */
 public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point> {
 
-
-    /**
-     * The vector that has Ax=b.
-     */
-    public Point b;
-
-
-    /**
-     * A small number
-     */
-    private double epsilon = 1e-8;
-
-    /**
-     * sets a zero threshold number
-     *
-     * @param epsilon
-     */
-    public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
-    }
 
     /**
      * This affine space is the solution set to matrix*x == b. After b is added,
@@ -78,7 +55,8 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      * @param onSpace a point in the affine space
      */
     public RnAffineSpace(RnLinearSpace ls, Point onSpace) {
-        super(ls, onSpace);
+        super(ls);
+        setP(onSpace);
     }
 
     /**
@@ -112,26 +90,13 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
 
 
     /**
-     * A point in this affine space.
-     */
-    protected Point p = null;
-
-    /**
-     * Has a point in this affine space been found and saved.
-     *
-     * @return
-     */
-    public boolean hasAPoint() {
-        return p != null;
-    }
-
-    /**
      * This method is unprotected.It is on the caller to make sure that the
      * given point is in the affine space.
      *
      * @param p
      * @return
      */
+    @Override
     public RnAffineSpace setP(Point p) {
         this.p = p;
         return this;
@@ -143,6 +108,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      *
      * @return
      */
+    @Override
     public Point p() {
 
         if (p != null) return p;
@@ -186,7 +152,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
         if (isAllSpace()) return x;
         try {
             if (!hasProjFunc())
-                projFunc = new ProjectionFunction(linearSpace(), p(), epsilon);
+                projFunc = new ProjectionFunction(linearSpace(), p(), tolerance);
         } catch (NoSuchElementException nse) {
             throw new ProjectionFunction.NoProjFuncExists(linearSpace);
         }
@@ -299,8 +265,9 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      *
      * @return
      */
-    public PolyhedronRn asPolyhedron() {
-        return new PolyhedronRn(planeStream().map(pl -> new RnHalfSpace(pl)));
+    @Override
+    public RnPolyhedron polyhedralCone() {
+        return new RnPolyhedron(planeStream().map(pl -> new HalfSpace<Point>(pl)));
     }
 
     /**

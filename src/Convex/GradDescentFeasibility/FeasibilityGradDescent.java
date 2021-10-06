@@ -2,7 +2,7 @@ package Convex.GradDescentFeasibility;
 
 import Convex.RnHalfSpace;
 import Convex.LinearRn.RnPlane;
-import Convex.PolyhedronRn;
+import Convex.RnPolyhedron;
 import Matricies.Point;
 import Matricies.PointD;
 import java.io.BufferedWriter;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author Dov Neimand
  */
-public class FeasibilityGradDescent extends PolyhedronRn {
+public class FeasibilityGradDescent extends RnPolyhedron {
 
     /**
      * The constructor.
@@ -40,7 +40,7 @@ public class FeasibilityGradDescent extends PolyhedronRn {
         Path errorFile = Path.of("error.txt");
         PointD start = new PointD(Files.lines(errorFile).findFirst().get());
 
-        PolyhedronRn poly = new PolyhedronRn(
+        RnPolyhedron poly = new RnPolyhedron(
                 Files.lines(errorFile)
                         .filter(line -> line.startsWith("point"))
                         .map(line -> {
@@ -58,7 +58,7 @@ public class FeasibilityGradDescent extends PolyhedronRn {
      *
      * @param p another polytope to be copied.
      */
-    public FeasibilityGradDescent(PolyhedronRn p) {
+    public FeasibilityGradDescent(RnPolyhedron p) {
         super(p);
 
     }

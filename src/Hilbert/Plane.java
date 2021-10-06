@@ -23,6 +23,23 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
         );
     }
     
+    /**
+     * The constructor for this class
+     *
+     * @param p a vector on the plane
+     * @param normal a vector normal to the plane
+     */
+    public Plane(Vec p, Vec normal) {
+        this(normal, normal.ip(p));
+        this.p = p;
+
+    }
+    
+    public Plane(Plane<Vec> plane){
+        super(plane.linearSpace, plane.b);
+        if(plane.hasAPoint()) p = plane.p;
+    }
+    
     public Vec normal(){
         return linearSpace.normals[0];
     }
@@ -84,6 +101,7 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
      * @return 
      */
     public Vec p(){
+        if(p != null) return p;
         return normal().mult(b()/normal().normSq());
     }
 }

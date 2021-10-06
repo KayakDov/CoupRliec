@@ -40,7 +40,44 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     public Point getB() {
         return b;
     }
+
+
+    /**
+     * The constructor
+     * @param linearSpace solution to Ax = b
+     * @param b 
+     */
+    public AffineSpace(LinearSpace<Vec> linearSpace, Point b) {
+        this.linearSpace = linearSpace;
+        this.b = b;
+        setHashCode();
+    }
+
+    /**
+     * The constructor.  This should be used if a point p is availeble and called together with setP().
+     * @param linearSpace 
+     */
+    public AffineSpace(LinearSpace<Vec> linearSpace) {
+        this.linearSpace = linearSpace;
+    }
+
     
+    
+    /**
+     * This method sets a point on the affine space.  If b has a value, then it
+     * is incumbent on the caller to make sure this point is in the affine space.
+     * If b does not have a value, then this method sets b.
+     * @param onSpace a point in the affine space. 
+     */
+    public AffineSpace<Vec> setP(Vec onSpace) {
+        if (!linearSpace.isAllSpace() && b == null) {
+            b = new PointD(linearSpace.normals().length).setAll(i -> linearSpace.normals()[i].ip(onSpace));
+            setHashCode();
+        } else hashCode = 0;
+        p = onSpace;
+        return this;
+    }
+
     /**
      * A small number
      */
@@ -63,9 +100,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param b
      */
     public AffineSpace(Vec[] normals, Point b) {
-        linearSpace = new LinearSpace(normals);
-        this.b = b;
-        setHashCode();
+        this(new LinearSpace(normals), b);
     }
 
     /**
@@ -75,21 +110,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      */
     public Vec[] nullMatrixRows() {
         return linearSpace.normals;
-    }
-
-    /**
-     * a constructor
-     *
-     * @param ls a linear space parallel to this affine space
-     * @param onSpace a point in the affine space
-     */
-    public AffineSpace(LinearSpace<Vec> ls, Vec onSpace) {
-        linearSpace = ls;
-        if (!ls.isAllSpace()) {
-            b = new PointD(ls.normals().length).setAll(i -> ls.normals()[i].ip(onSpace));
-            setHashCode();
-        } else hashCode = 0;
-        p = onSpace;
     }
 
     /**
@@ -166,18 +186,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     }
 
     /**
-     * This method is unprotected.It is on the caller to make sure that the
-     * given point is in the affine space.
-     *
-     * @param p
-     * @return
-     */
-    public AffineSpace setP(Vec p) {
-        this.p = p;
-        return this;
-    }
-
-    /**
      * The intersection of this affine space and the given affine space
      *
      * @param as another affine space
@@ -242,7 +250,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     public static <T extends Vector<T>> AffineSpace<T> allSpace() {
         return new AffineSpace<T>();
     }
-    
 
     public boolean isAllSpace() {
         return linearSpace == null || linearSpace.isAllSpace();
@@ -269,7 +276,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
                 planeStream().map(p -> new HalfSpace<Vec>(p))
         );
     }
-
 
     /**
      * Will return a plane for which this affine space is a subset. If this
@@ -348,7 +354,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 //        Arrays.setAll(oneDownArray, i -> new ASKeyRI(this, i));
 //        return oneDownArray;
 //    }
-
     /**
      * The planes that intersect to make this affine space
      *
@@ -365,24 +370,42 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     public Vec proj(Vec x) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     /**
-     * Is the given row index of this affine spaces constraints equal to the given hyperplane.
+     * Is the given row index of this affine spaces constraints equal to the
+     * given hyperplane.
+     *
      * @param i the index of one of the constraints that make this affine space.
      * @param p the plane that might be equal to the constraint.
-     * @return true if the constraint at the given index is equal to the hyperplane, false otherwise.
+     * @return true if the constraint at the given index is equal to the
+     * hyperplane, false otherwise.
      */
-    public boolean rowEquals(int i, Plane p){
+    public boolean rowEquals(int i, Plane p) {
         return this.nullMatrixRows()[i].equals(p.normal()) && b.get(i) == p.b();
     }
+
     /**
-     *  are the given constraints equal
+     * are the given constraints equal
+     *
      * @param i the i constraint in this affine space
      * @param j the j constraint in the given affine space
      * @param p the given affine space
-     * @return true if the i constraint in this affine space is equal to the j constraint in the given affine space.
+     * @return true if the i constraint in this affine space is equal to the j
+     * constraint in the given affine space.
      */
-    public boolean rowEquals(int i, int j, AffineSpace<Vec> p){
-        return this.nullMatrixRows()[i].equals(p.nullMatrixRows()[j]) && b.get(i) == p.b.get(j);
+    public boolean rowEquals(int i, int j, AffineSpace<Vec> p) {
+        return this.nullMatrixRows()[i].equals(p.nullMatrixRows()[j])
+                && b.get(i) == p.b.get(j);
+    }
+
+    /**
+     * A point in the affine space.
+     *
+     * @return
+     */
+    public Vec p() {
+        if (p == null)
+            throw new NullPointerException("The value of p has not been set and can't currently be calculated for an arbitrary affines space.");
+        return p;
     }
 }

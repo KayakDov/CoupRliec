@@ -1,7 +1,7 @@
 package main;
 
 import Convex.LinearRn.RnAffineSpace;
-import Convex.PolyhedronRn;
+import Convex.RnPolyhedron;
 import Matricies.PointD;
 import Convex.RnHalfSpace;
 import Convex.LinearRn.RnLinearSpace;
@@ -24,8 +24,8 @@ public class Main {
 //            if (i % 100 == 0)
                 System.out.println("i = " + i);
 
-            FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(PolyhedronRn.random(numFaces, 1, dim))
-                    : new FeasibilityGradDescent(PolyhedronRn.randomNonEmpty(numFaces, 1, dim));
+            FeasibilityGradDescent poly = empty ? new FeasibilityGradDescent(RnPolyhedron.random(numFaces, 1, dim))
+                    : new FeasibilityGradDescent(RnPolyhedron.randomNonEmpty(numFaces, 1, dim));
 
             poly.setEpsilon(epsilon);
 
@@ -45,7 +45,7 @@ public class Main {
 
         PointD y = new PointD(0, 1);
 
-        System.out.println(new FeasibilityGradDescent(new PolyhedronRn(hs)).fesibility(y));
+        System.out.println(new FeasibilityGradDescent(new RnPolyhedron(hs)).fesibility(y));
 
     }
 
@@ -92,7 +92,7 @@ public class Main {
     public static void cubeTest() {
         Point a = new PointD(1, 1, 1);
         Point b = new PointD(2, 2, 2);
-        PolyhedronRn cube = new PolyhedronRn(new RnHalfSpace[]{
+        RnPolyhedron cube = new RnPolyhedron(new RnHalfSpace[]{
             new RnHalfSpace(a, new PointD(-1, 0, 0)),
             new RnHalfSpace(a, new PointD(0, -1, 0)),
             new RnHalfSpace(a, new PointD(0, 0, -1)),
@@ -124,7 +124,7 @@ public class Main {
         hs[4] = new RnHalfSpace(new PointD(7, 0), new PointD(1, 1));
         PointD start = new PointD(-10, -1);
 
-        Point fp = new FeasibilityGradDescent(new PolyhedronRn(hs)).fesibility(start);
+        Point fp = new FeasibilityGradDescent(new RnPolyhedron(hs)).fesibility(start);
         System.out.println(fp);
 
     }
@@ -133,7 +133,7 @@ public class Main {
 
 //        counterExample()
         int i = 2;
-        polytopeFeasabilityTest(3, 4, 1000000, false, false);
+        polytopeFeasabilityTest(10, 100, 100, false, true);
 
 //        FeasibilityGradDescent.loadFromErrorFile();//don't forget to fix toe plane.tosting for dim 2 or 3.
 //        cubeTest();
