@@ -3,7 +3,6 @@ package main;
 import Convex.LinearRn.RnAffineSpace;
 import Convex.RnPolyhedron;
 import Matricies.PointD;
-import Convex.RnHalfSpace;
 import Convex.LinearRn.RnLinearSpace;
 import Convex.LinearRn.RnPlane;
 import Convex.GradDescentFeasibility.FeasibilityGradDescent;

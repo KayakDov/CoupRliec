@@ -1,11 +1,13 @@
 
 package Convex;
 
+import Convex.LinearRn.RnAffineProjection;
 import Hilbert.HalfSpace;
 import Hilbert.Polyhedron;
 import java.util.List;
 import Convex.LinearRn.RnPlane;
 import Convex.LinearRn.RnAffineSpace;
+import Hilbert.CoupRliec;
 import Hilbert.Plane;
 import Matricies.Matrix;
 import Matricies.Point;
@@ -411,15 +413,6 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     }
 
-    /**
-     * Finds all the faces with the given point on their surface.
-     *
-     * @param x a point on the surface of the polytope.
-     * @return all the faces smallestContainingSubSpace x on their surface.
-     */
-    private RnPolyhedron facesContaining(Point x) {
-        return new RnPolyhedron(stream().filter(hs -> hs.boundary().hasElement(x)));
-    }
 
     /**
      * Are the two polytopes equal.
@@ -443,7 +436,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return bruteForceProjection(p);
+        return new CoupRliec<Point>(new RnAffineProjection(p), halfspaces).argMin();
     }
 
     /**
