@@ -1,7 +1,6 @@
 package Convex.LinearRn;
 
 import Convex.RnPolyhedron;
-import Hilbert.AffineSpace;
 import Hilbert.HalfSpace;
 import Hilbert.Plane;
 import Matricies.Matrix;
@@ -123,17 +122,17 @@ public class RnPlane extends Plane<Point> {
 
     public static boolean printEasyRead = true;
 
-    @Override
-    public String toString() {
-        if (printEasyRead) {
-            if (dim() == 2)
-                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
-            if (dim() == 3)
-                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
-        }
-        return toStringMultiDim();
-
-    }
+//    @Override
+//    public String toString() {
+//        if (printEasyRead) {
+//            if (dim() == 2)
+//                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") = 0";
+//            if (dim() == 3)
+//                return normal().x() + "*(x-" + p().x() + ") + " + normal().y() + "*(y-" + p().y() + ") + " + normal().z() + "*(z-" + p().z() + ")= 0";
+//        }
+//        return toStringMultiDim();
+//
+//    }
 
     public String toStringMultiDim() {
         return "point " + p + " with normal " + normal();

@@ -1,5 +1,8 @@
 package Convex.ASKeys;
 
+import Hilbert.Vector;
+import Matricies.Point;
+
 /**
  * A key that can be generated from a half space or set of planes that calls a
  * specific affine space or polyhedral cone from hashsets
@@ -55,5 +58,15 @@ public abstract class ASKey {
     @Override
     public String toString() {
         return "" + hashCode;
+    }
+    
+    
+    public static<Vec extends Vector<Vec>> int hashCodeGenerator(Vec normal, double b){
+        return normal.hashCode() >> Double.hashCode(b);
+    }
+    public static<Vec extends Vector<Vec>> int hashCodeGenerator(Vec[] normals, Point b){
+        int hashCode = 0;
+        for(int i = 0; i < normals.length; i++) hashCode += hashCodeGenerator(normals[i], b.get(i));
+        return hashCode;
     }
 }

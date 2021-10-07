@@ -59,16 +59,6 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     }
 
     /**
-     * A constructor
-     *
-     * @param intersectingPlanes the planes that intersect to form this affine
-     * space.
-     */
-    public RnAffineSpace(Set<RnPlane> intersectingPlanes) {
-        super(intersectingPlanes);
-    }
-
-    /**
      * The constructor.
      *
      * @param planes The planes that intersect to form this affine space.
@@ -99,6 +89,10 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     public RnAffineSpace setP(Point p) {
         this.p = p;
         return this;
+    }
+    
+    public RnAffineSpace(AffineSpace<Point> as){
+        super(as.linearSpace(), as.getB());
     }
 
     /**
@@ -325,12 +319,6 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     }
 
 
-
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -350,27 +338,6 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
 
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
 
-    }
-
-    /**
-     * The has value for just one row.
-     * @param row the row
-     * @return the hash value of the hyperplane the row represents.
-     */
-    public int hashRow(int row) {
-        return linearSpace.normals()[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
-    }
-    /**
-     * The hash value for this function.
-     */
-    private int hashCode;
-
-    /**
-     * Sets and saves the hashcode.
-     */
-    private void setHashCode() {
-        hashCode = 0;
-        for (int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
     }
 
     /**

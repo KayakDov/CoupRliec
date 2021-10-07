@@ -29,8 +29,13 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         this.boundry = boundary;
     }
 
+    /**
+     * The constructor
+     * @param onPlane a point on the plane
+     * @param normal a vector normal to the plane
+     */
     public HalfSpace(Vec onPlane, Vec normal) {
-        this.boundry = new Plane<Vec>(normal, onPlane);
+        this.boundry = new Plane<>(onPlane, normal);
     }
     
 
@@ -127,5 +132,12 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     public int dim(){
         return normal().dim();
     }
+
+    @Override
+    public int hashCode() {
+        return boundry.hashCode();
+    }
+    
+    
     
 }

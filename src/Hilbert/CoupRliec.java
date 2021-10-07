@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import listTools.ArgMinContainer;
 
 /**
  * The algorithm spelled out in Hilbert-Space Convex Optimization Utilizing
@@ -37,7 +38,7 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @param prevCoDim the set of affine spaces of codimension i
      * @return the set of affine spaces of the polyhedron of codim i
      */
-    private Map<ASKey, PCone<Vec>> nextCoDim(Collection<PCone<Vec>> prevCoDim) {
+    private Map<ASKey, PCone<Vec>> coDimPlusPlus(Collection<PCone<Vec>> prevCoDim) {
         return prevCoDim.parallelStream()
                 .flatMap(pCone
                         -> IntStream.range(pCone.getIndexOfLastHS() + 1, poly.numHalfSpaces())
@@ -66,7 +67,7 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @param posMin
      * @return 
      */
-    private boolean suffCrit(SavedArgMin<Vec> posMin){
+    private boolean suffCrit(ArgMinContainer<Vec> posMin){
         return posMin.meetsNecCrti() && poly.hasElement(posMin.argMin());
     }
     
@@ -76,7 +77,8 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @param level all the affine spaces at the given codimension.
      * @return null if there is no minimum over the polyhedron at this level, the argmin otherwise.
      */
-    private SavedArgMin<Vec> posMinOnLevel(Map<ASKey, PCone<Vec>> prevLevel, Map<ASKey, PCone<Vec>> level){
+    private ArgMinContainer<Vec> posMinOnLevel(Map<ASKey, PCone<Vec>> prevLevel, Map<ASKey, PCone<Vec>> level){
+
         return level.values().parallelStream()
                             .map(pCone -> pCone.min(prevLevel))
                             .filter(aMin -> suffCrit(aMin))
@@ -89,20 +91,21 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @return 
      */
     public Vec argMin() {
+        
         PCone pConeHilb = PCone.allSpace(f);
 
-        Map<ASKey, PCone<Vec>> pCones = new HashMap<>(), nextPCones;
-        pCones.put(new ASKeyPCo(pConeHilb), pConeHilb);
+        Map<ASKey, PCone<Vec>> pConeCoDimI = new HashMap<>(), pConeCoDimeIPlusOne;
+        pConeCoDimI.put(new ASKeyPCo(pConeHilb), pConeHilb);
 
-        SavedArgMin<Vec> posMin = pConeHilb.min(null);
-        if(suffCrit(posMin)) return posMin.argMin();
+        ArgMinContainer<Vec> min = pConeHilb.min(null);
+        if(suffCrit(min)) return min.argMin();
         
         int n = Math.min(poly.numHalfSpaces(), dim());
 
-        for (int i = 0; i < n; pCones = nextPCones, i++) {
-            nextPCones = nextCoDim(pCones.values());
-            posMin = posMinOnLevel(pCones, nextPCones);
-            if(posMin != null) return posMin.argMin();            
+        for (int i = 0; i < n; pConeCoDimI = pConeCoDimeIPlusOne, i++) {
+            pConeCoDimeIPlusOne = coDimPlusPlus(pConeCoDimI.values());
+            min = posMinOnLevel(pConeCoDimI, pConeCoDimeIPlusOne);
+            if(min != null) return min.argMin();            
         }
         return null;
 

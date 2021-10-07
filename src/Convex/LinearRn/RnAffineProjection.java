@@ -32,10 +32,8 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
     }
     
     
-    
-    @Override
-    public Point argMinAffine(AffineSpace<Point> A) {
-        if(project != null) return projectOnto.proj(project);
+    public Point argMinAffine(RnAffineSpace A) {
+        if(project != null) return A.proj(project);
         throw new RuntimeException("No point to be projected has been set.");
     }
 
@@ -58,6 +56,11 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
     public Point argMinAffine(Point y) {
         if(projectOnto != null) return projectOnto.proj(y);
         throw new RuntimeException("No affine space to project onto has been set.");
+    }
+
+    @Override
+    public Point argMinAffine(AffineSpace<Point> A) {
+        return argMinAffine(new RnAffineSpace(A));
     }
     
 }

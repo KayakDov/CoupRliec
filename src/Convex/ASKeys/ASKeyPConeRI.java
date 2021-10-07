@@ -14,6 +14,8 @@ public class ASKeyPConeRI extends ASKeyPCo{
     public ASKeyPConeRI(PCone aCone, int removeIndex) {
         super(aCone);
         this.removeIndex = removeIndex;
+        hashCode -= aCone.getHS(removeIndex).hashCode();
+        
     }
     
     @Override

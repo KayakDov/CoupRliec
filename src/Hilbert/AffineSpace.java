@@ -1,5 +1,6 @@
 package Hilbert;
 
+import Convex.ASKeys.ASKey;
 import Convex.ConvexSet;
 import Matricies.Point;
 import Matricies.PointD;
@@ -7,7 +8,6 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,33 +41,34 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         return b;
     }
 
-
     /**
      * The constructor
+     *
      * @param linearSpace solution to Ax = b
-     * @param b 
+     * @param b
      */
     public AffineSpace(LinearSpace<Vec> linearSpace, Point b) {
-        this.linearSpace = linearSpace;
+        this(linearSpace);
         this.b = b;
-        setHashCode();
     }
 
     /**
-     * The constructor.  This should be used if a point p is availeble and called together with setP().
-     * @param linearSpace 
+     * The constructor. This should be used if a point p is available and called
+     * together with setP(), if not then this will be a linear space.
+     *
+     * @param linearSpace
      */
     public AffineSpace(LinearSpace<Vec> linearSpace) {
         this.linearSpace = linearSpace;
     }
 
-    
-    
     /**
-     * This method sets a point on the affine space.  If b has a value, then it
-     * is incumbent on the caller to make sure this point is in the affine space.
+     * This method sets a point on the affine space.If b has a value, then it is
+     * incumbent on the caller to make sure this point is in the affine space.
      * If b does not have a value, then this method sets b.
-     * @param onSpace a point in the affine space. 
+     *
+     * @param onSpace a point in the affine space.
+     * @return returns this
      */
     public AffineSpace<Vec> setP(Vec onSpace) {
         if (!linearSpace.isAllSpace() && b == null) {
@@ -112,20 +113,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         return linearSpace.normals;
     }
 
-    /**
-     * A constructor
-     *
-     * @param intersectingPlanes the planes that intersect to form this affine
-     * space.
-     */
-    public AffineSpace(Set<? extends Plane<Vec>> intersectingPlanes) {
 
-        this((Plane[]) (Array.newInstance(
-                intersectingPlanes.iterator().next().getClass(),
-                intersectingPlanes.size()
-        )));
-
-    }
 
     /**
      * The constructor.
@@ -232,7 +220,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public String toString() {
-        return linearSpace().toString() + "\nb = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
+        return linearSpace().toString()+"*x = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
     }
 
     private long subSpaceDim = -2;
@@ -291,6 +279,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public int hashCode() {
+        if(!hashCodeIsSet)setHashCode();
         return hashCode;
     }
 
@@ -315,26 +304,23 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     }
 
-    /**
-     * The has value for just one row.
-     *
-     * @param row the row
-     * @return the hash value of the hyperplane the row represents.
-     */
-    public int hashRow(int row) {
-        return linearSpace.normals[row].hashCode() * Double.hashCode(b.get(row));//When this is plus there is no null pointer bug
-    }
+    
     /**
      * The hash value for this function.
      */
     private int hashCode;
 
     /**
-     * Sets and saves the hashcode.
+     * Is the hashcode set?
      */
-    private void setHashCode() {
-        hashCode = 0;
-        for (int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
+    public boolean hashCodeIsSet = false;
+    
+    /**
+     * Sets the hashcode.
+     */
+    protected void setHashCode() {
+        hashCode = ASKey.hashCodeGenerator(linearSpace.normals, b);
+        hashCodeIsSet = true;
     }
 
 //    /**
@@ -368,6 +354,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public Vec proj(Vec x) {
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

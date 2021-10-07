@@ -13,25 +13,26 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     
     /**
      * The constructor
-     * @param normals the vector normal to this plane
+     * @param normal the vector normal to this plane
      * @param b Every point on this plane, x, is a solution to \<normal, x\> = b
      */
-    public Plane(Vec normals, double b) {
+    public Plane(Vec normal, double b) {
         super(
-                (Vec[]) (Array.newInstance(normals.getClass(),1)), 
+                (Vec[]) (Array.newInstance(normal.getClass(),1)), 
                 PointD.oneD(b)
         );
+        linearSpace.normals[0] = normal;
     }
     
     /**
      * The constructor for this class
      *
-     * @param p a vector on the plane
+     * @param onPlane a vector on the plane
      * @param normal a vector normal to the plane
      */
-    public Plane(Vec p, Vec normal) {
-        this(normal, normal.ip(p));
-        this.p = p;
+    public Plane(Vec onPlane, Vec normal) {
+        this(normal, normal.ip(onPlane));
+        this.p = onPlane;
 
     }
     
@@ -100,8 +101,9 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
      * A point on this hyperplane.
      * @return 
      */
+    @Override
     public Vec p(){
         if(p != null) return p;
         return normal().mult(b()/normal().normSq());
-    }
+    }    
 }

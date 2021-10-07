@@ -76,5 +76,32 @@ public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         return halfspaces;
     }
     
+    /**
+     * The haschode of this polyhedron.  It is computed the same way as it is
+     * for affine spaces.
+     */
+    private int hashcode;
+    /**
+     * Is the hashcode set?
+     */
+    private boolean hashcodeIsSet = false;
+    /**
+     * Sets the hashcode the same way it is for an affine space.
+     */
+    private void setHashCode(){
+        hashcode = stream().mapToInt(hs -> hs.boundary().hashCode()).sum();
+        hashcodeIsSet = true;
+    }
+    @Override
+    public int hashCode() {
+        if(!hashcodeIsSet) setHashCode();
+        return hashcode;
+    }
+
+    @Override
+    public String toString() {
+        return halfspaces.toString();
+    }
+    
     
 }

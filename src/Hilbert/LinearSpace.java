@@ -87,4 +87,12 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
     public static <T extends Vector<T>> LinearSpace<T> allSpace(){
         return new LinearSpace<T>();
     }
+
+    @Override
+    public String toString() {
+        if(normals.length == 0) return "The entire Hilbert Space";
+        return Arrays.toString(normals);
+    }
+    
+    
 }

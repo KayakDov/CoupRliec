@@ -436,7 +436,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return new CoupRliec<Point>(new RnAffineProjection(p), halfspaces).argMin();
+        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
     }
 
     /**
