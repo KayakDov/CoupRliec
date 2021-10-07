@@ -27,4 +27,14 @@ public class ASKeyPConeRI extends ASKeyPCo{
     public int getRemoveIndex() {
         return removeIndex;
     }
+
+    @Override
+    public boolean equals(ASKeyPCo askaco) {
+        for (int i = 0; i < halfspaces.size() - 1; i++)
+            if (!askaco.get(i).equals(get(i)))
+                return false;
+        return true;
+    }
+    
+    
 }

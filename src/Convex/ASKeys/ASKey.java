@@ -36,9 +36,8 @@ public abstract class ASKey {
         if (this == obj) return true;
         if (obj == null) return false;
         if (!(obj instanceof ASKey)) return false;
-
         if (obj instanceof ASKeyPCo) return equals((ASKeyPCo) obj);
-
+        
         return equals((ASKey) obj);
     }
 

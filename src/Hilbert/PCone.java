@@ -63,12 +63,8 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      * inside this cone.
      */
     private ArgMinContainer<Vec> superCone(int i, Map<ASKey, PCone<Vec>> superCones) {
-
-        ASKey asKey = new ASKeyPConeRI(this, i);
         
-        PCone<Vec> superCone = superCones.get(asKey);
-        System.out.println(superCone);
-        Vec superAConeArgMin = superCone.savedArgMin.argMin();
+        Vec superAConeArgMin =  superCones.get(new ASKeyPConeRI(this, i)).savedArgMin.argMin();
         
         if (getHS(i).hasElement(superAConeArgMin))
             return new ArgMinContainer<>(superAConeArgMin, false);
