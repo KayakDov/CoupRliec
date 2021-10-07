@@ -6,7 +6,7 @@ import Hilbert.Plane;
 import java.util.List;
 
 /**
- * Affine spcae keys for ACones
+ * Affine space keys for ACones
  * @author Dov Neimand
  */
 public class ASKeyPCo extends ASKey{
@@ -33,36 +33,6 @@ public class ASKeyPCo extends ASKey{
         return halfspaces.get(i).boundary();
     }
     
-    @Override
-    public boolean equals(ASKeyAS askas) {
-        int size = halfspaces.size();
-        if(askas.as.nullMatrixRows().length != size) return false;
-        for(int i = 0; i < size; i++)
-            if(askas.as.rowEquals(i, get(i))) return false;
-        return true;
-    }
-
-    @Override
-    public boolean equals(ASKeyPlanes askp) {
-        if(askp.planes.length != halfspaces.size()) return false;
-        for(int i = 0; i < askp.planes.length; i++)
-            if(!askp.planes[i].equals(get(i)))
-                    return false;
-        return true;
-    }
-
-    @Override
-    public boolean equals(ASKeyRI askri) {
-        
-        if(askri.immidiateSubSpace.b.dim()-1 != halfspaces.size()) return false;
-        
-        for(int i = 0, j = 0; i < halfspaces.size(); i++, j++){
-            if(j == askri.removeIndex) j++;
-            if(!askri.immidiateSubSpace.rowEquals(j, get(i))) return false;
-        }
-        return true;
-    }
-
     @Override
     public boolean equals(ASKeyPCo askaco) {
         for(int i = 0; i < halfspaces.size(); i++)

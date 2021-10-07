@@ -1,7 +1,5 @@
 package Hilbert;
 
-import Convex.GradDescentFeasibility.Proj.ASNode;
-import Matricies.Point;
 import java.util.Arrays;
 import java.util.stream.Stream;
 

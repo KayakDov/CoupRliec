@@ -2,7 +2,6 @@ package Convex.LinearRn;
 
 import Convex.ConvexSet;
 import Convex.RnPolyhedron;
-import Convex.ASKeys.ASKeyRI;
 import Hilbert.AffineSpace;
 import Hilbert.HalfSpace;
 import Matricies.Matrix;
@@ -372,24 +371,6 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     private void setHashCode() {
         hashCode = 0;
         for (int i = 0; i < b.dim(); i++) hashCode += hashRow(i);
-    }
-
-    /**
-     * If this affine space is defined by the set of solutions to Ax=b, then
-     * this function returns the set of A'x = b, where A' is A with one row
-     * removed.
-     *
-     * @return the keys for the afformentioned affine spaces
-     */
-    public ASKeyRI[] immidiateSuperKeys() {
-        int numRows = linearSpace.normals().length;
-
-        if (numRows == 1)
-            throw new RuntimeException("oneDown may not be called on planes.");
-
-        ASKeyRI[] oneDownArray = new ASKeyRI[numRows];
-        Arrays.setAll(oneDownArray, i -> new ASKeyRI(this, i));
-        return oneDownArray;
     }
 
     /**
