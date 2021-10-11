@@ -4,6 +4,7 @@ import Convex.ConvexSet;
 import Convex.RnPolyhedron;
 import Hilbert.AffineSpace;
 import Hilbert.HalfSpace;
+import Hilbert.LinearSpace;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelonDense;
 import Matricies.Point;
@@ -26,7 +27,18 @@ import java.util.stream.Stream;
  */
 public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point> {
 
+    /**
+     * A constructor
+     * @param ls a linear space
+     * @param b every point in this affine space will be a solution to the 
+     * linear space times x equals b.
+     */
+    public RnAffineSpace(LinearSpace<Point> ls, Point b) {
+        super(ls, b);
+    }
 
+
+    
     /**
      * This affine space is the solution set to matrix*x == b. After b is added,
      * it's changed to a row instead of a column.
@@ -92,7 +104,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     }
     
     public RnAffineSpace(AffineSpace<Point> as){
-        super(as.linearSpace(), as.getB());
+        super(as);
     }
 
     /**
@@ -145,7 +157,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
         if (isAllSpace()) return x;
         try {
             if (!hasProjFunc())
-                projFunc = new ProjectionFunction(linearSpace(), p(), tolerance);
+                projFunc = new ProjectionFunction(linearSpace, p(), tolerance);
         } catch (NoSuchElementException nse) {
             throw new ProjectionFunction.NoProjFuncExists(linearSpace);
         }
@@ -195,7 +207,16 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      * @return
      */
     @Override
-    public RnLinearSpace linearSpace() {
+    public LinearSpace<Point> linearSpace() {
+        return linearSpace;
+    }
+    
+    /**
+     * The underlying linear space. If Ax = b the this returns Null(A).
+     *
+     * @return
+     */
+    public RnLinearSpace RnlinearSpace() {
         return new RnLinearSpace(linearSpace);
     }
 
@@ -215,8 +236,9 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
 
     @Override
     public String toString() {
-        return linearSpace().toString() + "\nb = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
+        return linearSpace + "*x = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
     }
+    
 
     private long subSpaceDim = -2;
 
@@ -228,7 +250,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     public long subSpaceDim() {
         if (subSpaceDim != -2) return subSpaceDim;
         if (nullMatrixRows().length == 0) return subSpaceDim = dim();
-        return subSpaceDim = linearSpace().subSpaceDim();
+        return subSpaceDim = RnlinearSpace().subSpaceDim();
     }
 
     /**
@@ -240,7 +262,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      * given point.
      */
     public RnAffineSpace orthogonalComplement(Point x) {
-        return new RnAffineSpace(linearSpace().OrhtogonalComplement(), x);
+        return new RnAffineSpace(RnlinearSpace().OrhtogonalComplement(), x);
     }
 
     /**
@@ -281,7 +303,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      */
     public boolean subsetOf(RnAffineSpace containing) {
         return containing.hasElement(p())
-                && linearSpace().colSpaceMatrix().colStream()
+                && RnlinearSpace().colSpaceMatrix().colStream()
                         .allMatch(col -> containing.hasElement(col.plus(p())));
     }
 

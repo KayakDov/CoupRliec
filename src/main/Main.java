@@ -3,10 +3,16 @@ package main;
 import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPCo;
 import Convex.ASKeys.ASKeyPConeRI;
+import Convex.LinearRn.ProjectionFunction;
 import Convex.LinearRn.RnAffineProjection;
+import Convex.LinearRn.RnAffineSpace;
+import Convex.LinearRn.RnPlane;
 import Convex.RnPolyhedron;
+import Hilbert.AffineSpace;
 import Hilbert.HalfSpace;
+import Hilbert.LinearSpace;
 import Hilbert.PCone;
+import Hilbert.Plane;
 import Hilbert.Polyhedron;
 import Matricies.Point;
 import Matricies.PointD;
@@ -30,7 +36,7 @@ public class Main {
     
 
     public static void testSquare(){
-        System.out.println(square().proj(new PointD(4, 7)));
+        System.out.println(square().proj(new PointD(0, -8)));
     }
     
     public static void testAffineKeys(){
@@ -58,11 +64,22 @@ public class Main {
     }
     
     public static void testProjectionFunction(){
+        RnAffineProjection proj = new RnAffineProjection(new PointD(5,7));
+        RnPlane plane = new RnPlane(new PointD(0,1), 0);
+        System.out.println(plane.linearSpace().normals().length);
+        System.out.println(proj.argMinAffine(plane));
+    }
+    
+    public static void testRnAffine(){
+        Plane<Point> p = new Plane<>(new PointD(0,1), 0);
+        System.out.println("main.Main.testRnAffine()");
+        System.out.println("p = " + p);
+        System.out.println(new RnAffineSpace(p).toString());
+
         
     }
     
     public static void main(String[] args) throws IOException {
-        
         testSquare();
     }
 

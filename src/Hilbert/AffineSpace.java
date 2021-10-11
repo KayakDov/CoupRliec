@@ -44,11 +44,11 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     /**
      * The constructor
      *
-     * @param linearSpace solution to Ax = b
+     * @param ls solution to Ax = b
      * @param b
      */
-    public AffineSpace(LinearSpace<Vec> linearSpace, Point b) {
-        this(linearSpace);
+    public AffineSpace(LinearSpace<Vec> ls, Point b) {
+        this(ls);
         this.b = b;
     }
 
@@ -56,10 +56,10 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * The constructor. This should be used if a point p is available and called
      * together with setP(), if not then this will be a linear space.
      *
-     * @param linearSpace
+     * @param ls
      */
-    public AffineSpace(LinearSpace<Vec> linearSpace) {
-        this.linearSpace = linearSpace;
+    public AffineSpace(LinearSpace<Vec> ls) {
+        this.linearSpace = ls;
     }
 
     /**
@@ -113,7 +113,9 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         return linearSpace.normals;
     }
 
-
+    public AffineSpace(AffineSpace<Vec> as){
+        this(as.linearSpace, as.b);
+    }
 
     /**
      * The constructor.
@@ -179,7 +181,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param as another affine space
      * @return the intersection of the two spaces.
      */
-    public AffineSpace intersection(AffineSpace as) {
+    public AffineSpace<Vec> intersection(AffineSpace<Vec> as) {
         if (isAllSpace()) return as;
         if (as.isAllSpace()) return this;
 
@@ -193,7 +195,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param space
      * @return a new affine space
      */
-    public static AffineSpace intersection(AffineSpace[] space) {
+    public static<Vec extends Vector<Vec>> AffineSpace<Vec> intersection(AffineSpace<Vec>[] space) {
         if (space.length == 0)
             throw new RuntimeException("Empty intersection?");
         return intersection(Arrays.stream(space));
@@ -205,7 +207,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param space
      * @return a new affine space
      */
-    public static AffineSpace intersection(Stream<? extends AffineSpace> space) {
+    public static<Vec extends Vector<Vec>> AffineSpace<Vec> intersection(Stream<? extends AffineSpace<Vec>> space) {
         return space.map(as -> (AffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
     }
 
@@ -214,7 +216,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      *
      * @return
      */
-    public LinearSpace linearSpace() {
+    public LinearSpace<Vec> linearSpace() {
         return linearSpace;
     }
 
@@ -345,8 +347,8 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      *
      * @return
      */
-    public HashSet<Plane> intersectingPlanesSet() {
-        HashSet<Plane> planes = new HashSet<>(b.dim());
+    public HashSet<Plane<Vec>> intersectingPlanesSet() {
+        HashSet<Plane<Vec>> planes = new HashSet<>(b.dim());
         for (int i = 0; i < b.dim(); i++)
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
@@ -367,7 +369,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @return true if the constraint at the given index is equal to the
      * hyperplane, false otherwise.
      */
-    public boolean rowEquals(int i, Plane p) {
+    public boolean rowEquals(int i, Plane<Vec> p) {
         return this.nullMatrixRows()[i].equals(p.normal()) && b.get(i) == p.b();
     }
 

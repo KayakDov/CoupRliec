@@ -37,10 +37,10 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
 
     /**
      * The constructor
-     * @param nomralVectors the rows of the matrix for which this is the null space.
+     * @param normalVectors the rows of the matrix for which this is the null space.
      */
-    public LinearSpace(Vec[] nomralVectors) {
-        this.normals = nomralVectors;
+    public LinearSpace(Vec[] normalVectors) {
+        this.normals = normalVectors;
     }
 
     public boolean isAllSpace(){

@@ -31,12 +31,6 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
         super(ls.normals());
     }
 
-    
-    /**
-     * The rows of the the matrix Ax = 0.
-     */
-    public Point[] normals;
-
     @Override
     public int hashCode() {
         int hashCode = 0;
@@ -214,10 +208,6 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
         projFunc = null;
     }
 
-    @Override
-    public String toString() {
-        return "null space of \n" + Matrix.fromRows(normals);
-    }
 
     /**
      * The linear sum of two vector spaces = {a + b | a in this, b in ls}

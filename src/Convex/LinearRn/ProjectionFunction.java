@@ -30,7 +30,7 @@ public class ProjectionFunction implements Function<Point, Point> {
      * @param epsilon a small number
      */
     public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
-
+        
         Matrix nullSpaceMatrix = new RnLinearSpace(ls).matrix();
         Matrix A = RnLinearSpace.colSpaceMatrix(nullSpaceMatrix);
 
