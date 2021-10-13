@@ -13,16 +13,41 @@ import java.util.stream.Stream;
  */
 public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
 
+    /**
+     * The half spaces that intersect to make this polyhedron.
+     */
     protected List<HalfSpace<Vec>> halfspaces;
 
+    /**
+     * The constructor
+     * @param halfspaces the set of halfspaces that intersect to form this polyhedron. 
+     */
     public Polyhedron(List<HalfSpace<Vec>> halfspaces) {
         this.halfspaces = halfspaces;
     }
     
+    /**
+     * A constructor
+     * @param halfspace a half space that is to be the only halfspace in the
+     * polyhedron unless more are added.
+     */
+    public Polyhedron(HalfSpace<Vec> halfspace) {
+        this(new ArrayList<>(1));
+        halfspaces.add(halfspace);
+    }
+    
+    /**
+     * A constructor
+     * @param halfspaces a stream of halfspaces
+     */
     public Polyhedron(Stream<HalfSpace<Vec>> halfspaces) {
         this(halfspaces.collect(Collectors.toList()));
     }
     
+    /**
+     * A stream of the halfspaces that intersect to form this polyhedron
+     * @return 
+     */
     public Stream<HalfSpace<Vec>> stream(){
         return halfspaces.stream();
     }

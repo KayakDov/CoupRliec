@@ -7,7 +7,8 @@ import Hilbert.Polyhedron;
 import java.util.List;
 import Convex.LinearRn.RnPlane;
 import Convex.LinearRn.RnAffineSpace;
-import Hilbert.CoupRliec;
+import Hilbert.Optimization.AccCoupRliec;
+import Hilbert.Optimization.CoupRliec;
 import Hilbert.Plane;
 import Matricies.Matrix;
 import Matricies.Point;
@@ -24,7 +25,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import listTools.ChoosePlanes;
+import listTools.Choose;
 
 /**
  *
@@ -407,7 +408,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
                 .rangeClosed(1, maxHSPerIntersection)
                 .mapToObj(i -> i)
                 .flatMap(i
-                        -> new ChoosePlanes(planes().collect(Collectors.toList()), i)
+                        -> new Choose(planes().collect(Collectors.toList()), i)
                         .chooseStream())
                 .map(planeArray -> new RnAffineSpace(planeArray));
 
@@ -436,7 +437,8 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+        return new AccCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+//        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
     }
 
     /**

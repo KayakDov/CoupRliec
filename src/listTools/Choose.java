@@ -8,11 +8,11 @@ import java.util.stream.Stream;
 
 /**
  * Preforms the provided operation on all the subsets of a given size on the
- * set.
+ * set.  This class may be obsolete
  *
  * @author Dov Neimand
  */
-public class ChoosePlanes {
+public class Choose {
 
     private final List<RnPlane> fromList;
     private final int choose;
@@ -23,7 +23,7 @@ public class ChoosePlanes {
      * @param list
      * @param choose
      */
-    public ChoosePlanes(List<RnPlane> list, int choose) {
+    public Choose(List<RnPlane> list, int choose) {
         this.fromList = list;
         this.choose = choose;
     }

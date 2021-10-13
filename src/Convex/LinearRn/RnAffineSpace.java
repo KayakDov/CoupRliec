@@ -131,14 +131,15 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
                 }).toArray(PointD[]::new)
         );
 
-        Point b2 = b.concat(new PointSparse(append.rows()));
+        Point b2 = b.concat(new PointD(append.rows()));
         try {
             return p = nullMatrix().rowConcat(append).solve(b2);
 
         } catch (Exception ex) {
             System.out.println("Convex.Linear.AffineSpace.p()");
             System.out.println(nullMatrix().rowConcat(append));
-            System.out.println(this);
+            System.out.println("b2 = " + b2 +"\n");
+            System.out.println("this = " + this + "\n");
             System.out.println("rre = \n" + rre);
             throw ex;
 //            throw new NoSuchElementException("This affine space is empty." + this);

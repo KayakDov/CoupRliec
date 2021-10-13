@@ -3,7 +3,6 @@ package Hilbert;
 import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPConeRI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -17,38 +16,64 @@ import listTools.ArgMinContainer;
  */
 public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
-    private final int indexOfLastHS;
-    private ArgMinContainer<Vec> savedArgMin;
-    private final StrictlyConvexFunction<Vec> f;
+    
+    protected ArgMinContainer<Vec> savedArgMin;
+    protected final StrictlyConvexFunction<Vec> f;
 
     /**
      *
      * @param f the function we seek to find the minimum of
      * @param hs a list of halfspaces
-     * @param i The index of the last half space in the list of all the half
-     * spaces. This is used to generate subspaces without creating redundancies
-     * with the subspaces of other ACones.
+     
      */
-    public PCone(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> hs, int i) {
+    public PCone(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> hs) {
         super(hs);
-        indexOfLastHS = i;
+        this.f = f;
+    }
+    
+    /**
+     *
+     * @param f the function we seek to find the minimum of
+     * @param hs a halfspace
+     */
+    public PCone(StrictlyConvexFunction<Vec> f, HalfSpace<Vec> hs) {
+        super(hs);
         this.f = f;
     }
 
     /**
-     * Creates a new polyhedron with the additional inequality constraint.
-     *
-     * @param addOn the inequality constraint being added
-     * @param lastIndex the index of addOn
-     * @return A new PCone at the intersection of these half spaces and the
-     * added one.
+     * Creates a new half space from this polyhedron's half space list list with the addon concatinated to it.
+     * @param addOn the half space to be concatinated.
+     * @return 
      */
-    public PCone<Vec> concat(HalfSpace<Vec> addOn, int lastIndex) {
+    protected List<HalfSpace<Vec>> concatHSToList(HalfSpace<Vec> addOn){
         ArrayList<HalfSpace<Vec>> concatHSList
                 = new ArrayList(halfspaces.size() + 1);
         concatHSList.addAll(halfspaces);
         concatHSList.add(addOn);
-        return new PCone<>(f, concatHSList, lastIndex);
+        return concatHSList;
+    }
+    /**
+     * Creates a new polyhedron with the additional inequality constraint.
+     *
+     * @param addOn the inequality constraint being added
+     * @return A new PCone at the intersection of these half spaces and the
+     * added one.
+     */
+    public PCone<Vec> concat(HalfSpace<Vec> addOn) {
+        return new PCone<>(f, concatHSToList(addOn));
+    }
+    
+    
+    /**
+     * Creates a new polyhedron with the additional inequality constraint.
+     *
+     * @param addOn the inequality constraint being added
+     * @return A new PCone at the intersection of these half spaces and the
+     * added one.
+     */
+    public IndexedPCone<Vec> concat(HalfSpace<Vec> addOn, int indexOfLastPCone) {
+        return new IndexedPCone<>(f, concatHSToList(addOn), indexOfLastPCone);
     }
 
     /**
@@ -71,6 +96,8 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
         return null;
     }
 
+    
+    
     /**
      * Returns the minimum over this polyhedral cone and weather or not this
      * cone meets the necessary criteria.
@@ -102,14 +129,6 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
         return new AffineSpace<>(stream().map(hs -> hs.boundary()).toArray(Plane[]::new));
     }
 
-    /**
-     * The index of the last halfspace in an external list.
-     *
-     * @return
-     */
-    public int getIndexOfLastHS() {
-        return indexOfLastHS;
-    }
 
     /**
      * A polhedral cone with no half spaces, this is the entire hilbert space.
@@ -119,6 +138,24 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      * @return
      */
     public static <Vec extends Vector<Vec>> PCone<Vec> allSpace(StrictlyConvexFunction<Vec> f) {
-        return new PCone<>(f, new ArrayList<>(0), -1);
+        return new PCone<>(f, new ArrayList<>(0));
     }
+    
+    /**
+     * returns a default value for index of last halfspace.
+     * @return 
+     */
+    public int getIndexOfLastHS(){
+        return -1;
+    }
+
+    /**
+     * The saved Arg Min if it exists.
+     * @return 
+     */
+    public ArgMinContainer<Vec> getSavedArgMin() {
+        return savedArgMin;
+    }
+    
+    
 }

@@ -9,7 +9,25 @@ import Matricies.Point;
  * @param <Vec> The Hilbert Space
  */
 public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
+    /**
+     * The surface of the half space
+     */
     protected final Plane<Vec> boundry;
+    
+    /**
+     * A name for this halfspace
+     */
+    protected String name;
+
+    /**
+     * Sets the name for this halfspace
+     * @param name
+     * @return 
+     */
+    public HalfSpace<Vec> setName(String name) {
+        this.name = name;
+        return this;
+    }
     
     
     /**
@@ -108,7 +126,7 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
 
     @Override
     public String toString() {
-        return boundary().toString().replace("=", "<=");
+        return boundary().toString().replace("=", "<=") + " " + name;
     }    
 
     @Override

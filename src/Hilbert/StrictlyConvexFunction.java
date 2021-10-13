@@ -18,4 +18,16 @@ public interface StrictlyConvexFunction<Vec extends Vector<Vec>> extends Functio
      * @return the minimum value of the function on the affine space.
      */
     public Vec argMinAffine(AffineSpace<Vec> A);
+    
+    /**
+     * The arg min over the entire Hilbert space.
+     * @return 
+     */
+    public default Vec ArgMin(){
+        return argMinAffine(AffineSpace.<Vec>allSpace());
+    }
+    
+    public default double min(AffineSpace<Vec> A){
+        return apply(argMinAffine(A));
+    }
 }

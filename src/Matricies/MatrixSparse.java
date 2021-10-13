@@ -21,6 +21,10 @@ import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.DecompositionFactory_DSCC;
 
+/**
+ * This is a sparse Matrix.  The class is not sufficiently tested.
+ * @author Kayak
+ */
 public class MatrixSparse implements Matrix {
 
     protected DMatrixSparseCSC ejmlSparse;

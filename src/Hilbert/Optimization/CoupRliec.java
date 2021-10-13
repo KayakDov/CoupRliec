@@ -1,7 +1,13 @@
-package Hilbert;
+package Hilbert.Optimization;
 
 import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPCo;
+import Hilbert.HalfSpace;
+import Hilbert.IndexedPCone;
+import Hilbert.PCone;
+import Hilbert.Polyhedron;
+import Hilbert.StrictlyConvexFunction;
+import Hilbert.Vector;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +25,8 @@ import listTools.ArgMinContainer;
  */
 public class CoupRliec<Vec extends Vector<Vec>> {
 
-    private final StrictlyConvexFunction<Vec> f;
-    private final Polyhedron<Vec> poly;
+    protected final StrictlyConvexFunction<Vec> f;
+    protected final Polyhedron<Vec> poly;
 
     public CoupRliec(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
         this.f = f;
@@ -61,51 +67,60 @@ public class CoupRliec<Vec extends Vector<Vec>> {
         if (poly.numHalfSpaces() == 0) return 1;
         return poly.getHS(0).normal().dim();
     }
-    
+
     /**
      * Does this possible minimum meet the sufficient criteria.
+     *
      * @param posMin
-     * @return 
+     * @return
      */
-    private boolean suffCrit(ArgMinContainer<Vec> posMin){
+    protected boolean suffCrit(ArgMinContainer<Vec> posMin) {
         return posMin.meetsNecCrti() && poly.hasElement(posMin.argMin());
     }
     
     /**
-     * Finds the minimum if it exists for all the affine spaces of a given codimension.
+     * Finds the minimum if it exists for all the affine spaces of a given
+     * codimension.
+     *
      * @param prevLevel all the affine spaces at the codimension - 1.
      * @param level all the affine spaces at the given codimension.
-     * @return null if there is no minimum over the polyhedron at this level, the argmin otherwise.
+     * @return null if there is no minimum over the polyhedron at this level,
+     * the argmin otherwise.
      */
-    private ArgMinContainer<Vec> posMinOnLevel(Map<ASKey, PCone<Vec>> prevLevel, Map<ASKey, PCone<Vec>> level){
+    private ArgMinContainer<Vec> posMinOnLevel(Map<ASKey, PCone<Vec>> prevLevel, Map<ASKey,PCone<Vec>> level) {
 
         return level.values().parallelStream()
-                            .map(pCone -> pCone.min(prevLevel))
-                            .filter(aMin -> suffCrit(aMin))
-                            .findAny()
-                            .orElse(null);
+                .map(pCone -> pCone.min(prevLevel))
+                .filter(aMin -> suffCrit(aMin))
+                .findAny()
+                .orElse(null);
+    }
+
+    protected int numSeqentialIterations() {
+        return Math.min(poly.numHalfSpaces(), dim());
     }
 
     /**
      * Finds the arg min over the polyhedron.
-     * @return 
+     *
+     * @return
      */
     public Vec argMin() {
-        
-        PCone pConeHilb = PCone.allSpace(f);
+
+        IndexedPCone pConeHilb = IndexedPCone.allSpace(f);
 
         Map<ASKey, PCone<Vec>> pConeCoDimI = new HashMap<>(), pConeCoDimeIPlusOne;
         pConeCoDimI.put(new ASKeyPCo(pConeHilb), pConeHilb);
 
         ArgMinContainer<Vec> min = pConeHilb.min(null);
-        if(suffCrit(min)) return min.argMin();
-        
-        int n = Math.min(poly.numHalfSpaces(), dim());
+        if (suffCrit(min)) return min.argMin();
+
+        int n = numSeqentialIterations();
 
         for (int i = 0; i < n; pConeCoDimI = pConeCoDimeIPlusOne, i++) {
             pConeCoDimeIPlusOne = coDimPlusPlus(pConeCoDimI.values());
             min = posMinOnLevel(pConeCoDimI, pConeCoDimeIPlusOne);
-            if(min != null) return min.argMin();            
+            if (min != null) return min.argMin();
         }
         return null;
 
