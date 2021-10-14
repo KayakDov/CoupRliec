@@ -34,7 +34,7 @@ public class ProjectionFunction implements Function<Point, Point> {
         Matrix nullSpaceMatrix = new RnLinearSpace(ls).matrix();
         Matrix A = RnLinearSpace.colSpaceMatrix(nullSpaceMatrix);
 
-        if (!A.isZero(epsilon)) pm = A.mult(A.pseudoInverse());
+        if (!A.isZero(epsilon) && A.rows() == p.dim()) pm = A.mult(A.pseudoInverse());
         else{
             if(A.asDense().rank() == A.asDense().numCols) {
                 if(p == null)p =  new PointD(nullSpaceMatrix.rows());

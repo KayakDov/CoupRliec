@@ -34,11 +34,11 @@ public class Main {
     
 
     public static void testSquare(){
-        PointD projecting = new PointD(-6, -8);
+        PointD projecting = new PointD(6, -8);
         System.out.println(square().proj(projecting));
     }
     public static void testCube(){
-        System.out.println(Cube().proj(new PointD(.5, 5, .4)));
+        System.out.println(Cube().proj(new PointD(3, 7, 9)));
     }
     
     

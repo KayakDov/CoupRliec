@@ -120,7 +120,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
 
         ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullMatrix());
 
-        if (nullMatrix().isSquare() && rre.hasFullRank())
+        if (rre.noFreeVariable())
             return p = nullMatrix().solve(b);
 
         Matrix append = Matrix.fromRows(

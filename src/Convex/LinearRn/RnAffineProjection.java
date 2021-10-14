@@ -33,7 +33,11 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
     
     
     public Point argMinAffine(RnAffineSpace A) {
+        try{
         if(project != null) return A.proj(project);
+        } catch(ProjectionFunction.NoProjFuncExists ex){
+            return null;
+        }
         throw new RuntimeException("No point to be projected has been set.");
     }
 
