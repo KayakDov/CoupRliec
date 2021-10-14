@@ -1,6 +1,6 @@
 package Matricies;
 
-import listTools.Pair1T;
+import tools.Pair1T;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
@@ -541,7 +541,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     public static MatrixDense randomColPoints(int numPoints, PointD center, double r) {
 
-        return new MatrixDense(center.dim(), numPoints).setCols(i -> PointD.uniformRand(center, r));
+        return new MatrixDense(center.dim(), numPoints).setCols(i -> PointD.uniformBoundedRand(center, r));
     }
 
     /**

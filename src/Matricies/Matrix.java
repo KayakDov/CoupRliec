@@ -12,7 +12,7 @@ import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import listTools.Pair1T;
+import tools.Pair1T;
 
 /**
  *

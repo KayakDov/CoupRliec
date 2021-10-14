@@ -5,12 +5,22 @@ import Hilbert.StrictlyConvexFunction;
 import Matricies.Point;
 
 /**
- *
+ * A projection function that can either be constructed as a function of
+ * affine spaces or a function of points.
  * @author Dov Neimand
  */
 public class RnAffineProjection implements StrictlyConvexFunction<Point>{
 
+    /**
+     * The space that this function projects onto.  If this is set than the
+     * function can be called on different points.
+     */
     private RnAffineSpace projectOnto;
+    
+    /**
+     * The point being projected.  If this is set, the function can be called
+     * on different affine spaces.
+     */
     private Point project;
 
     /**

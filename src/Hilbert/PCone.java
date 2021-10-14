@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-import listTools.ArgMinContainer;
+import tools.ArgMinContainer;
 
 /**
  * The ACone of an affine space is defined
@@ -16,7 +16,6 @@ import listTools.ArgMinContainer;
  */
 public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
-    
     protected ArgMinContainer<Vec> savedArgMin;
     protected final StrictlyConvexFunction<Vec> f;
 
@@ -24,13 +23,13 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      *
      * @param f the function we seek to find the minimum of
      * @param hs a list of halfspaces
-     
+     *
      */
     public PCone(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> hs) {
         super(hs);
         this.f = f;
     }
-    
+
     /**
      *
      * @param f the function we seek to find the minimum of
@@ -42,17 +41,20 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
     }
 
     /**
-     * Creates a new half space from this polyhedron's half space list list with the addon concatinated to it.
+     * Creates a new half space from this polyhedron's half space list list with
+     * the addon concatinated to it.
+     *
      * @param addOn the half space to be concatinated.
-     * @return 
+     * @return
      */
-    protected List<HalfSpace<Vec>> concatHSToList(HalfSpace<Vec> addOn){
+    protected List<HalfSpace<Vec>> concatHSToList(HalfSpace<Vec> addOn) {
         ArrayList<HalfSpace<Vec>> concatHSList
                 = new ArrayList(halfspaces.size() + 1);
         concatHSList.addAll(halfspaces);
         concatHSList.add(addOn);
         return concatHSList;
     }
+
     /**
      * Creates a new polyhedron with the additional inequality constraint.
      *
@@ -63,8 +65,7 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
     public PCone<Vec> concat(HalfSpace<Vec> addOn) {
         return new PCone<>(f, concatHSToList(addOn));
     }
-    
-    
+
     /**
      * Creates a new polyhedron with the additional inequality constraint.
      *
@@ -78,26 +79,38 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
     /**
      * Checks to see if the optimal point over the immediate superspace PCone
-     * achieved by removing the i indexed halfspace is in this PCone.  If it is
+     * achieved by removing the i indexed halfspace is in this PCone. If it is
      * then we do not meet the necessary criteria and and that optimal point is
      * the optimal point over this PCone.
+     *
      * @param i the halfspace to be removed.
-     * @param superCones an inventory of PCones that contains all the immediate superspaces.
-     * @return null if the optimal point over the immediate supercone is outside 
-     * this cone, and the optimal point over the immediate supercone if it's 
+     * @param superCones an inventory of PCones that contains all the immediate
+     * superspaces.
+     * @return null if the optimal point over the immediate supercone is outside
+     * this cone, and the optimal point over the immediate supercone if it's
      * inside this cone.
      */
     private ArgMinContainer<Vec> superCone(int i, Map<ASKey, PCone<Vec>> superCones) {
-        
-        Vec superAConeArgMin =  superCones.get(new ASKeyPConeRI(this, i)).savedArgMin.argMin();
-        
+
+        Vec superAConeArgMin = null;
+        ASKey key = new ASKeyPConeRI(this, i);
+        try {
+            superAConeArgMin = superCones.get(key).savedArgMin.argMin();
+        } catch (NullPointerException npe) {
+            System.out.println(npe.toString());
+            System.out.println("failed key is " + key);
+            System.out.println("key should be "+ new ASKeyPConeRI(this, i));
+            System.out.println("saved argmin is " + superCones.get(new ASKeyPConeRI(this, i)).savedArgMin.argMin());
+            System.out.println("Trying to pull " + new ASKeyPConeRI(this, i)
+                    + " from " + superCones.toString());
+            throw npe;
+        }
         if (getHS(i).hasElement(superAConeArgMin))
             return new ArgMinContainer<>(superAConeArgMin, false);
         return null;
+
     }
 
-    
-    
     /**
      * Returns the minimum over this polyhedral cone and weather or not this
      * cone meets the necessary criteria.
@@ -129,7 +142,6 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
         return new AffineSpace<>(stream().map(hs -> hs.boundary()).toArray(Plane[]::new));
     }
 
-
     /**
      * A polhedral cone with no half spaces, this is the entire hilbert space.
      *
@@ -140,22 +152,23 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
     public static <Vec extends Vector<Vec>> PCone<Vec> allSpace(StrictlyConvexFunction<Vec> f) {
         return new PCone<>(f, new ArrayList<>(0));
     }
-    
+
     /**
      * returns a default value for index of last halfspace.
-     * @return 
+     *
+     * @return
      */
-    public int getIndexOfLastHS(){
+    public int getIndexOfLastHS() {
         return -1;
     }
 
     /**
      * The saved Arg Min if it exists.
-     * @return 
+     *
+     * @return
      */
     public ArgMinContainer<Vec> getSavedArgMin() {
         return savedArgMin;
     }
-    
-    
+
 }

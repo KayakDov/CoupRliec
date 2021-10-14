@@ -18,6 +18,14 @@ public class ASKeyPCo extends ASKey {
         super(pCone.hashCode());
         this.halfspaces = pCone.getHalfspaces();
     }
+    
+    protected ASKeyPCo(PCone pCone, int removeIndex) {
+        super(0);
+        this.halfspaces = pCone.getHalfspaces();
+        for(int i = 0; i < pCone.numHalfSpaces(); i++) 
+            if(i != removeIndex)hashCode += pCone.getHS(i).hashCode();
+        
+    }
 
 
     /**

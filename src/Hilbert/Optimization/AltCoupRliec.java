@@ -9,8 +9,9 @@ import Hilbert.Vector;
 import java.util.*;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import listTools.Choose;
+import tools.Choose;
 
 /**
  * We accelerate the CoupRleic algorithm by ordering the half spaces and searching up before out.
@@ -18,11 +19,11 @@ import listTools.Choose;
  * @author Dov Neimand
  * @param <Vec>
  */
-public class AccCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
+public class AltCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
 
     private final ArrayList<Map<ASKey, PCone<Vec>>> affSpacesCoDimI;
 
-    public AccCoupRliec(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
+    public AltCoupRliec(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
         super(f, halfSpaces);
         affSpacesCoDimI = new ArrayList<>(numSeqentialIterations() + 1);
         int n = numSeqentialIterations();
@@ -35,7 +36,7 @@ public class AccCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
 
     
     public Map<ASKey, PCone<Vec>> nextPConeTear(int coDim, HalfSpace<Vec> hs, Map<ASKey, PCone<Vec>> superConeAddOns){
-        Map<ASKey, PCone<Vec>> superCones = new HashMap<>(superConeAddOns.size() + affSpacesCoDimI.get(coDim).size());
+        Map<ASKey, PCone<Vec>> superCones = new ConcurrentHashMap<>(superConeAddOns.size() + affSpacesCoDimI.get(coDim).size());
         superCones.putAll(affSpacesCoDimI.get(coDim));
         superCones.putAll(superConeAddOns);
         

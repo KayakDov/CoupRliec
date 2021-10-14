@@ -126,7 +126,7 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
 
     @Override
     public String toString() {
-        return boundary().toString().replace("=", "<=") + " " + name;
+        return boundary().toString().replace("=", "<=") + " " + (name != null? name:"");
     }    
 
     @Override

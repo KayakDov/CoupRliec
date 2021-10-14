@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import listTools.ArgMinContainer;
+import tools.ArgMinContainer;
 
 /**
  * The algorithm spelled out in Hilbert-Space Convex Optimization Utilizing

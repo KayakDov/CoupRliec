@@ -7,7 +7,7 @@ import Hilbert.Polyhedron;
 import java.util.List;
 import Convex.LinearRn.RnPlane;
 import Convex.LinearRn.RnAffineSpace;
-import Hilbert.Optimization.AccCoupRliec;
+import Hilbert.Optimization.AltCoupRliec;
 import Hilbert.Optimization.CoupRliec;
 import Hilbert.Plane;
 import Matricies.Matrix;
@@ -24,7 +24,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import listTools.Choose;
+import tools.Choose;
 
 /**
  *
@@ -436,8 +436,27 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return new AccCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+        return new AltCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
 //        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+    }
+    
+    /**
+     * Uses the CoupRleic standard algorithm to compute the projection
+     * @param p
+     * @return 
+     */
+    public Point projCoupRleic(Point p){
+        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+    }
+    /**
+     * Uses the variation utilizing a partial ordering on the CoupRleic algorithm
+     * to find the projection.
+     * @param p
+     * @return 
+     */
+    public Point projCoupRliecVar(Point p) {
+        return new AltCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+
     }
 
     /**
@@ -453,7 +472,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
         RnPolyhedron poly = new RnPolyhedron();
         IntStream.range(0, numFaces).forEach(i -> {
 
-            PointD random = PointD.uniformRand(new PointD(dim), radius);
+            PointD random = PointD.uniformBoundedRand(new PointD(dim), radius);
 
             random.multMe(radius * (rand.nextDouble() + 1) / random.magnitude());
 
@@ -474,8 +493,8 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
         RnPolyhedron poly = new RnPolyhedron();
         IntStream.range(0, numFaces).forEach(i -> {
-            PointD random1 = PointD.uniformRand(new PointD(dim), radius);
-            PointD random2 = PointD.uniformRand(new PointD(dim), radius);
+            PointD random1 = PointD.uniformBoundedRand(new PointD(dim), radius);
+            PointD random2 = PointD.uniformBoundedRand(new PointD(dim), radius);
 
             poly.add(new HalfSpace<Point>(random1.mult(radius), random2.mult(1 / random2.magnitude())));
         });

@@ -1,6 +1,6 @@
 package Matricies;
 
-import listTools.Pair1T;
+import tools.Pair1T;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;

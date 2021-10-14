@@ -400,10 +400,10 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
 
     /**
-     * creates start one dimensional point
+     * creates a one dimensional point
      *
      * @param x the value of the point
-     * @return start one dimensional point located at x
+     * @return a one dimensional point located at x
      */
     public static PointD oneD(double x) {
         return new PointD(new double[]{x});
@@ -412,30 +412,27 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public static Random rand = new Random(1);
 
     /**
-     * generates start vertex randomly distributed in start sphere of radius r
-     * around start central point.
+     * generates a vertex randomly distributed in a sphere of radius r
+     * around a central point.
      *
-     * @param dim the space the point is in
      * @param center the center of the sphere the vertes is randomly generated
      * in.
      * @param r the radius of the sphere.
-     * @param rand the random number generator.
-     * @return start random vertex in start sphere.
+     * @return a random vertex in a sphere.
      */
-    public static PointD uniformRand(PointD center, double r) {
+    public static PointD uniformBoundedRand(PointD center, double r) {
         return center.mapToDense(t -> t + r * (2 * rand.nextDouble() - 1));
     }
 
     /**
-     * creates start new point with start gaussian distribution near the
+     * creates a new point with a gaussian distribution near the
      * provided mean.
      *
      * @param dim the dimensions of the new point
      * @param mean the center of the distribution
      * @param standardDeviation the standard deviation of the distribution.
-     * @param r
      * @param rand the random number generator
-     * @return start new randomly distributed point.
+     * @return a new randomly distributed point.
      */
     public static PointD gaussianRand(int dim, PointD mean, PointD standardDeviation, Random rand) {
         return new PointD(dim).setAll(i -> rand.nextGaussian()
