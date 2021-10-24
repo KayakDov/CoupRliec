@@ -13,7 +13,9 @@ public abstract class Time {
      * @return how long does the function take.
      */
     public static long inMilli(TimeableVoid timeable){
-        return timeable.time();
+        final long start = System.currentTimeMillis();
+        timeable.doSomething();
+        return System.currentTimeMillis() - start;
     }
 
     /**
@@ -26,14 +28,5 @@ public abstract class Time {
          */
         public void doSomething();
 
-        /**
-         * How long does it take to do something.
-         * @return 
-         */
-        public default long time() {
-            final long start = System.currentTimeMillis();
-            doSomething();
-            return System.currentTimeMillis() - start;
-        }
     }
 }

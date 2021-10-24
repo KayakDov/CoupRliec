@@ -7,9 +7,9 @@ import Hilbert.Polyhedron;
 import java.util.List;
 import Convex.LinearRn.RnPlane;
 import Convex.LinearRn.RnAffineSpace;
-import Hilbert.Optimization.AltCoupRliec;
+import Hilbert.Optimization.CoupRliecOrderedHalfSpaces;
 import Hilbert.Optimization.CoupRliec;
-import Hilbert.Plane;
+import Hilbert.Optimization.CoupRliecPointMethod;
 import Matricies.Matrix;
 import Matricies.Point;
 import Matricies.PointD;
@@ -24,7 +24,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import tools.Choose;
+import tools.Combinatorics;
 
 /**
  *
@@ -346,16 +346,9 @@ public class RnPolyhedron extends Polyhedron<Point>{
      */
     public Point bruteForceProjection(Point y) {
 
-        if (hasElement(y, epsilon)) {
-            return y;
-        }
-
         try {
             return affineSubSpaces().map(as -> as.proj(y))
-                    .filter(asProj -> {
-//                        System.out.println(stream().mapToDouble(hs -> hs.d(asProj)).sum());
-                        return hasElement(asProj, epsilon);
-                    })
+                    .filter(asProj -> hasElement(asProj, epsilon))
                     .min(Comparator.comparing(p -> p.d(y))).get();
         } catch (NoSuchElementException ex) {
 
@@ -404,13 +397,10 @@ public class RnPolyhedron extends Polyhedron<Point>{
     public Stream<RnAffineSpace> affineSubSpaces(int maxHSPerIntersection) {
 
         return IntStream
-                .rangeClosed(1, maxHSPerIntersection)
+                .range(0, maxHSPerIntersection)
                 .mapToObj(i -> i)
-                .flatMap(i
-                        -> new Choose(planes().collect(Collectors.toList()), i)
-                        .chooseStream())
-                .map(planeArray -> new RnAffineSpace(planeArray));
-
+                .flatMap(i -> Combinatorics.choose(planes().collect(Collectors.toList()), i))
+                .map(planeSet -> new RnAffineSpace(planeSet));
     }
 
 
@@ -436,7 +426,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return new AltCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+        return new CoupRliecOrderedHalfSpaces<>(new RnAffineProjection(p), halfspaces).argMin();
 //        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
     }
     
@@ -454,9 +444,17 @@ public class RnPolyhedron extends Polyhedron<Point>{
      * @param p
      * @return 
      */
-    public Point projCoupRliecVar(Point p) {
-        return new AltCoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
-
+    public Point projCoupRliecOrderedHalfSpaces(Point p) {
+        return new CoupRliecOrderedHalfSpaces<>(new RnAffineProjection(p), halfspaces).argMin();
+    }
+    /**
+     * Uses the variation utilizing a partial ordering on the CoupRleic algorithm
+     * to find the projection.
+     * @param p
+     * @return 
+     */
+    public Point projCoupRliecPointMethod(Point p) {
+        return new CoupRliecPointMethod(new RnAffineProjection(p), halfspaces).argMin();
     }
 
     /**

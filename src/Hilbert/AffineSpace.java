@@ -113,7 +113,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         return linearSpace.normals;
     }
 
-    public AffineSpace(AffineSpace<Vec> as){
+    public AffineSpace(AffineSpace<Vec> as) {
         this(as.linearSpace, as.b);
     }
 
@@ -123,13 +123,16 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param planes The planes that intersect to form this affine space.
      */
     public AffineSpace(Plane<Vec>[] planes) {
-        Vec[] normals = (Vec[]) (Array.newInstance(
-                planes[0].normal().getClass(),
-                planes.length
-        ));
-        Arrays.setAll(normals, i -> planes[i].normal());
-        b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
-        linearSpace = new LinearSpace(normals);
+        if (planes.length != 0) {
+
+            Vec[] normals = (Vec[]) (Array.newInstance(
+                    planes[0].normal().getClass(),
+                    planes.length
+            ));
+            Arrays.setAll(normals, i -> planes[i].normal());
+            b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
+            linearSpace = new LinearSpace(normals);
+        }
         setHashCode();
     }
 
@@ -195,7 +198,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param space
      * @return a new affine space
      */
-    public static<Vec extends Vector<Vec>> AffineSpace<Vec> intersection(AffineSpace<Vec>[] space) {
+    public static <Vec extends Vector<Vec>> AffineSpace<Vec> intersection(AffineSpace<Vec>[] space) {
         if (space.length == 0)
             throw new RuntimeException("Empty intersection?");
         return intersection(Arrays.stream(space));
@@ -207,7 +210,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @param space
      * @return a new affine space
      */
-    public static<Vec extends Vector<Vec>> AffineSpace<Vec> intersection(Stream<? extends AffineSpace<Vec>> space) {
+    public static <Vec extends Vector<Vec>> AffineSpace<Vec> intersection(Stream<? extends AffineSpace<Vec>> space) {
         return space.map(as -> (AffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
     }
 
@@ -222,7 +225,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public String toString() {
-        return linearSpace().toString()+"*x = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
+        return linearSpace().toString() + "*x = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
     }
 
     private long subSpaceDim = -2;
@@ -281,7 +284,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public int hashCode() {
-        if(!hashCodeIsSet)setHashCode();
+        if (!hashCodeIsSet) setHashCode();
         return hashCode;
     }
 
@@ -306,7 +309,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     }
 
-    
     /**
      * The hash value for this function.
      */
@@ -316,13 +318,15 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * Is the hashcode set?
      */
     public boolean hashCodeIsSet = false;
-    
+
     /**
      * Sets the hashcode.
      */
     protected void setHashCode() {
-        hashCode = ASKey.hashCodeGenerator(linearSpace.normals, b);
+        if(isAllSpace()) hashCode = 0;
+        else hashCode = ASKey.hashCodeGenerator(linearSpace.normals, b);
         hashCodeIsSet = true;
+        
     }
 
 //    /**
@@ -356,7 +360,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
     @Override
     public Vec proj(Vec x) {
-        
+
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

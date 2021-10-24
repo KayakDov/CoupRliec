@@ -1,9 +1,7 @@
 package Convex.ASKeys;
 
 import Hilbert.PCone;
-import Hilbert.HalfSpace;
 import Hilbert.Plane;
-import java.util.List;
 
 /**
  * Affine space keys for ACones
@@ -12,21 +10,28 @@ import java.util.List;
  */
 public class ASKeyPCo extends ASKey {
 
-    protected final List<HalfSpace> halfspaces;
+    protected final PCone halfspaces;
 
     public ASKeyPCo(PCone pCone) {
         super(pCone.hashCode());
-        this.halfspaces = pCone.getHalfspaces();
+        this.halfspaces = pCone;
     }
     
     protected ASKeyPCo(PCone pCone, int removeIndex) {
         super(0);
-        this.halfspaces = pCone.getHalfspaces();
+        this.halfspaces = pCone;
         for(int i = 0; i < pCone.numHalfSpaces(); i++) 
             if(i != removeIndex)hashCode += pCone.getHS(i).hashCode();
         
     }
-
+    
+    /**
+     * how many half spaces intersect to make this PCone.
+     * @return 
+     */
+    public int coDim(){
+        return halfspaces.numHalfSpaces();
+    }
 
     /**
      * The boundary of the halfspace of index i
@@ -35,15 +40,18 @@ public class ASKeyPCo extends ASKey {
      * @return
      */
     public Plane get(int i) {
-        return halfspaces.get(i).boundary();
+        return halfspaces.getHS(i).boundary();
     }
 
     @Override
     public boolean equals(ASKeyPCo askaco) {
-        for (int i = 0; i < halfspaces.size(); i++)
+        for (int i = 0; i < halfspaces.numHalfSpaces(); i++)
             if (!askaco.get(i).equals(get(i)))
                 return false;
         return true;
     }
 
+    public PCone generatePCone(){
+        return new PCone(halfspaces);
+    }
 }

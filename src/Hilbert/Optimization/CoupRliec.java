@@ -8,6 +8,7 @@ import Hilbert.PCone;
 import Hilbert.Polyhedron;
 import Hilbert.StrictlyConvexFunction;
 import Hilbert.Vector;
+import java.awt.Choice;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import tools.ArgMinContainer;
+import tools.Combinatorics;
 
 /**
  * The algorithm spelled out in Hilbert-Space Convex Optimization Utilizing
@@ -37,6 +39,28 @@ public class CoupRliec<Vec extends Vector<Vec>> {
         this.f = f;
         this.poly = poly;
     }
+    
+    /**
+     * This gives the total number of affine spaces.
+     * @return 
+     */
+    private int totallNumberOfAffineSpaces(){
+        int tot = 0;
+        for(int i = 0; i <= numSeqentialIterations(); i++)
+            tot += Combinatorics.choose(poly.numHalfSpaces(), i);
+        return tot;
+    }
+
+    /**
+     * The percent of affine spaces the minimum value was computed over.
+     * @return 
+     */
+    public double fracAffineSpacesChecked() {
+        argMin();
+        return (double)numAffineSpacesChecked/totallNumberOfAffineSpaces();
+    }
+    
+    
 
     /**
      * The next set of affine spaces of the polyhedron of codimension i+1
@@ -64,7 +88,7 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @return
      */
     public int dim() {
-        if (poly.numHalfSpaces() == 0) return 1;
+        if (poly.numHalfSpaces() == 0) throw new NullPointerException("The polyhedron is empty.");
         return poly.getHS(0).normal().dim();
     }
 
@@ -75,6 +99,7 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * @return
      */
     protected boolean suffCrit(ArgMinContainer<Vec> posMin) {
+        if(posMin.meetsNecCrti()) numAffineSpacesChecked++;
         return posMin.meetsNecCrti() && poly.hasElement(posMin.argMin());
     }
     
@@ -96,10 +121,20 @@ public class CoupRliec<Vec extends Vector<Vec>> {
                 .orElse(null);
     }
 
+    /**
+     * The maximum of the number of half space or the number of dimensions.
+     * This is the minimum number of iterations required.
+     * @return 
+     */
     protected int numSeqentialIterations() {
         return Math.min(poly.numHalfSpaces(), dim());
     }
 
+    /**
+     * This variable is meant to track the number of affine spaces checked when the
+     * algorithm is fun.
+     */
+    private int numAffineSpacesChecked = 0;
     /**
      * Finds the arg min over the polyhedron.
      *
@@ -125,5 +160,5 @@ public class CoupRliec<Vec extends Vector<Vec>> {
         return null;
 
     }
-
+    
 }

@@ -52,6 +52,19 @@ public class Polyhedron<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         return halfspaces.stream();
     }
     
+    
+    /**
+     * A stream of the halfspaces that intersect to form this polyhedron
+     * @return 
+     */
+    public Stream<Plane<Vec>> planeStream(){
+        return halfspaces.stream().map(hs ->hs.boundry);
+    }
+    
+    public List<Plane<Vec>> planeList(){
+        return planeStream().collect(Collectors.toList());
+    }
+    
     @Override
     public boolean hasElement(Vec x) {
         return stream().allMatch(hs -> hs.hasElement(x));

@@ -1,6 +1,7 @@
 package Matricies;
 import Convex.ConvexSet;
 import Convex.LinearRn.RnPlane;
+import Hilbert.Vector;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.DoubleStream;

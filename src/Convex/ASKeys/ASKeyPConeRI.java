@@ -1,7 +1,10 @@
 package Convex.ASKeys;
 
+import Hilbert.GeneratingPCone;
+import Hilbert.HalfSpace;
 import Hilbert.PCone;
 import Hilbert.Plane;
+import java.util.ArrayList;
 
 /**
  *
@@ -28,11 +31,14 @@ public class ASKeyPConeRI extends ASKeyPCo{
 
     @Override
     public boolean equals(ASKeyPCo askaco) {
-        for (int i = 0; i < halfspaces.size() - 1; i++)
+        for (int i = 0; i < halfspaces.numHalfSpaces() - 1; i++)
             if (!askaco.get(i).equals(get(i)))
                 return false;
         return true;
     }
-    
-    
+
+    @Override
+    public int coDim() {
+        return super.coDim() - 1; 
+    }
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import tools.ArgMinContainer;
 
 /**
@@ -18,6 +19,16 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
     protected ArgMinContainer<Vec> savedArgMin;
     protected final StrictlyConvexFunction<Vec> f;
+    
+    
+    /**
+     * Copy constructor
+     * @param pCone
+     */
+    public PCone(PCone<Vec> pCone) {
+        super(pCone.halfspaces);
+        this.f = pCone.f;
+    }
 
     /**
      *
@@ -79,38 +90,39 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
     /**
      * Checks to see if the optimal point over the immediate superspace PCone
-     * achieved by removing the i indexed halfspace is in this PCone. If it is
+     * achieved by removing the i indexed halfspace is in this PCone.If it is
      * then we do not meet the necessary criteria and and that optimal point is
      * the optimal point over this PCone.
      *
+     * @param superCone an immediate supercone of this one.
      * @param i the halfspace to be removed.
-     * @param superCones an inventory of PCones that contains all the immediate
-     * superspaces.
      * @return null if the optimal point over the immediate supercone is outside
      * this cone, and the optimal point over the immediate supercone if it's
      * inside this cone.
      */
-    private ArgMinContainer<Vec> superCone(int i, Map<ASKey, PCone<Vec>> superCones) {
+    protected ArgMinContainer<Vec> meetsNecesary(PCone<Vec> superCone, int i) {
 
-        Vec superAConeArgMin = null;
-        ASKey key = new ASKeyPConeRI(this, i);
-        try {
-            superAConeArgMin = superCones.get(key).savedArgMin.argMin();
-        } catch (NullPointerException npe) {
-            System.out.println(npe.toString());
-            System.out.println("failed key is " + key);
-            System.out.println("key should be "+ new ASKeyPConeRI(this, i));
-            System.out.println("saved argmin is " + superCones.get(new ASKeyPConeRI(this, i)).savedArgMin.argMin());
-            System.out.println("Trying to pull " + new ASKeyPConeRI(this, i)
-                    + " from " + superCones.toString());
-            throw npe;
-        }
+        Vec superAConeArgMin = superCone.getSavedArgMin().argMin();
         if (getHS(i).hasElement(superAConeArgMin))
             return new ArgMinContainer<>(superAConeArgMin, false);
         return null;
 
     }
+    
+    /**
+     * Retrieves the supercone from the map of cones with one less codim than the current;
+     * @param i the index of the half space that is in this cone but not the desired supercone
+     * @param superCones all of the cones with codim one less than this one, to include the desired supercone.
+     * @return a supercone like this cone, but without constraint i.
+     */
+    private PCone<Vec> superCone(int i, Map<ASKey, PCone<Vec>> superCones){
+        return superCones.get(new ASKeyPConeRI(this, i));
+    }
 
+    protected ArgMinContainer<Vec> allSpaceArgMin(){
+        return new ArgMinContainer(f.argMinAffine(AffineSpace.<Vec>allSpace()), true);
+    }
+    
     /**
      * Returns the minimum over this polyhedral cone and weather or not this
      * cone meets the necessary criteria.
@@ -121,15 +133,12 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      */
     public ArgMinContainer<Vec> min(Map<ASKey, PCone<Vec>> superCones) {
         if (isAllSpace())
-            savedArgMin = new ArgMinContainer(f.argMinAffine(AffineSpace.<Vec>allSpace()), true);
+            return savedArgMin = allSpaceArgMin();
 
-        else savedArgMin = IntStream.range(0, halfspaces.size()).parallel()
-                    .mapToObj(i -> superCone(i, superCones))
-                    .filter(obj -> obj != null)
-                    .findAny()
-                    .orElse(new ArgMinContainer<>(f.argMinAffine(affineSpace()), true));
-
-        return savedArgMin;
+        return savedArgMin = findAnyOrAffine(
+                intStream()
+                    .mapToObj(i -> meetsNecesary(superCone(i, superCones), i))
+        );
 
     }
 
@@ -138,7 +147,7 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      *
      * @return
      */
-    private AffineSpace<Vec> affineSpace() {
+    protected AffineSpace<Vec> affineSpace() {
         return new AffineSpace<>(stream().map(hs -> hs.boundary()).toArray(Plane[]::new));
     }
 
@@ -171,4 +180,33 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
         return savedArgMin;
     }
 
+    /**
+     * 
+     * @return the function to be optimized over this cones
+     */
+    public StrictlyConvexFunction<Vec> getF() {
+        return f;
+    }
+    
+    /**
+     * This methods checks to see if any of the argmin containers disqualify this
+     * PCone.If none do, then it calculates the optimal point over this affine 
+     * space.
+     * @param stream a stream of argMin containers
+     * @return 
+     */
+    protected ArgMinContainer findAnyOrAffine(Stream<ArgMinContainer> stream){
+        return stream.filter(obj -> obj != null)
+                    .findAny()
+                    .orElse(new ArgMinContainer<>(f.argMinAffine(affineSpace()), true));
+    }
+    
+    /**
+     * an integer for each half space
+     * @return a parallel stream of integers, one for each half space.
+     */
+    protected IntStream intStream(){
+        return IntStream.range(0, halfspaces.size()).parallel();
+    }
+    
 }

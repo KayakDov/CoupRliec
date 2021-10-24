@@ -59,7 +59,7 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
     @Override
     public Double apply(Point t) {
         if(projectOnto != null) return projectOnto.d(t);
-        throw new RuntimeException("No affine space to project onto has been set.");
+        return Double.valueOf(0);
     }
     
     /**

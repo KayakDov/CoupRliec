@@ -78,6 +78,16 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
     public RnAffineSpace(RnPlane[] planes) {
         super(planes);
     }
+    
+    
+    /**
+     * The constructor.
+     *
+     * @param planes The planes that intersect to form this affine space.
+     */
+    public RnAffineSpace(Set<RnPlane> planes) {
+        this(planes.toArray(RnPlane[]::new));
+    }
 
     /**
      * A constructor

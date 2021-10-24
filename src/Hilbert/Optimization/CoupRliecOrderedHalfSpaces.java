@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import tools.Choose;
+import tools.Combinatorics;
 
 /**
  * We accelerate the CoupRleic algorithm by ordering the half spaces and searching up before out.
@@ -19,22 +19,36 @@ import tools.Choose;
  * @author Dov Neimand
  * @param <Vec>
  */
-public class AltCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
+public class CoupRliecOrderedHalfSpaces<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
 
-    private final ArrayList<Map<ASKey, PCone<Vec>>> affSpacesCoDimI;
+    protected final ArrayList<Map<ASKey, PCone<Vec>>> affSpacesCoDimI;
+    
 
-    public AltCoupRliec(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
+    /**
+     * The constructor
+     * @param f the function to optimize
+     * @param halfSpaces the half spaces optimized over
+     */
+    public CoupRliecOrderedHalfSpaces(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
         super(f, halfSpaces);
         affSpacesCoDimI = new ArrayList<>(numSeqentialIterations() + 1);
         int n = numSeqentialIterations();
         for (int i = 0; i < n + 1; i++)
-            affSpacesCoDimI.add(new HashMap<>(Choose.choose(halfSpaces.size(), i)));
+            affSpacesCoDimI.add(new HashMap<>(Combinatorics.choose(halfSpaces.size(), i)));
         PCone allSpace = PCone.allSpace(f);
         allSpace.min(affSpacesCoDimI.get(0));
         affSpacesCoDimI.get(0).put(new ASKeyPCo(allSpace), allSpace);
     }
 
-    
+    /**
+     * Generates the next outer iteration of PCones.  If the current iteration
+     * is all teh PCones of codimension i, then this will return all the 
+     * PCones of codimension i+1.
+     * @param coDim the codimension of the current level of PCones, not the next level.
+     * @param hs The half space most recently added to the list of half spaces.
+     * @param superConeAddOns the list of supercones that are subets of the halfspace hs
+     * @return The next tear of PCones that have hs in them.
+     */
     public Map<ASKey, PCone<Vec>> nextPConeTear(int coDim, HalfSpace<Vec> hs, Map<ASKey, PCone<Vec>> superConeAddOns){
         Map<ASKey, PCone<Vec>> superCones = new ConcurrentHashMap<>(superConeAddOns.size() + affSpacesCoDimI.get(coDim).size());
         superCones.putAll(affSpacesCoDimI.get(coDim));
@@ -47,6 +61,13 @@ public class AltCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
             }).collect(Collectors.toMap(pCone -> new ASKeyPCo(pCone), pCone -> pCone));
     }
     
+    /**
+     * Pass the next half space into here to examine the intersections of this
+     * half space and all the ones studied so far.
+     * @param hs the half space being added
+     * @return the optimal point in the polyhedron if it can be found by adding
+     * this half space to those already studied.
+     */
     private Vec nextHalfSpace(HalfSpace<Vec> hs) {
 
         int n = numSeqentialIterations();
@@ -62,6 +83,10 @@ public class AltCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
         return null;
     }
 
+    /**
+     * Sorts the half spaces by -f.min(hs.boundary())
+     * @param argMinHilb 
+     */
     private void sortHalfSpaces(Vec argMinHilb){
         
         poly.getHalfspaces().sort(Comparator.comparingDouble(hs -> {
@@ -81,4 +106,5 @@ public class AltCoupRliec<Vec extends Vector<Vec>> extends CoupRliec<Vec> {
         }
         return null;
     }
+    
 }
