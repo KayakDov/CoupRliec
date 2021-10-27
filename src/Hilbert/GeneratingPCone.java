@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import tools.ArgMinContainer;
 
@@ -21,17 +22,17 @@ import tools.ArgMinContainer;
  */
 public class GeneratingPCone extends PCone<Point> {
 
-    private final ArrayList<Map<ASKey, GeneratingPCone>> memoization;
+    private final ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization;
     private final Polyhedron<Point> poly;
     private boolean meetsSufficient = false;
 
-    public GeneratingPCone(StrictlyConvexFunction<Point> f, List<HalfSpace<Point>> hs, ArrayList<Map<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
+    public GeneratingPCone(StrictlyConvexFunction<Point> f, List<HalfSpace<Point>> hs, ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
         super(f, hs);
         this.memoization = memoization;
         this.poly = poly;
     }
     
-    public GeneratingPCone(StrictlyConvexFunction<Point> f, Set<HalfSpace<Point>> hs, ArrayList<Map<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
+    public GeneratingPCone(StrictlyConvexFunction<Point> f, Set<HalfSpace<Point>> hs, ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
         this(f, new ArrayList<>(hs), memoization, poly);
     }
 
@@ -118,7 +119,7 @@ public class GeneratingPCone extends PCone<Point> {
      * @param poly
      * @return
      */
-    public static GeneratingPCone allSpace(StrictlyConvexFunction<Point> f, ArrayList<Map<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
+    public static GeneratingPCone allSpace(StrictlyConvexFunction<Point> f, ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
         return new GeneratingPCone(f, new ArrayList<>(0), memoization, poly);
     }
 

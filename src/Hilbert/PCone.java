@@ -196,9 +196,13 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
      * @return 
      */
     protected ArgMinContainer findAnyOrAffine(Stream<ArgMinContainer> stream){
+        try{
         return stream.filter(obj -> obj != null)
                     .findAny()
                     .orElse(new ArgMinContainer<>(f.argMinAffine(affineSpace()), true));
+        }catch(ClassCastException cce){
+            throw cce;
+        }
     }
     
     /**

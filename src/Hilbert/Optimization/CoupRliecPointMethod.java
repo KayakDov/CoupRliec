@@ -4,19 +4,13 @@ import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPCo;
 import Hilbert.GeneratingPCone;
 import Hilbert.HalfSpace;
-import Hilbert.PCone;
 import Hilbert.StrictlyConvexFunction;
-import Matricies.Matrix;
-import Matricies.MatrixDense;
 import Matricies.Point;
-import Matricies.PointD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import tools.Combinatorics;
 
@@ -26,7 +20,7 @@ import tools.Combinatorics;
  */
 public class CoupRliecPointMethod extends CoupRliec<Point> {
 
-    protected final ArrayList<Map<ASKey, GeneratingPCone>> memoization;
+    protected final ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization;
 
     /**
      * The constructor
@@ -36,10 +30,12 @@ public class CoupRliecPointMethod extends CoupRliec<Point> {
      */
     public CoupRliecPointMethod(StrictlyConvexFunction<Point> f, List<HalfSpace<Point>> halfSpaces) {
         super(f, halfSpaces);
-        memoization = new ArrayList<>(numSeqentialIterations() + 1);
         int n = numSeqentialIterations();
+        memoization = new ArrayList<>(n + 1);
+
         for (int i = 0; i < n + 1; i++)
-            memoization.add(new HashMap<>(Combinatorics.choose(halfSpaces.size(), i)));
+            memoization.add(new ConcurrentHashMap<>(Combinatorics.choose(halfSpaces.size(), i)));
+        
         GeneratingPCone allSpace = GeneratingPCone.allSpace(f, memoization, poly);
         allSpace.min();
         memoization.get(0).put(new ASKeyPCo(allSpace), allSpace);
@@ -47,21 +43,24 @@ public class CoupRliecPointMethod extends CoupRliec<Point> {
 
     @Override
     public Point argMin() {
-        if (dim() < poly.numHalfSpaces()) {
-            List<GeneratingPCone> pCones
-                    = Combinatorics.choose(new HashSet<>(poly.getHalfspaces()), dim())
-                            .parallelStream()
-                            .map(hsSet -> new GeneratingPCone(f, hsSet, memoization, poly))
-                            .collect(Collectors.toList());
 
-            pCones = pCones.parallelStream().filter(p -> poly.hasElement(p.point())).collect(Collectors.toList());
-            pCones.sort(Comparator.comparingDouble(cone -> f.apply(cone.point())));
+        if (dim() < poly.numHalfSpaces()) {
+            GeneratingPCone[] pCones
+                    = Combinatorics.choose(poly.getHalfspaces(), dim())
+                            .map(hsList -> new GeneratingPCone(f, hsList, memoization, poly))
+                            .filter(p -> poly.hasElement(p.point()))
+                            .sorted(Comparator.comparingDouble(cone -> f.apply(cone.point())))
+                            .toArray(GeneratingPCone[]::new);
 
             for (GeneratingPCone gpc : pCones) {
                 if (gpc.getMeetsSufficient())
                     return gpc.getSavedArgMin().argMin();
             }
+
+            System.out.println("Hilbert.Optimization.CoupRliecPointMethod.argMin()");
+            System.out.println("Something went wrong.");
         }
+
         return new CoupRliecOrderedHalfSpaces<>(f, poly.getHalfspaces()).argMin();
 
     }

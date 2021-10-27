@@ -19,17 +19,31 @@ import java.util.stream.Stream;
  */
 public class Combinatorics {
 
-    private static<T> ArrayList<T> add(List<T> list, T i) {
+    /**
+     * duplicates a list and adds an item to it.
+     * @param <T> the type of the list
+     * @param list the list being added to
+     * @param i the item to be added to the list
+     * @return a new list with the given item added to it.
+     */
+    private static <T> ArrayList<T> add(List<T> list, T i) {
         ArrayList<T> add = new ArrayList<>(list.size() + 1);
-        add.add(i);
         add.addAll(list);
+        add.add(i);
         return add;
     }
 
+    /**
+     * takes in a an n choose k -1 list and returns and n choose k list
+     * @param chooseList a list of all the elements in n choose k - 1
+     * @param n the total number of integers being chosen from
+     * @param remaining how many more times will this method be called recursively
+     * @return a new list of all the n choose k combinatons.
+     */
     private static Stream<List<Integer>> nextChoose(Stream<List<Integer>> chooseList, int n, int remaining) {
 
         return chooseList.flatMap(list -> IntStream
-                .range(list.get(0) + 1, n + 1 - remaining).mapToObj(i -> add(list, i))
+                .range(list.get(list.size() - 1) + 1, n + 1 - remaining).mapToObj(i -> add(list, i))
         );
     }
 
@@ -52,6 +66,13 @@ public class Combinatorics {
         return chooseList;
     }
 
+    /**
+     * All the subsets of the given set of size k
+     * @param <T> the type of element in the lists
+     * @param chooseFrom the list that the sublists will be chosen from.
+     * @param k the size of the sublists
+     * @return all the sublists of the given list of size k.
+     */
     public static <T> Stream<List<T>> choose(List<T> chooseFrom, int k) {
         return chooseIntegers(chooseFrom.size(), k).map(intList
                 -> intList.stream()
@@ -61,27 +82,18 @@ public class Combinatorics {
 
     
     /**
-     * @param <T>
-     * @param set
-     * @return 
+     * The power set of the given list
+     * @param <T> the type of elements in the set
+     * @param list 
+     * @return a stream of all the subsets of the given set.
      */
-    public static <T> Stream<List<T>> powerSet(List<T> set) {
-        return powerSet(set, 0);
-    }
-
-    /**
-     * The power
-     *
-     * @param <T>
-     * @param list the set you want the power set of
-     * @return
-     */
-    private static <T> Stream<List<T>> powerSet(List<T> list, int i) {
+    public static <T> Stream<List<T>> powerSet(List<T> list) {
         Stream<List<T>> lists = Stream.of(new ArrayList<>(0));
         for(T t: list)
             lists = lists.flatMap(subList -> Stream.of(subList, add(subList,t))).parallel();
         return lists;
     }
+
 
 
     /**
@@ -108,11 +120,11 @@ public class Combinatorics {
         set.add("c");
         set.add("d");
 
-        int n = 4, k = 2;
-        Combinatorics.powerSet(set).forEach(System.out::print);
+        int k = 1;
+        Combinatorics.choose(set, k).forEach(System.out::print);
         System.out.println("");
-        System.out.println("wnumber of elements is "
-                + powerSet(set).count());
-        System.out.println("We should have " + Math.pow(2, set.size()));
+        System.out.println("number of elements is "
+                + choose(set, k).count());
+        System.out.println("We should have " + choose(set.size(), k));
     }
 }
