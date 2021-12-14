@@ -22,7 +22,7 @@ public class RnPlane extends Plane<Point> {
      * @param normal a vector normal to the plane
      */
     public RnPlane(Point p, Point normal) {
-        super(normal, normal);
+        super(p, normal);
 
     }
 

@@ -340,20 +340,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     }
 
 
-    public PointD(double x, double y) {
-        this(2);
-        set(0, x);
-        set(1, y);
-        setHash();
-    }
-
-    public PointD(double x, double y, double z) {
-        this(3);
-        set(0, x);
-        set(1, y);
-        set(2, z);
-        setHash();
-    }
+    
 
     public double x() {
         return get(0);
