@@ -72,7 +72,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      */
     public AffineSpace<Vec> setP(Vec onSpace) {
         if (!linearSpace.isAllSpace() && b == null) {
-            b = new PointD(linearSpace.normals().length).setAll(i -> linearSpace.normals()[i].ip(onSpace));
+            b = new PointD(linearSpace.normals().length, i -> linearSpace.normals()[i].ip(onSpace));
             setHashCode();
         } else hashCode = 0;
         p = onSpace;
@@ -130,7 +130,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
                     planes.length
             ));
             Arrays.setAll(normals, i -> planes[i].normal());
-            b = new PointD(planes.length).setAll(i -> planes[i].b.get(0));
+            b = new PointD(planes.length, i -> planes[i].b.get(0));
             linearSpace = new LinearSpace(normals);
         }
         setHashCode();

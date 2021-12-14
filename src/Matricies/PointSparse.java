@@ -37,22 +37,6 @@ public class PointSparse extends MatrixSparse implements Point{
     }
 
     @Override
-    public PointSparse addToMe(Point p) {
-        if(p.isDense()) setAll(i -> get(i) + p.get(i));
-        else p.asSparse().nonZeroes().forEach(coord -> set(coord.row, get(coord.row) + coord.value));
-        return this;
-    }
-    
-    public PointSparse addToMe(PointD p) {
-        return setAll(i -> get(i) + p.get(i));
-    }
-    
-    public PointSparse addToMe(PointSparse p) {
-        p.nonZeroes().forEach(coord -> set(coord.row, get(coord.row) + coord.value));
-        return this;
-    }
-
-    @Override
     public double[] array() {
         return asDense().data;
     }
@@ -74,6 +58,18 @@ public class PointSparse extends MatrixSparse implements Point{
     
     public PointSparse(DMatrixSparseCSC csc){
         super(csc);
+    }
+    
+    /**
+     * Creates a sparse point with a single nonzero value
+     * @param dim the dimension of the point
+     * @param i the index of the non zero value
+     * @param d the non zero value
+     */
+  
+    public PointSparse(int dim, int i, double d){
+        this(dim);
+        set(i, 0, d);
     }
     
     public PointSparse concat(PointD pd){
@@ -173,12 +169,6 @@ public class PointSparse extends MatrixSparse implements Point{
     }
 
     @Override
-    public PointSparse multMe(double k) {
-        nonZeroes().forEach(coord -> set(coord.row, coord.value*k));
-        return this;
-    }
-
-    @Override
     public Point plus(Point p) {
         if(p.isDense()) return plus(p.asDense());
         else return plus(p.asSparse());
@@ -191,38 +181,9 @@ public class PointSparse extends MatrixSparse implements Point{
         return new PointD(super.plus(p).data);
     }
 
-
-    /**
-     * Don't call this for repeated use.  It has to rebuild the entire matrix.
-     * @param i
-     * @param y
-     * @return 
-     */
-    @Override
-    public double set(int i, double y) {
-        set(i, 0, y);
-        return y;
-    }
-
-    @Override
-    public PointSparse set(double[] x) {
-        int numNonZeroes = (int)Arrays.stream(x).filter(s -> s != 0).count();
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(x.length, 1, numNonZeroes);
-        IntStream.range(0, x.length).forEach(i->trip.set(i, 0, x[i]));
-        setFromTrip(trip);
-        return this;
-    }
-
-    @Override
-    public PointSparse set(Point x) {
-        ejmlSparse = new DMatrixSparseCSC(x.asSparse().ejmlSparse);
-        return this;
-    }
-
-    @Override
-    public PointSparse setAll(IntToDoubleFunction f) {
-         setAll((i, j) -> f.applyAsDouble(i));
-         return this;
+    public PointSparse(int dim, IntToDoubleFunction f) {
+        super(dim, 1, (i, j) -> f.applyAsDouble(i));
+         
     }
 
 

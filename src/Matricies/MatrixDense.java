@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.DoubleFunction;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.Predicate;
@@ -34,8 +35,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @param matrix
      */
     public MatrixDense(double[][] matrix) {
-        this(matrix.length, matrix[0].length);
-        setAll((i, j) -> matrix[i][j]);
+        this(matrix.length, matrix[0].length, (i, j) -> matrix[i][j]);
     }
 
     /**
@@ -180,7 +180,6 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
 
     }
 
-
     /**
      *
      * @param rows num rows
@@ -199,13 +198,12 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         this(n, n);
     }
 
-
     public MatrixDense minus(Matrix m) {
         MatrixDense mDense = m.asDense();
         MatrixDense minus = new MatrixDense(numRows, numCols);
-        
+
         CommonOps_DDRM.subtract(this, mDense, minus);
-        
+
         return minus;
     }
 
@@ -228,12 +226,12 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     @Override
     public PointD col(int n) {
-        return new PointD(numRows).setAll(i -> get(i, n));
+        return new PointD(numRows, i -> get(i, n));
     }
 
     @Override
     public PointD row(int n) {
-        return new PointD(numCols).setAll(i -> get(n, i));
+        return new PointD(numCols, i -> get(n, i));
     }
 
     /**
@@ -243,16 +241,16 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @param v
      * @return this
      */
-    public Matrix setCol(int n, double[] v) {
+    private Matrix setCol(int n, double[] v) {
         return setCol(n, new PointD(v));
     }
 
-    public Matrix setCol(int n, PointD v) {
+    private Matrix setCol(int n, PointD v) {
         IntStream.range(0, numRows).forEach(i -> set(i, n, v.get(i)));
         return this;
     }
 
-    public Matrix setCol(int n, PointSparse v) {
+    private Matrix setCol(int n, PointSparse v) {
         v.nonZeroes().forEach(coord -> set(coord.row, n, coord.value));
         return this;
     }
@@ -264,16 +262,16 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @param v
      * @return this
      */
-    public MatrixDense setRow(int n, PointD v) {
+    private MatrixDense setRow(int n, PointD v) {
         return setRow(n, v.data);
     }
 
-    public MatrixDense setRow(int n, PointSparse v) {
+    private MatrixDense setRow(int n, PointSparse v) {
         v.nonZeroes().forEach(coord -> set(n, coord.row, coord.value));
         return this;
     }
 
-    public MatrixDense setRow(int i, double[] x) {
+    private MatrixDense setRow(int i, double[] x) {
         System.arraycopy(x, 0, data, numCols * i, x.length);
         return this;
     }
@@ -285,7 +283,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     @Override
     public MatrixDense T() {
-        return new MatrixDense(numCols, numRows).setAll((i, j) -> get(j, i));
+        return new MatrixDense(numCols, numRows, (i, j) -> get(j, i));
     }
 
     /**
@@ -304,32 +302,20 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
     }
 
     protected Matrix mapToDense(DoubleFunction<Double> f) {
-        return new MatrixDense(numRows, numCols).setAll((i, j) -> f.apply(get(i, j)));
+        return new MatrixDense(numRows, numCols, (i, j) -> f.apply(get(i, j)));
     }
 
     /**
      * sets all the elements of the matrix, in parallel, to f(i, j)
      *
+     * @param rows the number of rows in the matrix
+     * @param cols the number of columns in the matrix
      * @param f a unction of the row and column
      * @return
      */
-    @Override
-    public MatrixDense setAll(Z2ToR f) {
+    public MatrixDense(int rows, int cols, Z2ToR f) {
+        this(rows, cols);
         Arrays.parallelSetAll(data, a -> f.apply(rowIndex(a), colIndex(a)));
-        return this;
-    }
-
-    /**
-     * Sets some of the elements of this matrix and leaves the others alone
-     *
-     * @param filter chooses which elements to be set
-     * @param f the function that sets the element
-     * @return this matrix
-     */
-    public MatrixDense setSome(BiFunction<Integer, Integer, Boolean> filter, Z2ToR f) {
-        Z2ToR filteredF = (i, j) -> filter.apply(i, j) ? f.apply(i, j) : get(i, j);
-        setAll(filteredF);
-        return this;
     }
 
     /**
@@ -401,12 +387,38 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
         if (rows.length == 0)
             throw new RuntimeException("You're tyring to create a matrix from an empty array.");
         if (rows[0].isDense())
-            return new MatrixDense(rows.length, rows[0].dim()).setAll((i, j) -> rows[i].get(j));
+            return new MatrixDense(rows.length, rows[0].dim(), (i, j) -> rows[i].get(j));
         else {
             MatrixDense m = new MatrixDense(rows.length, rows[0].dim());
             IntStream.range(0, m.numRows).forEach(i -> m.setRow(i, rows[i].asSparse()));
             return m;
         }
+    }
+
+    /**
+     * Returns a matrix with rows set by the passed function.
+     *
+     * @param numRows
+     * @param setRow;
+     * @return a matrix created from rows.
+     */
+    public static MatrixDense fromRows(int numRows, IntFunction<PointD> setRow) {
+        PointD firstRow = setRow.apply(0);
+        int rowLength = firstRow.dim();
+        MatrixDense fromRows = new MatrixDense(numRows, rowLength);
+        fromRows.setRow(0, firstRow);
+        for (int i = 1; i < numRows; i++)
+            fromRows.setRow(i, setRow.apply(i));
+        return fromRows;
+    }
+
+    public static MatrixDense fromCols(int numCols, IntFunction<Point> setCol) {
+        PointD firstCol = setCol.apply(0).asDense();
+        int colLength = firstCol.dim();
+        MatrixDense fromCols = new MatrixDense(colLength, numCols);
+        fromCols.setCol(0, firstCol);
+        IntStream.range(1, numCols).forEach(i -> fromCols.setCol(i, setCol.apply(i).asDense()));
+        return fromCols;
     }
 
     /**
@@ -416,31 +428,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @return
      */
     public static MatrixDense fromCols(Point[] cols) {
-        return new MatrixDense(cols[0].dim(), cols.length).setAll((i, j) -> cols[j].get(i));
-    }
-
-    /**
-     * Sets the rows of the matrix
-     *
-     * TODO: this should probably be parallel.
-     *
-     * @param f
-     * @return
-     */
-    public MatrixDense setRows(IntFunction<PointD> f) {
-        IntStream.range(0, numRows).parallel().forEach(i -> setRow(i, f.apply(i)));
-        return this;
-    }
-
-    /**
-     * Sets the columns of the matrix
-     *
-     * @param f
-     * @return
-     */
-    public MatrixDense setCols(IntFunction<Point> f) {
-        IntStream.range(0, numCols).forEach(i -> setCol(i, f.apply(i).asDense()));//TODO::paralel 
-        return this;
+        return new MatrixDense(cols[0].dim(), cols.length, (i, j) -> cols[j].get(i));
     }
 
     public PointD[] rowArray() {
@@ -467,8 +455,8 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     @Override
     public boolean isZero(double epsilon) {
-        for(int i = 0; i < data.length; i++)
-            if(data[i] < -epsilon || data[i] > epsilon) return false;
+        for (int i = 0; i < data.length; i++)
+            if (data[i] < -epsilon || data[i] > epsilon) return false;
         return true;
     }
 
@@ -515,12 +503,8 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     @Override
     public MatrixDense colConcat(Matrix cols) {
-        MatrixDense concat = new MatrixDense(Math.max(this.numRows, cols.rows()), this.numCols
-                + cols.cols());
-
         MatrixDense colsDense = cols.asDense();
-
-        return concat.setCols(i -> i < this.numCols
+        return MatrixDense.fromCols(cols.cols() + cols(), i -> i < this.numCols
                 ? col(i)
                 : colsDense.col(i - this.numCols));
     }
@@ -541,7 +525,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      */
     public static MatrixDense randomColPoints(int numPoints, PointD center, double r) {
 
-        return new MatrixDense(center.dim(), numPoints).setCols(i -> PointD.uniformBoundedRand(center, r));
+        return MatrixDense.fromCols(numPoints, i -> PointD.uniformBoundedRand(center, r));
     }
 
     /**
@@ -554,7 +538,7 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
      * @return a new matrix
      */
     public static MatrixDense randomRowPoints(int numPoints, PointD center, double r) {
-        return randomColPoints(numPoints, center, r).T();
+        return MatrixDense.fromRows(numPoints, i -> PointD.uniformBoundedRand(center, r));
     }
 
     public boolean hasFullRank() {
@@ -593,13 +577,15 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
     public boolean equals(Matrix obj) {
         if (obj.isSparse())
             return obj.asSparse().nonZeroes()
-                    .allMatch(coord -> Math.abs(coord.value - get(coord.row)) < tolerance);
+                    .allMatch(coord -> Math.abs(coord.value - get(coord.row))
+                    < tolerance);
         return Arrays.equals(obj.asDense().data, data);
     }
 
     @Override
     public int numNonZeroes() {
-        return (int) Matrix.z2Stream(numRows, numCols).filter(p -> get(p.l, p.r) != 0).count();
+        return (int) Matrix.z2Stream(numRows, numCols).filter(p -> get(p.l, p.r)
+                != 0).count();
 
     }
 
@@ -615,20 +601,8 @@ public class MatrixDense extends DMatrixRMaj implements Matrix {
 
     @Override
     public MatrixDense square() {
-
-        return new MatrixDense(Math.max(numRows, numCols)).setIf((i, j) -> i < numRows && j < numCols, (i, j) -> get(i, j));
-    }
-
-    @Override
-    public MatrixDense setIf(Z2Predicate filter, Z2ToR f) {
-        Matrix.z2Stream(numRows, numCols).filter(filter::test).forEach(p -> set(p.l, p.r, f.apply(p)));
-        return this;
-    }
-
-    @Override
-    public MatrixDense setIf(Predicate<Double> filter, Z2ToR f) {
-        Matrix.z2Stream(numRows, numCols).filter(p -> filter.test(get(p.l, p.r))).forEach(p -> set(p.l, p.r, f.apply(p)));
-        return this;
+        int size = Math.max(numRows, numCols);
+        return new MatrixDense(size, size, (i, j) -> i<numRows && j < numCols? get(i, j): 0);
     }
 
     @Override

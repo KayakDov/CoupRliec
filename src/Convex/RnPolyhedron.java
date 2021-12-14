@@ -107,9 +107,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
      * @return
      */
     public PointD b() {
-        return new PointD(size())
-                .setAll(i
-                        -> halfspaces.get(i).boundary().b.get(0));
+        return new PointD(size(), i -> halfspaces.get(i).boundary().b.get(0));
     }
 
     /**
@@ -472,7 +470,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
             PointD random = PointD.uniformBoundedRand(new PointD(dim), radius);
 
-            random.multMe(radius * (rand.nextDouble() + 1) / random.magnitude());
+            random = random.mult(radius * (rand.nextDouble() + 1) / random.magnitude());
 
             poly.add(new HalfSpace<Point>(random, random));
         });

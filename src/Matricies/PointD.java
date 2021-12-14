@@ -21,7 +21,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @param x
      * @param y
      */
-    public PointD(double[] x) {
+    public PointD(double... x) {
         super(x.length, 1);
         System.arraycopy(x, 0, data, 0, x.length);
         hash = Arrays.hashCode(x);
@@ -39,6 +39,17 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     public PointD(int n) {
         super(n, 1);
+    }
+    
+    /**
+     * A constructor that sets all values to 0 except at the given index
+     * @param dim the dimension of space
+     * @param i the index that with a non 0 value.
+     * @param val the value at the given index.
+     */
+    public PointD(int dim, int i, double val){
+        this(dim);
+        data[i] = val;
     }
 
     public static PointD sparse(int dim, int numNonZeroes) {
@@ -83,14 +94,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return this;
     }
 
-    /**
-     * @param p the point to be added to this one
-     * @return this point, with p added to it.
-     */
-    @Override
-    public PointD addToMe(Point p) {
-        return setAll(i -> get(i) + p.get(i));
-    }
 
     /**
      * @see plus
@@ -142,7 +145,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public PointD mapToDense(DoubleFunction<Double> f) {
-        return new PointD(dim()).setAll(i -> f.apply(data[i]));
+        return new PointD(dim(), i -> f.apply(data[i]));
     }
 
     @Override
@@ -199,11 +202,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     @Override
     public MatrixDense mult(Matrix matrix) {
         return new MatrixDense(this).T().mult(matrix);
-    }
-
-    @Override
-    public PointD multMe(double k) {
-        return setAll(i -> get(i) * k);
     }
 
     @Override
@@ -325,18 +323,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return get(dim() - 1);
     }
 
-    /**
-     * Sets the value of the point
-     *
-     * @param i the index of the value
-     * @param y the new value at that index
-     * @return this point
-     */
-    @Override
-    public double set(int i, double y) {
-        data[i] = y;
-        return y;
-    }
+    
 
     @Override
     public PointD asDense() {
@@ -388,7 +375,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      */
     @Override
     public PointD plus(Point p) {
-        return new PointD(dim()).setAll(i -> get(i) + p.get(i));
+        return new PointD(dim(), i -> get(i) + p.get(i));
     }
 
     @Override
@@ -396,7 +383,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         if (m.rows() != dim())
             throw new ArithmeticException("wrong number of rows in matrix to multiply by this point");
 
-        return new PointD(m.cols()).setAll(i -> m.row(i).dot(this));
+        return new PointD(m.cols(), i -> m.row(i).dot(this));
     }
 
 
@@ -436,7 +423,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
      * @return a new randomly distributed point.
      */
     public static PointD gaussianRand(int dim, PointD mean, PointD standardDeviation, Random rand) {
-        return new PointD(dim).setAll(i -> rand.nextGaussian()
+        return new PointD(dim, i -> rand.nextGaussian()
                 * standardDeviation.get(i) + mean.get(i));
     }
 
@@ -446,30 +433,6 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
     public DoubleStream stream() {
         return Arrays.stream(data);
     }
-
-    /**
-     * Sets the values of this point to those in the array.
-     *
-     * @param x an array of scalars
-     * @return this point
-     */
-    @Override
-    public PointD set(double[] x) {
-        System.arraycopy(x, 0, data, 0, x.length);
-        return setHash();
-    }
-
-    /**
-     * sets this point equal to the given point
-     *
-     * @param x
-     * @return
-     */
-    @Override
-    public PointD set(Point x) {
-        return set(x.asDense().data);
-    }
-
 
     /**
      * Is this point in a convex set
@@ -539,11 +502,15 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
         return concat(PointD.oneD(d));
     }
 
-    @Override
-    public PointD setAll(IntToDoubleFunction f) {
+    public PointD(int dim, IntToDoubleFunction f){
+        this(dim);
         Arrays.setAll(data, f);
-        return setHash();
     }
+//    @Override
+//    public PointD setAll(IntToDoubleFunction f) {
+//        
+//        return setHash();
+//    }
 
     /**
      * The constructor, a 4f point
@@ -565,9 +532,7 @@ public class PointD extends MatrixDense implements Point {//implements Comparabl
 
     @Override
     public PointSparse asSparse() {
-        PointSparse ps = new PointSparse(numRows);
-        ps.setAll((i, j) -> get(i));
-        return ps;
+        return new PointSparse(numRows, i -> get(i));
     }
 
 }

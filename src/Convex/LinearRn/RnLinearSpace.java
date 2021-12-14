@@ -10,6 +10,10 @@ import Matricies.Point;
 import Matricies.PointD;
 import Matricies.PointSparse;
 import java.util.Arrays;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.IntToDoubleFunction;
+import java.util.stream.IntStream;
 
 /**
  * An object that describes a linear/vector space
@@ -86,15 +90,21 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
         int rows = basis.rows() - basis.cols(),
                 cols = basis.rows();
 
-        Matrix nullMatrix = isDense ? new MatrixDense(rows, cols) : new MatrixSparse(rows, cols);
+        IntFunction<Point> setCol = i -> {
+            
+            if (i < basis.cols()){
+                IntToDoubleFunction setPoint = j -> rcef.get(j + basis.cols(), i);
+                return isDense ? new PointD(rows, setPoint) : new PointSparse(rows, setPoint);
+            }
+            else{
+                return isDense ? 
+                        new PointD(rows, i - basis.cols(), -1) : 
+                        new PointSparse(rows, i - basis.cols(), -1);
+            }
 
-        nullMatrix.setCols(i -> {
-            if (i < basis.cols())
-                return (isDense ? new PointD(rows) : new PointSparse(rows)).setAll(j -> rcef.get(j + basis.cols(), i));
-            else
-                return (isDense ? new PointD(rows) : new PointSparse(rows)).setInit(i - basis.cols(), -1);
-
-        });
+        };
+        Matrix nullMatrix = isDense ? MatrixDense.fromCols(cols, setCol) : MatrixSparse.fromCols(cols, setCol);
+        
         return new RnLinearSpace(nullMatrix.rowsArray());
     }
 

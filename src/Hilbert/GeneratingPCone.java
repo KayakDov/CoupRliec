@@ -31,7 +31,7 @@ public class GeneratingPCone extends PCone<Point> {
         this.memoization = memoization;
         this.poly = poly;
     }
-    
+
     public GeneratingPCone(StrictlyConvexFunction<Point> f, Set<HalfSpace<Point>> hs, ArrayList<ConcurrentHashMap<ASKey, GeneratingPCone>> memoization, Polyhedron<Point> poly) {
         this(f, new ArrayList<>(hs), memoization, poly);
     }
@@ -59,27 +59,27 @@ public class GeneratingPCone extends PCone<Point> {
      * return check.
      * @return
      */
-    private GeneratingPCone getPCone(int i) {
+    private GeneratingPCone immediatSuperCone(int i) {
+        
         ASKeyPConeRI key = new ASKeyPConeRI(this, i);
         GeneratingPCone pCone = memoization.get(key.coDim()).get(key);
         if (pCone != null) return pCone;
+        
         GeneratingPCone generated = new GeneratingPCone(f, withoutHS(i), memoization, poly);
         memoization.get(key.coDim()).put(key, generated);
         return generated;
     }
 
     protected ArgMinContainer<Point> meetsNecesary(GeneratingPCone superCone, int i) {
-        
-        if(superCone.getMeetsSufficient()){
+
+        if (superCone.getMeetsSufficient()) {
             meetsSufficient = true;
             return superCone.getSavedArgMin();
         }
-        
-        return super.meetsNecesary(superCone, i); 
+
+        return super.meetsNecesary(superCone, i);
     }
 
-    
-    
     /**
      * This function uses recursion and memomization to find the optimal point
      * over this PCone
@@ -87,16 +87,15 @@ public class GeneratingPCone extends PCone<Point> {
      * @return
      */
     public ArgMinContainer<Point> min() {
-        if (isAllSpace())
-            savedArgMin = allSpaceArgMin();
+        if (isAllSpace()) savedArgMin = allSpaceArgMin();
 
-        savedArgMin = findAnyOrAffine(
-                intStream()
-                        .mapToObj(i -> meetsNecesary(getPCone(i), i))
+        savedArgMin = argMin(
+                intStream().parallel().mapToObj(i -> meetsNecesary(immediatSuperCone(i), i))
         );
 
-        if (!meetsSufficient && poly.hasElement(savedArgMin.argMin())) meetsSufficient = true;
-        
+        if (!meetsSufficient && poly.hasElement(savedArgMin.argMin()))
+            meetsSufficient = true;
+
         return savedArgMin;
     }
 
@@ -105,9 +104,9 @@ public class GeneratingPCone extends PCone<Point> {
         if (savedArgMin != null) return savedArgMin;
         return min();
     }
-    
-    public boolean getMeetsSufficient(){
-        if(savedArgMin == null) min();
+
+    public boolean getMeetsSufficient() {
+        if (savedArgMin == null) min();
         return meetsSufficient;
     }
 
@@ -126,21 +125,23 @@ public class GeneratingPCone extends PCone<Point> {
     private Point point;
 
     /**
-     * Is the apex of this cone a single point?  if so set it, get it, and save it.
+     * Is the apex of this cone a single point? if so set it, get it, and save
+     * it.
+     *
      * @return the single point at the apex of this cone.
      */
     public Point point() {
-        if(hasPoint()) return point;
+        if (hasPoint()) return point;
         PointD[] rows = new PointD[getHS(0).dim()];
         Arrays.setAll(rows, i -> getHS(i).normal());
         MatrixDense A = MatrixDense.fromRows(rows);
-        
-        PointD b = new PointD(rows.length).setAll(i -> getHS(i).boundary().b());
+
+        PointD b = new PointD(rows.length, i -> getHS(i).boundary().b());
         return point = A.solve(b);
     }
-    public boolean hasPoint(){
+
+    public boolean hasPoint() {
         return point != null;
     }
 
-    
 }

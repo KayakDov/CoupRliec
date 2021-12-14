@@ -1,16 +1,13 @@
 package main;
 
-import Convex.LinearRn.RnAffineProjection;
 import Convex.RnPolyhedron;
 import Hilbert.HalfSpace;
-import Hilbert.Optimization.CoupRliec;
 import Matricies.Point;
 import Matricies.PointD;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 import tools.Table;
-import tools.Time;
 
 public class Main {
 
@@ -62,7 +59,7 @@ public class Main {
             PointD randP = PointD.uniformBoundedRand(new PointD(numDim), r * 10);
             
             double startTime = System.currentTimeMillis();
-            poly.projCoupRleic(randP);
+            poly.projCoupRliecOrderedHalfSpaces(randP);
             double time = System.currentTimeMillis() - startTime;
             
             
@@ -91,9 +88,9 @@ public class Main {
      * prints a table
      */
     public static void testProjection() {
-        int numTests = 5;
+        int numTests = 3;
                 
-        int numDimChecks = 5, numFaceChecks = 10, faceIncrement = 3;
+        int numDimChecks = 5, numFaceChecks = 5, faceIncrement = 3;
 
         double table[][] = new double[numFaceChecks][numDimChecks];
     
@@ -106,9 +103,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-//        testProjection();
-    
-        IntStream.range(0, 100).parallel().forEach(System.out::println);
+        testProjection();
+
+
 
     }
 

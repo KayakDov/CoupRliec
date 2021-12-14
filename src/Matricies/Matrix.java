@@ -174,16 +174,8 @@ public interface Matrix {
     public Stream<? extends Point> rowStream();
 
     public Point[] rowsArray();
-    /**
-     * sets A_i,j = d
-     *
-     * @param i the row of the new value
-     * @param j the column for the new value
-     * @param d the value to be placed at (i, j)
-     * @return this
-     */
-    public void set(int i, int j, double d);
-
+    
+    
     public interface Z2ToR extends BiFunction<Integer, Integer, Double> {
 
         
@@ -198,14 +190,7 @@ public interface Matrix {
         }
     }
 
-    /**
-     * sets all the elements of the matrix, in parallel, to f(i, j)
-     *
-     * @param f a unction of the row and column
-     * @return
-     */
-    public Matrix setAll(Z2ToR f);
-
+    
     public Point solve(Point b);
 
     /**
@@ -251,8 +236,6 @@ public interface Matrix {
         else return new MatrixSparse(rows, cols);
     }
     
-    public Matrix setCols(IntFunction<Point> f);
-    
     public static Matrix fromRows(Point[] rows){
         if(rows[0].isDense()) return MatrixDense.fromRows(rows);
         else return MatrixSparse.fromRows(rows);
@@ -285,22 +268,6 @@ public interface Matrix {
     public default boolean has(int row, int col){
         return row >= 0 && col >= 0 && row <= rows() && col <= rows();
     }
-    
-    /**
-     * Sets points if their indecies meet the given criteria
-     * @param filter
-     * @param f
-     * @return 
-     */
-    public Matrix setIf(Z2Predicate filter, Z2ToR f);
-    
-    /**
-     * resets points with values that meet a given criteria
-     * @param filter
-     * @param f
-     * @return 
-     */
-    public Matrix setIf(Predicate<Double> filter, Z2ToR f);
     
     public Matrix pseudoInverse();
 }

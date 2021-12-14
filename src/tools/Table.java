@@ -23,13 +23,13 @@ public class Table {
     }
     
     private void print(Object string){
-        System.out.print(wSpaces(string.toString()));
+        System.out.print("&" + wSpaces(string.toString()));
     }
     
     private void printRow(String rowName, Object[] row){
         print(rowName);
         for(Object st: row) print(st.toString());
-        System.out.println();
+        System.out.println("\\\\");
     }
     
     private void printRow(String rowName, double[] row){

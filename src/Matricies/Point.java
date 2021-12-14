@@ -27,8 +27,6 @@ public interface Point extends Matrix, Vector<Point>{
      */
     public boolean above(RnPlane plane);
 
-    public Point addToMe(Point p);
-
     /**
      *
      * @return the point as an array
@@ -164,8 +162,6 @@ public interface Point extends Matrix, Vector<Point>{
     
     public Matrix mult(Matrix matrix);
 
-    public Point multMe(double k);
-
     /**
      * the sum of this point and another
      *
@@ -179,44 +175,6 @@ public interface Point extends Matrix, Vector<Point>{
         return plus(v);
     }
     
-    /**
-     * Sets the value of the point
-     *
-     * @param i the index of the value
-     * @param y the new value at that index
-     * @return this point
-     */
-    public double set(int i, double y);
-    
-    /**
-     * Sets a value in this point and returns this point
-     * @param i
-     * @param y
-     * @return 
-     */
-    public default Point setInit(int i, double y){
-        set(i, y);
-        return this;
-    }
-
-    /**
-     * Sets the values of this point to those in the array.
-     *
-     * @param x an array of scalars
-     * @return this point
-     */
-    public Point set(double[] x);
-
-    /**
-     * sets this point equal to the given point
-     *
-     * @param x
-     * @return
-     */
-    public Point set(Point x);
-
-    public Point setAll(IntToDoubleFunction f);
-
     /**
      * sets the values of this point to a sub array.
      *

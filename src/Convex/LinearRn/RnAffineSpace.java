@@ -134,11 +134,9 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
             return p = nullMatrix().solve(b);
 
         Matrix append = Matrix.fromRows(
-                rre.getFreeVariables().map(i -> {
-                    Point row = new PointD(rre.numCols);
-                    row.set(i, 1);
-                    return row;
-                }).toArray(PointD[]::new)
+                rre.getFreeVariables()
+                        .map(i ->  new PointD(rre.numCols, i, 1))
+                        .toArray(PointD[]::new)
         );
 
         Point b2 = b.concat(new PointD(append.rows()));

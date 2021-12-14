@@ -121,7 +121,7 @@ public class MatrixSparse implements Matrix {
      * @param d the value to be placed at (i, j)
      * @return this
      */
-    public void set(int row, int col, double d) {
+    protected void set(int row, int col, double d) {
         ejmlSparse.set(row, col, d);
     }
 
@@ -219,7 +219,7 @@ public class MatrixSparse implements Matrix {
     }
 
     public MatrixDense plus(MatrixDense m) {
-        return new MatrixDense(m.numRows, m.numCols).setAll((i, j) -> m.get(i, j) + ejmlSparse.get(i, j));
+        return new MatrixDense(m.numRows, m.numCols, (i, j) -> m.get(i, j) + ejmlSparse.get(i, j));
     }
 
     public Matrix minus(Matrix m) {
@@ -292,42 +292,33 @@ public class MatrixSparse implements Matrix {
     /**
      * sets all the elements of the matrix, in parallel, to f(i, j)
      *
+     * @param rows the number of rows in the matrix
+     * @param cols the number of columns in the matrix
      * @param f a unction of the row and column
      * @return
      */
-    @Override
-    public MatrixSparse setAll(Z2ToR f) {
+    
+    public MatrixSparse(int rows, int cols, Z2ToR f) {
+        this(rows, cols);
         int nonZeroes = (int) Matrix.z2Stream(rows(), cols()).filter(p -> f.apply(p) != 0).count();
 
         DMatrixSparseTriplet dmst = new DMatrixSparseTriplet(rows(), cols(), nonZeroes);
 
         Matrix.z2Stream(rows(), cols()).filter(p -> f.apply(p) != 0).forEach(p -> dmst.set(p.l, p.r, f.apply(p)));
 
-        return setFromTrip(dmst);
+        setFromTrip(dmst);
     }
 
     protected MatrixSparse mapToSparse(DoubleFunction<Double> f) {
 
-        return new MatrixSparse(rows(), cols()).setAll((i, j) -> f.apply(get(i, j)));
+        return new MatrixSparse(rows(), cols(), (i, j) -> f.apply(get(i, j)));
     }
 
     protected Matrix mapToDense(DoubleFunction<Double> f) {
 
-        return new MatrixDense(rows(), cols()).setAll((i, j) -> f.apply(get(i, j)));
+        return new MatrixDense(rows(), cols(), (i, j) -> f.apply(get(i, j)));
     }
 
-    /**
-     * Sets some of the elements of this matrix and leaves the others alone
-     *
-     * @param filter chooses which elements to be set
-     * @param f the function that sets the element
-     * @return this matrix
-     */
-    public Matrix setSome(BiFunction<Integer, Integer, Boolean> filter, Z2ToR f) {
-        Z2ToR filteredF = (i, j) -> filter.apply(i, j) ? f.apply(i, j) : get(i, j);
-        setAll(filteredF);
-        return this;
-    }
 
     /**
      * Sets this matrix from a DMatrixSparseTriplet.
@@ -396,6 +387,18 @@ public class MatrixSparse implements Matrix {
      */
     public static MatrixSparse fromRows(Stream<PointSparse> pointStream) {
         return MatrixSparse.fromRows(pointStream.toArray(PointSparse[]::new));
+    }
+    
+    /**
+     * Creates a sparse matrix from a function that creates columns
+     * @param numCols
+     * @param setCol
+     * @return 
+     */
+    public static MatrixSparse fromCols(int numCols, IntFunction<Point> setCol){
+        Point[] cols = new Point[numCols];
+        Arrays.setAll(cols, setCol);
+        return fromCols(cols);
     }
 
     /**
@@ -523,7 +526,7 @@ public class MatrixSparse implements Matrix {
 
     @Override
     public MatrixDense asDense() {
-        return new MatrixDense(rows(), cols()).setAll((i, j) -> get(i, j));
+        return new MatrixDense(rows(), cols(), (i, j) -> get(i, j));
     }
 
     @Override
@@ -588,21 +591,6 @@ public class MatrixSparse implements Matrix {
         return new MatrixSparse(rows(), cols());
     }
 
-    @Override
-    public MatrixSparse setCols(IntFunction<Point> f) {
-
-        PointSparse[] cols = new PointSparse[cols()];
-        Arrays.setAll(cols, f);
-
-        int numZeroes = Arrays.stream(cols).mapToInt(col -> col.numNonZeroes()).sum();
-
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows(), cols(), numZeroes);
-
-        IntStream.range(0, cols()).forEach(i -> {
-            IntStream.range(0, rows()).forEach(j -> trip.set(i, j, cols[i].get(j)));
-        });
-        return setFromTrip(trip);
-    }
 
     @Override
     public Matrix square() {
@@ -610,24 +598,6 @@ public class MatrixSparse implements Matrix {
         DMatrixSparseTriplet trip = new DMatrixSparseTriplet(size, size, ejmlSparse.getNonZeroLength());
         nonZeroes().forEach(coord -> trip.set(coord.row, coord.col, coord.value));
         return new MatrixSparse(trip);
-    }
-
-    
-    
-    @Override
-    public Matrix setIf(Z2Predicate filter, Z2ToR f) {
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows(), cols(), 0);
-        Matrix.z2Stream(rows(), cols()).forEach(p ->  trip.set(p.l, p.r, filter.test(p)?f.apply(p):get(p.l, p.r)));
-        setFromTrip(trip);
-        return this;
-    }
-
-    @Override
-    public Matrix setIf(Predicate<Double> filter, Z2ToR f) {
-        DMatrixSparseTriplet trip = new DMatrixSparseTriplet(rows(), cols(), 0);
-        Matrix.z2Stream(rows(), cols()).forEach(p ->  trip.set(p.l, p.r, filter.test(get(p.l, p.r))?f.apply(p):get(p.l, p.r)));
-        setFromTrip(trip);
-        return this;
     }
 
     @Override
