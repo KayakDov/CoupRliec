@@ -492,7 +492,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
             PointD random1 = PointD.uniformBoundedRand(new PointD(dim), radius);
             PointD random2 = PointD.uniformBoundedRand(new PointD(dim), radius);
 
-            poly.add(new HalfSpace<Point>(random1.mult(radius), random2.mult(1 / random2.magnitude())));
+            poly.add(new HalfSpace<Point>(random2.mult(1 / random2.magnitude()), random1.mult(radius)));
         });
 
         return poly;

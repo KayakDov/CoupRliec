@@ -30,7 +30,7 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
      * @param onPlane a vector on the plane
      * @param normal a vector normal to the plane
      */
-    public Plane(Vec onPlane, Vec normal) {
+    public Plane(Vec normal, Vec onPlane) {
         this(normal, normal.ip(onPlane));
         this.p = onPlane;
 

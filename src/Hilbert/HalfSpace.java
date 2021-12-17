@@ -52,8 +52,8 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
      * @param onPlane a point on the plane
      * @param normal a vector normal to the plane
      */
-    public HalfSpace(Vec onPlane, Vec normal) {
-        this.boundry = new Plane<>(onPlane, normal);
+    public HalfSpace(Vec normal, Vec onPlane) {
+        this.boundry = new Plane<>(normal, onPlane);
     }
     
 

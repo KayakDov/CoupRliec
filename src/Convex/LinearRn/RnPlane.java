@@ -21,8 +21,8 @@ public class RnPlane extends Plane<Point> {
      * @param p a point on the plane
      * @param normal a vector normal to the plane
      */
-    public RnPlane(Point p, Point normal) {
-        super(p, normal);
+    public RnPlane(Point normal, Point p) {
+        super(normal, p);
 
     }
 
@@ -35,7 +35,7 @@ public class RnPlane extends Plane<Point> {
      * @param p
      */
     public RnPlane(RnPlane p) {
-        this(p.p(), p.normal());
+        this(p.normal(), p.p());
     }
 
     /**
@@ -223,4 +223,11 @@ public class RnPlane extends Plane<Point> {
         return grad.mult(t).plus(onLine);
     }
 
+    @Override
+    public RnPlane flipNormal() {
+        if(hasAPoint()) return new RnPlane(normal().mult(-1), p);
+        return new RnPlane(normal().mult(-1), -b());
+    }
+
+    
 }

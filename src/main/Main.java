@@ -13,10 +13,10 @@ public class Main {
 
     public static RnPolyhedron square() {
         ArrayList<HalfSpace<Point>> halfspaces = new ArrayList<>();
-        halfspaces.add(new HalfSpace<>(new PointD(1, 1), new PointD(1, 0)).setName("right"));
-        halfspaces.add(new HalfSpace<>(new PointD(1, 1), new PointD(0, 1)).setName("top"));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 0), new PointD(0, -1)).setName("bottom"));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 0), new PointD(-1, 0)).setName("left"));
+        halfspaces.add(new HalfSpace<>(new PointD(1, 0), new PointD(1, 1)).setName("right"));
+        halfspaces.add(new HalfSpace<>(new PointD(0, 1), new PointD(1, 1)).setName("top"));
+        halfspaces.add(new HalfSpace<>(new PointD(0, -1), new PointD(0, 0)).setName("bottom"));
+        halfspaces.add(new HalfSpace<>(new PointD(-1, 0), new PointD(0, 0)).setName("left"));
         return new RnPolyhedron(halfspaces);
     }
 
@@ -24,12 +24,12 @@ public class Main {
         PointD ones = new PointD(1, 1, 1);
         PointD origin = new PointD(3);
         ArrayList<HalfSpace<Point>> halfspaces = new ArrayList<>();
-        halfspaces.add(new HalfSpace<>(ones, new PointD(1, 0, 0)));
-        halfspaces.add(new HalfSpace<>(ones, new PointD(0, 1, 0)));
-        halfspaces.add(new HalfSpace<>(ones, new PointD(0, 0, 1)));
-        halfspaces.add(new HalfSpace<>(origin, new PointD(-1, 0, 0)));
-        halfspaces.add(new HalfSpace<>(origin, new PointD(0, -1, 0)));
-        halfspaces.add(new HalfSpace<>(origin, new PointD(0, 0, -1)));
+        halfspaces.add(new HalfSpace<>(new PointD(1, 0, 0), ones));
+        halfspaces.add(new HalfSpace<>(new PointD(0, 1, 0), ones));
+        halfspaces.add(new HalfSpace<>(new PointD(0, 0, 1), ones));
+        halfspaces.add(new HalfSpace<>(new PointD(-1, 0, 0), origin));
+        halfspaces.add(new HalfSpace<>(new PointD(0, -1, 0), origin));
+        halfspaces.add(new HalfSpace<>(new PointD(0, 0, -1), origin));
         return new RnPolyhedron(halfspaces);
     }
 
