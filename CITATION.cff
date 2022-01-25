@@ -6,3 +6,4 @@ authors:
 title: "Code Written For Polyhedral Constrained Optimization Using Parallel Reduction of Linear Inequality to Equality Constraints"
 version: 1
 date-released: 2022-01-25
+url: "https://github.com/KayakDov/CoupRliec"
