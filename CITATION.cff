@@ -1,0 +1,8 @@
+cff-version: 1
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Neimand
+    given-names: E. Dov
+title: "Code Written For Polyhedral Constrained Optimization Using Parallel Reduction of Linear Inequality to Equality Constraints"
+version: 1
+date-released: 2022-01-25
