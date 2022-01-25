@@ -6,7 +6,6 @@ import Matricies.Point;
 import Matricies.PointD;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 import tools.Table;
 
 public class Main {
