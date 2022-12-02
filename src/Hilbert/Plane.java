@@ -1,7 +1,7 @@
 package Hilbert;
 
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.lang.reflect.Array;
 
 /**
@@ -14,12 +14,11 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     /**
      * The constructor
      * @param normal the vector normal to this plane
-     * @param b Every point on this plane, x, is a solution to \<normal, x\> = b
+     * @param b Every point on this plane, x, is a solution to normal dot x = b
      */
     public Plane(Vec normal, double b) {
-        super(
-                (Vec[]) (Array.newInstance(normal.getClass(),1)), 
-                PointD.oneD(b)
+        super((Vec[]) (Array.newInstance(normal.getClass(),1)), 
+                Point.oneD(b)
         );
         linearSpace.normals[0] = normal;
     }
@@ -50,7 +49,7 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     }
     
     /**
-     * Is this halfspace above the given vector.  i.e. \<n, v\> \< b
+     * Is this halfspace above the given vector.  i.e. n dot v less than b
      * @param v
      * @return 
      */
@@ -80,7 +79,7 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     }
     
     /**
-     * Is this plane below the given point, i.e. \<n, v\> \> b.
+     * Is this plane below the given point, i.e. n dot v greater than b.
      * @param v
      * @return 
      */

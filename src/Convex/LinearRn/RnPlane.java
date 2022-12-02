@@ -5,7 +5,7 @@ import Hilbert.HalfSpace;
 import Hilbert.Plane;
 import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.util.NoSuchElementException;
 
 /**
@@ -205,7 +205,7 @@ public class RnPlane extends Plane<Point> {
             
             return (Matrix.fromRows(rows)).solve(b.concat(line.b));
         } catch (NoSuchElementException | ArithmeticException nsee) {
-            return new PointD(new double[]{Double.NaN});
+            return new Point(new double[]{Double.NaN});
         }
     }
 

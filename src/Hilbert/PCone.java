@@ -53,9 +53,9 @@ public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
 
     /**
      * Creates a new half space from this polyhedron's half space list list with
-     * the addon concatinated to it.
+     * the add-on concatenated to it.
      *
-     * @param addOn the half space to be concatinated.
+     * @param addOn the half space to be concatenated.
      * @return
      */
     protected List<HalfSpace<Vec>> concatHSToList(HalfSpace<Vec> addOn) {

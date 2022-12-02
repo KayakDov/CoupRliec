@@ -66,12 +66,11 @@ public class CoupRliec<Vec extends Vector<Vec>> {
      * The next set of affine spaces of the polyhedron of codimension i+1
      *
      * @param prevCoDim the set of affine spaces of codimension i
-     * @return the set of affine spaces of the polyhedron of codim i
+     * @return the set of affine spaces of the polyhedron of codim i + 1
      */
     private Map<ASKey, PCone<Vec>> coDimPlusPlus(Collection<PCone<Vec>> prevCoDim) {
         return prevCoDim.parallelStream()
-                .flatMap(pCone
-                        -> IntStream.range(pCone.getIndexOfLastHS() + 1, poly.numHalfSpaces())
+                .flatMap(pCone -> IntStream.range(pCone.getIndexOfLastHS() + 1, poly.numHalfSpaces())
                         .mapToObj(i -> pCone.concat(poly.getHS(i), i))
                 ).collect(Collectors.toMap(
                         pCone -> new ASKeyPCo(pCone),

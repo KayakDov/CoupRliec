@@ -3,7 +3,7 @@ package main;
 import Convex.RnPolyhedron;
 import Hilbert.HalfSpace;
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 import tools.Table;
@@ -12,33 +12,33 @@ public class Main {
 
     public static RnPolyhedron square() {
         ArrayList<HalfSpace<Point>> halfspaces = new ArrayList<>();
-        halfspaces.add(new HalfSpace<>(new PointD(1, 0), new PointD(1, 1)).setName("right"));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 1), new PointD(1, 1)).setName("top"));
-        halfspaces.add(new HalfSpace<>(new PointD(0, -1), new PointD(0, 0)).setName("bottom"));
-        halfspaces.add(new HalfSpace<>(new PointD(-1, 0), new PointD(0, 0)).setName("left"));
+        halfspaces.add(new HalfSpace<>(new Point(1, 0), new Point(1, 1)).setName("right"));
+        halfspaces.add(new HalfSpace<>(new Point(0, 1), new Point(1, 1)).setName("top"));
+        halfspaces.add(new HalfSpace<>(new Point(0, -1), new Point(0, 0)).setName("bottom"));
+        halfspaces.add(new HalfSpace<>(new Point(-1, 0), new Point(0, 0)).setName("left"));
         return new RnPolyhedron(halfspaces);
     }
 
     public static RnPolyhedron Cube() {
-        PointD ones = new PointD(1, 1, 1);
-        PointD origin = new PointD(3);
+        Point ones = new Point(new double[]{1, 1, 1});
+        Point origin = new Point(3);
         ArrayList<HalfSpace<Point>> halfspaces = new ArrayList<>();
-        halfspaces.add(new HalfSpace<>(new PointD(1, 0, 0), ones));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 1, 0), ones));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 0, 1), ones));
-        halfspaces.add(new HalfSpace<>(new PointD(-1, 0, 0), origin));
-        halfspaces.add(new HalfSpace<>(new PointD(0, -1, 0), origin));
-        halfspaces.add(new HalfSpace<>(new PointD(0, 0, -1), origin));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{1, 0, 0}), ones));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{0, 1, 0}), ones));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{0, 0, 1}), ones));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{-1, 0, 0}), origin));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{0, -1, 0}), origin));
+        halfspaces.add(new HalfSpace<>(new Point(new double[]{0, 0, -1}), origin));
         return new RnPolyhedron(halfspaces);
     }
 
     public static void testSquare() {
-        PointD projecting = new PointD(6, -8);
+        Point projecting = new Point(6, -8);
         System.out.println(square().proj(projecting));
     }
 
     public static void testCube() {
-        System.out.println(Cube().proj(new PointD(3, 7, 9)));
+        System.out.println(Cube().proj(new Point(new double[]{.5, 7, 9})));
     }
 
     /**
@@ -49,16 +49,17 @@ public class Main {
      * @param isTime true if we want to know how much time this takes, false if we want to know how many halfspaces are tested
      * @return the table value
      */
-    private static double tableVal(int numTests, int numDim, int numFaces) {
+    private static double tableVal(int numTests, int numDim, int numFaces, boolean ordered) {
         double avg = 0;
         double r = 1;
 
         for (int i = 0; i < numTests; i++) {
             RnPolyhedron poly = RnPolyhedron.randomNonEmpty(numFaces, 1, numDim);
-            PointD randP = PointD.uniformBoundedRand(new PointD(numDim), r * 10);
+            Point randP = Point.uniformBoundedRand(new Point(numDim), r * 10);
             
             double startTime = System.currentTimeMillis();
-            poly.projCoupRliecOrderedHalfSpaces(randP);
+            if(ordered)poly.projCoupRliecOrderedHalfSpaces(randP);
+            else poly.proj(randP);
             double time = System.currentTimeMillis() - startTime;
             
             
@@ -96,15 +97,17 @@ public class Main {
         for (int numFaces = 0; numFaces < numFaceChecks; numFaces++) 
             for (int numDim = 0; numDim < numDimChecks; numDim++)
                 table[numFaces][numDim] = tableVal(numTests, numDim + 2, (numFaces
-                        + 1) * faceIncrement);
+                        + 1) * faceIncrement, false);
         
         new Table(15).print(table, buildHeaders(numDimChecks), buildRowNames(numFaceChecks, faceIncrement));
     }
 
     public static void main(String[] args) throws IOException {
-        testProjection();
+//        testProjection();
 
-
+//        tableVal(1, 10, 20, false);
+        
+        testCube();
 
     }
 

@@ -2,9 +2,9 @@ package Hilbert;
 
 import Convex.ASKeys.ASKey;
 import Convex.ASKeys.ASKeyPConeRI;
-import Matricies.MatrixDense;
+import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -132,11 +132,11 @@ public class GeneratingPCone extends PCone<Point> {
      */
     public Point point() {
         if (hasPoint()) return point;
-        PointD[] rows = new PointD[getHS(0).dim()];
+        Point[] rows = new Point[getHS(0).dim()];
         Arrays.setAll(rows, i -> getHS(i).normal());
-        MatrixDense A = MatrixDense.fromRows(rows);
+        Matrix A = Matrix.fromRows(rows);
 
-        PointD b = new PointD(rows.length, i -> getHS(i).boundary().b());
+        Point b = new Point(rows.length, i -> getHS(i).boundary().b());
         return point = A.solve(b);
     }
 

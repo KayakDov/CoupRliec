@@ -1,55 +1,72 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Matricies;
 
 import java.util.HashSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.ejml.dense.row.CommonOps_DDRM;
+
+
 
 /**
- *
- * @author dov
+ * TODO:  Remove the need for this code and use ejml instead.
+ * the older version of this code
+ * @author Dov Neimand
  */
-public interface ReducedRowEchelon extends Matrix {
+public class ReducedRowEchelon extends Matrix {
 
-    
-    public HashSet<Integer> freeVariables();
+    /**
+     * Converts this matrix to reduced row echelon form.Note, if the det() != 0,
+     * than this will return the identity matrix.
+     *
+     * @param m the matrix to be reduced
+     */
+    public ReducedRowEchelon(Matrix m) {
+        
+        super(CommonOps_DDRM.rref(m.asDense(), -1, null));
+        
+        this.freeVariables = new HashSet<>(numCols);
+        
+        setFreeVariables();
+        
+    }
+        
+    private HashSet<Integer> freeVariables;
 
+    public HashSet<Integer> freeVariables(){
+        return freeVariables;
+    }
     
-    default void setFreeVariables(){
+    private void setFreeVariables(){
         for(int i = 0, j = 0; j < cols(); j++)
             if(i < rows() && get(i, j) != 0) i++;
             else freeVariables().add(j);
     }
     
-    public default boolean noFreeVariable() {
+    public  boolean noFreeVariable() {
         return freeVariables().isEmpty();
     }
 
-    public default boolean isFreeVariabls(int i) {
+    public  boolean isFreeVariabls(int i) {
         return freeVariables().contains(i);
     }
 
-    public default Stream<Integer> getFreeVariables() {
+    public  Stream<Integer> getFreeVariables() {
         return freeVariables().stream();
     }
 
-    public default Stream<Integer> getBasicVariables() {
+    public  Stream<Integer> getBasicVariables() {
         return IntStream.range(0, cols()).filter(i -> !freeVariables().contains(i)).mapToObj(i -> i);
     }
 
-    public default int numFreeVariables() {
+    public  int numFreeVariables() {
         return freeVariables().size();
     }
 
-    public default long rank() {
+    public  long rank() {
         return cols() - freeVariables().size();
     }
     
-    public default boolean hasFullRank(){
+    public  boolean hasFullRank(){
         return rows() - numFreeVariables() == cols();
     }
 

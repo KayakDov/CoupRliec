@@ -3,12 +3,10 @@ package Convex.LinearRn;
 import Convex.ConvexSet;
 import Hilbert.LinearSpace;
 import Matricies.Matrix;
-import Matricies.MatrixDense;
-import Matricies.MatrixSparse;
-import Matricies.ReducedRowEchelonDense;
+import Matricies.Matrix;
+import Matricies.ReducedRowEchelon;
 import Matricies.Point;
-import Matricies.PointD;
-import Matricies.PointSparse;
+import Matricies.Point;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -86,7 +84,6 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
 
         Matrix rcef = basis.T().reducedRowEchelon().T();
 
-        boolean isDense = basis.isDense();
         int rows = basis.rows() - basis.cols(),
                 cols = basis.rows();
 
@@ -94,16 +91,12 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
             
             if (i < basis.cols()){
                 IntToDoubleFunction setPoint = j -> rcef.get(j + basis.cols(), i);
-                return isDense ? new PointD(rows, setPoint) : new PointSparse(rows, setPoint);
+                return new Point(rows, setPoint);
             }
-            else{
-                return isDense ? 
-                        new PointD(rows, i - basis.cols(), -1) : 
-                        new PointSparse(rows, i - basis.cols(), -1);
-            }
+            else return new Point(rows, i - basis.cols(), -1);
 
         };
-        Matrix nullMatrix = isDense ? MatrixDense.fromCols(cols, setCol) : MatrixSparse.fromCols(cols, setCol);
+        Matrix nullMatrix = Matrix.fromCols(cols, setCol);
         
         return new RnLinearSpace(nullMatrix.rowsArray());
     }
@@ -124,8 +117,7 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
      * @return
      */
     protected Matrix matrix() {
-        if (normals[0].isDense()) return MatrixDense.fromRows(normals);
-        else return MatrixSparse.fromRows(normals);
+        return Matrix.fromRows(normals);
     }
 
     /**
@@ -143,7 +135,7 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
      *
      * @return
      */
-    public MatrixDense colSpaceMatrix() {
+    public Matrix colSpaceMatrix() {
         return colSpaceMatrix(matrix());
     }
 
@@ -153,14 +145,14 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
      * @param nullSpaceMatrix
      * @return
      */
-    public static MatrixDense colSpaceMatrix(Matrix nullSpaceMatrix) {
-        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullSpaceMatrix);
+    public static Matrix colSpaceMatrix(Matrix nullSpaceMatrix) {
+        ReducedRowEchelon rre = new ReducedRowEchelon(nullSpaceMatrix);
 
-        MatrixDense IMinus = MatrixDense.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
+        Matrix IMinus = Matrix.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
 
-        if (rre.noFreeVariable()) return new PointD(rre.numRows);
+        if (rre.noFreeVariable()) return new Point(rre.numRows);
 
-        return MatrixDense.subMatrixFromCols(rre.freeVariables(), IMinus);
+        return Matrix.subMatrixFromCols(rre.freeVariables(), IMinus);
     }
 
     @Override

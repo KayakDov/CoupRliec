@@ -12,7 +12,7 @@ import Hilbert.Optimization.CoupRliec;
 import Hilbert.Optimization.CoupRliecPointMethod;
 import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,8 +106,8 @@ public class RnPolyhedron extends Polyhedron<Point>{
      *
      * @return
      */
-    public PointD b() {
-        return new PointD(size(), i -> halfspaces.get(i).boundary().b.get(0));
+    public Point b() {
+        return new Point(size(), i -> halfspaces.get(i).boundary().b.get(0));
     }
 
     /**
@@ -140,7 +140,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
     }
 
     /**
-     * This polytope is defined by the equation normals*x < end
+     * This polytope is defined by the equation normals dot x less than end
      *
      * @param normals a matrix of the normal vectors of the half spaces
      * @param b the right side of the defning inequality
@@ -424,8 +424,8 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
     @Override
     public Point proj(Point p) {
-        return new CoupRliecOrderedHalfSpaces<>(new RnAffineProjection(p), halfspaces).argMin();
-//        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
+//        return new CoupRliecOrderedHalfSpaces<>(new RnAffineProjection(p), halfspaces).argMin();
+        return new CoupRliec<>(new RnAffineProjection(p), halfspaces).argMin();
     }
     
     /**
@@ -468,7 +468,7 @@ public class RnPolyhedron extends Polyhedron<Point>{
         RnPolyhedron poly = new RnPolyhedron();
         IntStream.range(0, numFaces).forEach(i -> {
 
-            PointD random = PointD.uniformBoundedRand(new PointD(dim), radius);
+            Point random = Point.uniformBoundedRand(new Point(dim), radius);
 
             random = random.mult(radius * (rand.nextDouble() + 1) / random.magnitude());
 
@@ -489,8 +489,8 @@ public class RnPolyhedron extends Polyhedron<Point>{
 
         RnPolyhedron poly = new RnPolyhedron();
         IntStream.range(0, numFaces).forEach(i -> {
-            PointD random1 = PointD.uniformBoundedRand(new PointD(dim), radius);
-            PointD random2 = PointD.uniformBoundedRand(new PointD(dim), radius);
+            Point random1 = Point.uniformBoundedRand(new Point(dim), radius);
+            Point random2 = Point.uniformBoundedRand(new Point(dim), radius);
 
             poly.add(new HalfSpace<Point>(random2.mult(1 / random2.magnitude()), random1.mult(radius)));
         });

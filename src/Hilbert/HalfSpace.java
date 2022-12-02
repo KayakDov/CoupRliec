@@ -33,7 +33,7 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     /**
      * The constructor
      * @param normal a vector normal to the plane
-     * @param b normal dot x \<= b
+     * @param b normal dot x = b
      */
     public HalfSpace(Vec normal, double b){
         boundry = new Plane(normal, b);
@@ -117,7 +117,7 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
    
     /**
      * the plane that makes up the boundary of this half space
-     * @returna  the plane that makes up the surface of this halfspace.
+     * @return a  the plane that makes up the surface of this halfspace.
      * This is the actual plane, so mess with it at your peril.
      */
     public Plane boundary(){

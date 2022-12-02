@@ -6,10 +6,9 @@ import Hilbert.AffineSpace;
 import Hilbert.HalfSpace;
 import Hilbert.LinearSpace;
 import Matricies.Matrix;
-import Matricies.ReducedRowEchelonDense;
+import Matricies.ReducedRowEchelon;
 import Matricies.Point;
-import Matricies.PointD;
-import Matricies.PointSparse;
+import Matricies.Point;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -128,18 +127,17 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
 
         if (p != null) return p;
 
-        ReducedRowEchelonDense rre = new ReducedRowEchelonDense(nullMatrix());
+        ReducedRowEchelon rre = new ReducedRowEchelon(nullMatrix());
 
         if (rre.noFreeVariable())
             return p = nullMatrix().solve(b);
 
-        Matrix append = Matrix.fromRows(
-                rre.getFreeVariables()
-                        .map(i ->  new PointD(rre.numCols, i, 1))
-                        .toArray(PointD[]::new)
+        Matrix append = Matrix.fromRows(rre.getFreeVariables()
+                        .map(i ->  new Point(rre.numCols, i, 1))
+                        .toArray(Point[]::new)
         );
 
-        Point b2 = b.concat(new PointD(append.rows()));
+        Point b2 = b.concat(new Point(append.rows()));
         try {
             return p = nullMatrix().rowConcat(append).solve(b2);
 
@@ -281,7 +279,7 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
      * @return
      */
     public static RnAffineSpace allSpace(int dim) {
-        return new RnAffineSpace(RnLinearSpace.allSpace(0), new PointSparse(dim));
+        return new RnAffineSpace(RnLinearSpace.allSpace(0), new Point(dim));
     }
 
     /**

@@ -2,9 +2,9 @@ package Convex.LinearRn;
 
 import Hilbert.LinearSpace;
 import Matricies.Matrix;
-import Matricies.MatrixDense;
+import Matricies.Matrix;
 import Matricies.Point;
-import Matricies.PointD;
+import Matricies.Point;
 import java.util.function.Function;
 
 /**
@@ -37,7 +37,7 @@ public class ProjectionFunction implements Function<Point, Point> {
         if (!A.isZero(epsilon) && A.rows() == p.dim()) pm = A.mult(A.pseudoInverse());
         else{
             if(A.asDense().rank() == A.asDense().numCols) {
-                if(p == null)p =  new PointD(nullSpaceMatrix.rows());
+                if(p == null)p =  new Point(nullSpaceMatrix.rows());
                 pm = null;
             }else throw new NoProjFuncExists(ls);
         }
@@ -57,7 +57,7 @@ public class ProjectionFunction implements Function<Point, Point> {
         }
 
         @Override
-        public PointD apply(Point t) {
+        public Point apply(Point t) {
             return t.asDense();
         }
             
