@@ -17,17 +17,28 @@ public interface StrictlyConvexFunction<Vec extends Vector<Vec>> extends Functio
      * @param A the affine space to find the arg min of this function over.
      * @return the minimum value of the function on the affine space.
      */
-    public Vec argMinAffine(AffineSpace<Vec> A);
+    public Vec argMin(AffineSpace<Vec> A);
     
     /**
      * The arg min over the entire Hilbert space.
      * @return 
      */
-    public default Vec ArgMin(){
-        return argMinAffine(AffineSpace.<Vec>allSpace());
+    public default Vec argMin(){
+        return argMin(AffineSpace.<Vec>allSpace());
     }
     
     public default double min(AffineSpace<Vec> A){
-        return apply(argMinAffine(A));
+        return apply(argMin(A));
+    }
+    
+    /**
+     * The minimum of a half space
+     * @param hs
+     * @return 
+     */
+    public default Vec argMin(HalfSpace<Vec> hs){
+        Vec hilbAMin = StrictlyConvexFunction.this.argMin();
+        if(hs.hasElement(hilbAMin)) return hilbAMin;
+        else return argMin(hs.boundry);
     }
 }

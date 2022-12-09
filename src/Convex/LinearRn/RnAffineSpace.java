@@ -1,13 +1,10 @@
 package Convex.LinearRn;
 
 import Convex.ConvexSet;
-import Convex.RnPolyhedron;
 import Hilbert.AffineSpace;
-import Hilbert.HalfSpace;
 import Hilbert.LinearSpace;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelon;
-import Matricies.Point;
 import Matricies.Point;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -282,15 +279,6 @@ public class RnAffineSpace extends AffineSpace<Point> implements ConvexSet<Point
         return new RnAffineSpace(RnLinearSpace.allSpace(0), new Point(dim));
     }
 
-    /**
-     * This affine space as an intersection of half spaces.
-     *
-     * @return
-     */
-    @Override
-    public RnPolyhedron polyhedralCone() {
-        return new RnPolyhedron(planeStream().map(pl -> new HalfSpace<Point>(pl)));
-    }
 
     /**
      * the dimension of the space containing this affine space

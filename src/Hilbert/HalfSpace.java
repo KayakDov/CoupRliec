@@ -1,5 +1,6 @@
 package Hilbert;
 
+
 import Convex.ConvexSet;
 import Matricies.Point;
 
@@ -150,12 +151,6 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     public int dim(){
         return normal().dim();
     }
-
-    @Override
-    public int hashCode() {
-        return boundry.hashCode();
-    }
-    
     
     
 }

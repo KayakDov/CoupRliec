@@ -73,13 +73,13 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
     }
 
     @Override
-    public Point argMinAffine(AffineSpace<Point> A) {
+    public Point argMin(AffineSpace<Point> A) {
         return argMinAffine(new RnAffineSpace(A));
     }
 
     @Override
     public double min(AffineSpace<Point> A) {
-        return project.d(argMinAffine(A));
+        return project.d(argMin(A));
     }
     
     

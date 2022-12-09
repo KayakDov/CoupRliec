@@ -1,222 +1,234 @@
 package Hilbert;
 
-import Convex.ASKeys.ASKey;
-import Convex.ASKeys.ASKeyPConeRI;
-import java.util.ArrayList;
+import Matricies.Point;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import tools.ArgMinContainer;
 
 /**
- * The ACone of an affine space is defined
  *
  * @author Dov Neimand
- * @param <Vec>
  */
-public class PCone<Vec extends Vector<Vec>> extends Polyhedron<Vec> {
+public class PCone<Vec extends Vector<Vec>> {
+
+    protected final List<HalfSpace<Vec>> allHalfSpaces;
+    public final PCone immediateSuperCone;
+    private PCone<Vec>[] subcones;
+    private final PCone<Vec> hilbertCone;
+    private final int[] hsIndicies;
+    private PCone<Vec>[] superCones;
 
     protected ArgMinContainer<Vec> savedArgMin;
-    protected final StrictlyConvexFunction<Vec> f;
 
+    
     /**
-     * Copy constructor
+     * The constructor for a p-cone that is the Hilbert Space
      *
-     * @param pCone
-     */
-    public PCone(PCone<Vec> pCone) {
-        super(pCone.halfspaces);
-        this.f = pCone.f;
-    }
-
-    /**
-     *
-     * @param f the function we seek to find the minimum of
-     * @param hs a list of halfspaces
-     *
-     */
-    public PCone(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> hs) {
-        super(hs);
-        this.f = f;
-    }
-
-    /**
-     *
-     * @param f the function we seek to find the minimum of
-     * @param hs a halfspace
-     */
-    public PCone(StrictlyConvexFunction<Vec> f, HalfSpace<Vec> hs) {
-        super(hs);
-        this.f = f;
-    }
-
-    /**
-     * Creates a new half space from this polyhedron's half space list list with
-     * the add-on concatenated to it.
-     *
-     * @param addOn the half space to be concatenated.
-     * @return
-     */
-    protected List<HalfSpace<Vec>> concatHSToList(HalfSpace<Vec> addOn) {
-        ArrayList<HalfSpace<Vec>> concatHSList
-                = new ArrayList(halfspaces.size() + 1);
-        concatHSList.addAll(halfspaces);
-        concatHSList.add(addOn);
-        return concatHSList;
-    }
-
-    /**
-     * Creates a new polyhedron with the additional inequality constraint.
-     *
-     * @param addOn the inequality constraint being added
-     * @return A new PCone at the intersection of these half spaces and the
-     * added one.
-     */
-    public PCone<Vec> concat(HalfSpace<Vec> addOn) {
-        return new PCone<>(f, concatHSToList(addOn));
-    }
-
-    /**
-     * Creates a new polyhedron with the additional inequality constraint.
-     *
-     * @param addOn the inequality constraint being added
-     * @return A new PCone at the intersection of these half spaces and the
-     * added one.
-     */
-    public IndexedPCone<Vec> concat(HalfSpace<Vec> addOn, int indexOfLastPCone) {
-        return new IndexedPCone<>(f, concatHSToList(addOn), indexOfLastPCone);
-    }
-
-    /**
-     * Checks to see if the optimal point over the immediate superspace PCone
-     * achieved by removing the i indexed halfspace is in this PCone.If it is
-     * then we do not meet the necessary criteria and and that optimal point is
-     * the optimal point over this PCone.
-     *
-     * @param superCone an immediate supercone of this one.
-     * @param i the halfspace to be removed.
-     * @return null if the optimal point over the immediate supercone is outside
-     * this cone, and the optimal point over the immediate supercone if it's
-     * inside this cone.
-     */
-    protected ArgMinContainer<Vec> meetsNecesary(PCone<Vec> superCone, int i) {
-
-        Vec superAConeArgMin = superCone.getSavedArgMin().argMin();
-        if (getHS(i).hasElement(superAConeArgMin))
-            return new ArgMinContainer<>(superAConeArgMin, false);
-        return null;
-
-    }
-
-    /**
-     * Retrieves the supercone from the map of cones with one less codim than
-     * the current;
-     *
-     * @param i the index of the half space that is in this cone but not the
-     * desired supercone
-     * @param superCones all of the cones with codim one less than this one, to
-     * include the desired supercone.
-     * @return a supercone like this cone, but without constraint i.
-     */
-    private PCone<Vec> superCone(int i, Map<ASKey, PCone<Vec>> superCones) {
-        return superCones.get(new ASKeyPConeRI(this, i));
-    }
-
-    protected ArgMinContainer<Vec> allSpaceArgMin() {
-        return new ArgMinContainer(f.argMinAffine(AffineSpace.<Vec>allSpace()), true);
-    }
-
-    /**
-     * Returns the minimum over this polyhedral cone and weather or not this
-     * cone meets the necessary criteria.
-     *
-     * @param superCones a set containing all the possible super cones of this
-     * one whose halfspaces are halfspaces of the greater polyhedron.
-     * @return the minimum over this cone.
-     */
-    public ArgMinContainer<Vec> min(Map<ASKey, PCone<Vec>> superCones) {
-        if (isAllSpace())
-            return savedArgMin = allSpaceArgMin();
-
-        return savedArgMin = argMin(
-                intStream().parallel()
-                        .mapToObj(i -> meetsNecesary(superCone(i, superCones), i))
-        );
-
-    }
-
-    /**
-     * The affine space that is contained in the surfaces of all the halfspaces.
-     *
-     * @return
-     */
-    protected AffineSpace<Vec> affineSpace() {
-        return new AffineSpace<>(stream().map(hs -> hs.boundary()).toArray(Plane[]::new));
-    }
-
-    /**
-     * A polhedral cone with no half spaces, this is the entire hilbert space.
-     *
-     * @param <Vec>
+     * @param halfSpaceList
      * @param f
-     * @return
+     * @param superCones
      */
-    public static <Vec extends Vector<Vec>> PCone<Vec> allSpace(StrictlyConvexFunction<Vec> f) {
-        return new PCone<>(f, new ArrayList<>(0));
+    public PCone(List<HalfSpace<Vec>> halfSpaceList) {
+        this(-1, halfSpaceList, null, null);
+    }
+    
+    /**
+     * The number of halfspaces that intersect to make this cone.
+     * @return 
+     */
+    public int codim(){
+        return hsIndicies.length;
     }
 
     /**
-     * returns a default value for index of last halfspace.
+     * The constructor.
+     *
+     * @param halfSpaceindex
+     * @param halfSpaceList
+     * @param immediateSuperCone
+     * @param hilbertCone
+     */
+    public PCone(int halfSpaceindex, List<HalfSpace<Vec>> halfSpaceList, PCone<Vec> immediateSuperCone, PCone<Vec> hilbertCone) {
+        this.allHalfSpaces = halfSpaceList;
+        this.immediateSuperCone = immediateSuperCone;
+        this.hilbertCone = hilbertCone;
+        
+        hsIndicies = immediateSuperCone != null? 
+                new int[immediateSuperCone.hsIndicies.length + 1]:
+                new int[0];
+
+        if (hsIndicies.length > 1)
+            System.arraycopy(immediateSuperCone.hsIndicies, 0,
+                    hsIndicies, 0,
+                    hsIndicies.length - 1);
+        if (hsIndicies.length > 0) hsIndicies[hsIndicies.length - 1] = halfSpaceindex;
+    }
+
+    /**
+     * gets the intersection of this cone and the halfspace with the proffered
+     * index.
+     *
+     * @param halfSpaceIndex the index of the halfspace that is to intersect
+     * this cone.
+     * @return A subcone of this cone.
+     */
+    public PCone<Vec> subCone(int halfSpaceIndex) {
+        if(subcones == null) setSubCones();
+        int lastIndex = (codim() == 0? 0:hsIndicies[codim() - 1] + 1);
+        return subCone0Ind(halfSpaceIndex - lastIndex);
+    }
+    
+    /**
+     * returns the subcone that is stored at the given index in the array of 
+     * subcones.  If there is no cone at that index, one is created and saved.
+     * @param i
+     * @return 
+     */
+    public PCone<Vec> subCone0Ind(int i){
+        if(subcones[i] != null) return subcones[i];
+        else return subcones[i] = new PCone<>(
+                        i + (codim() > 0 ? hsIndicies[codim() - 1] + 1 : 0),
+                        allHalfSpaces,
+                        this,
+                        hilbertCone == null ? this : hilbertCone);
+    }
+
+    /**
+     * Creates the array of subcones, initially empty.
+     */
+    private void setSubCones() {
+        int halfSpaceIndex = hsIndicies.length > 0? hsIndicies[hsIndicies.length - 1]: -1;
+        subcones = new PCone[allHalfSpaces.size() - halfSpaceIndex - 1];
+    }
+    
+
+    /**
+     * The immediate subcones of this cone.
      *
      * @return
      */
-    public int getIndexOfLastHS() {
-        return -1;
+    public Stream<PCone<Vec>> immediateSubCones() {
+
+        if(subcones == null) setSubCones();
+        return IntStream.range(0, subcones.length).mapToObj(i -> subCone0Ind(i));
     }
 
     /**
-     * The saved Arg Min if it exists.
+     * The superspace generated by removing the half space with the proffered
+     * index from the set of half spaces that intersect to make this cone.
+     *
+     * @param i
+     * @return
+     */
+    public PCone<Vec> immidiateSuper(int i) {
+
+        
+        PCone<Vec> superCone = hilbertCone;
+        for (int j = 0; j < codim() && superCone != null; j++)
+            if (i != j)
+                superCone = superCone.subCone(hsIndicies[j]);
+        
+        return superCone;
+    }
+
+    /**
+     * The affine space from which this cone emanates
      *
      * @return
      */
-    public ArgMinContainer<Vec> getSavedArgMin() {
-        return savedArgMin;
+    public AffineSpace<Vec> affineSpace() {
+        if (hsIndicies.length == 0) return AffineSpace.<Vec>allSpace();
+        Vec[] normals = (Vec[]) (Array.newInstance(getHS(0).normal().getClass(), codim()));
+        Point b = new Point(codim());
+
+        for (int i = 0; i < codim(); i++) {
+            HalfSpace<Vec> hs = getHS(i);
+            normals[i] = hs.normal();
+            b.data[i] = hs.boundry.b();
+        }
+        return new AffineSpace(normals, b);
     }
 
     /**
+     * The argmin of this pcone.
      *
-     * @return the function to be optimized over this cones
+     * @return
      */
-    public StrictlyConvexFunction<Vec> getF() {
-        return f;
+    public ArgMinContainer<Vec> aMin(StrictlyConvexFunction<Vec> f) {
+        
+        if(savedArgMin != null) return savedArgMin;
+        
+        for (int i = 0; i < codim(); i++) {
+            ArgMinContainer<Vec> argMinSuper = immidiateSuper(i).aMin(f);
+            if(argMinSuper.isPolyhedralMin) return argMinSuper;
+            
+            if (getHS(i).hasElement(argMinSuper.argMin()))
+                return savedArgMin = new ArgMinContainer(argMinSuper.argMin(), false);
+        }
+        
+        Vec aMin = f.argMin(affineSpace());
+        
+        return savedArgMin = new ArgMinContainer(aMin, allHalfSpaces.parallelStream().allMatch(hs -> hs.hasElement(aMin)));
+        
+        
     }
 
     /**
-     * This methods checks to see if any of the argmin containers disqualify
-     * this PCone.If none do, then it calculates the optimal point over this
-     * affine space.
-     *
-     * @param meetsNecesary a stream of argMin containers of immediate
-     * supercones. Elements of the stream should be null if they don't meet the
-     * necessary conditions, and have values if they do.
-     * @return the arg min over this P-cone
+     * gets the half space with the given index in the cones list of halfspaces.
+     * @param i the index in the list of halfspaces that intersect to make this cone.
+     * @return 
      */
-    protected ArgMinContainer argMin(Stream<ArgMinContainer> meetsNecesary) {
-
-        return meetsNecesary.filter(obj -> obj != null)
-                .findAny()
-                .orElse(new ArgMinContainer<>(f.argMinAffine(affineSpace()), true));
-
+    public HalfSpace<Vec> getHS(int i) {
+        return allHalfSpaces.get(hsIndicies[i]);
     }
-
+    
     /**
-     * an integer for each half space
-     *
-     * @return a parallel stream of integers, one for each half space.
+     * 
+     * @param i the index of  half space in the list of halfspaces that intersect
+     * to make this cone.
+     * @return The index of the same half space in the list of all halfspaces
+     * of the polyhedron.
      */
-    protected IntStream intStream() {
-        return IntStream.range(0, halfspaces.size());
+    public int halfSpaceInd(int i){
+        return hsIndicies[i];
+    }
+    
+
+    @Override
+    public String toString() {
+        return IntStream.range(0, codim()).mapToObj(i -> getHS(i)).toList().toString();
+    }
+    
+    /**
+     * Does this cone have a saved argMin
+     * @return 
+     */
+    public boolean hasArgMin() {
+        return savedArgMin != null;
     }
 
+    
+    /**
+     * Saves the immediated supercones of this cone for faster access.
+     */
+    public void saveSuperCones(){
+        if(superCones == null) superCones = (PCone<Vec>[]) (Array.newInstance(getClass(), codim()));
+        Arrays.parallelSetAll(superCones, i -> {
+            if(superCones[i] == null) return immidiateSuper(i);
+            return superCones[i];
+        });
+    }
+    
+    /**
+     * Have the supercones of this cone found their argmins.
+     * @return true if they have, false otherwise.
+     */
+    public boolean isReady(){
+        saveSuperCones();
+        return Arrays.stream(superCones).allMatch(cone -> cone != null && cone.hasArgMin());
+    }
+    
 }

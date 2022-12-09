@@ -1,6 +1,5 @@
 package Hilbert;
 
-import Convex.ASKeys.ASKey;
 import Convex.ConvexSet;
 import Matricies.Point;
 import Matricies.Point;
@@ -71,10 +70,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      * @return returns this
      */
     public AffineSpace<Vec> setP(Vec onSpace) {
-        if (!linearSpace.isAllSpace() && b == null) {
-            b = new Point(linearSpace.normals().length, i -> linearSpace.normals()[i].ip(onSpace));
-            setHashCode();
-        } else hashCode = 0;
         p = onSpace;
         return this;
     }
@@ -133,7 +128,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
             b = new Point(planes.length, i -> planes[i].b.get(0));
             linearSpace = new LinearSpace(normals);
         }
-        setHashCode();
     }
 
     /**
@@ -258,17 +252,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
                 .mapToObj(i -> new Plane<Vec>(linearSpace.normals()[i], b.get(i)));
     }
 
-    /**
-     * This affine space as an intersection of half spaces.
-     *
-     * @return
-     */
-    public Polyhedron polyhedralCone() {
-
-        return new Polyhedron(
-                planeStream().map(p -> new HalfSpace<Vec>(p))
-        );
-    }
 
     /**
      * Will return a plane for which this affine space is a subset. If this
@@ -280,12 +263,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
      */
     public Plane subsetOfPlane(int i) {
         return new Plane(linearSpace.normals()[i], b.get(i));
-    }
-
-    @Override
-    public int hashCode() {
-        if (!hashCodeIsSet) setHashCode();
-        return hashCode;
     }
 
     @Override
@@ -307,26 +284,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
 
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
 
-    }
-
-    /**
-     * The hash value for this function.
-     */
-    private int hashCode;
-
-    /**
-     * Is the hashcode set?
-     */
-    public boolean hashCodeIsSet = false;
-
-    /**
-     * Sets the hashcode.
-     */
-    protected void setHashCode() {
-        if(isAllSpace()) hashCode = 0;
-        else hashCode = ASKey.hashCodeGenerator(linearSpace.normals, b);
-        hashCodeIsSet = true;
-        
     }
 
 //    /**

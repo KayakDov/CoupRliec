@@ -1,6 +1,6 @@
 package Matricies;
 
-import tools.Pair1T;
+import tools.Pair;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
@@ -120,11 +120,11 @@ public class Matrix extends DMatrixRMaj {
      * @param m
      * @return 
      */
-    public static Stream<Pair1T<Integer>> z2Stream(int n, int m){
+    public static Stream<Pair<Integer>> z2Stream(int n, int m){
         return IntStream.range(0, n)
-                .boxed().flatMap( i ->
+                .boxed().flatMap(i ->
                         IntStream.range(0, m)
-                                .mapToObj(j -> new Pair1T<Integer>(i, j)));
+                                .mapToObj(j -> new Pair<Integer>(i, j)));
     }
 
     /**
@@ -297,13 +297,13 @@ public class Matrix extends DMatrixRMaj {
     public interface Z2ToR extends BiFunction<Integer, Integer, Double> {
 
         
-        public default Double apply(Pair1T<Integer> pair) {
+        public default Double apply(Pair<Integer> pair) {
             return apply(pair.l, pair.r);
         }
         
     }
     public interface Z2Predicate extends BiPredicate<Integer, Integer>{
-        public default boolean test(Pair1T<Integer> pair){
+        public default boolean test(Pair<Integer> pair){
             return test(pair.l, pair.r);
         }
     }
@@ -370,13 +370,13 @@ public class Matrix extends DMatrixRMaj {
      * @return
      */
     
-    public Pair1T<Matrix> QRDecomposition() {
+    public Pair<Matrix> QRDecomposition() {
         org.ejml.interfaces.decomposition.QRDecomposition<DMatrixRMaj> qrd
                 = DecompositionFactory_DDRM.qr();
 
         qrd.decompose(this);
 
-        return new Pair1T<>(new Matrix(qrd.getQ(null, true)), new Matrix(qrd.getR(null, true)));
+        return new Pair<>(new Matrix(qrd.getQ(null, true)), new Matrix(qrd.getR(null, true)));
     }
 
     /**

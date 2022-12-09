@@ -11,17 +11,21 @@ import Hilbert.Vector;
  * @author Dov Neimand
  * @param <Vec>
  */
-public class ArgMinContainer<Vec extends Vector<Vec>> extends Pair<Vec, Boolean> {
+public class ArgMinContainer<Vec extends Vector<Vec>> {
+    
+    public final Vec argMin;
+    public final boolean isPolyhedralMin;
 
     /**
      * The constructor for the pair
      *
      * @param argMin the argmin over this ACone
-     * @param meetsNecesaryCriteria weather or not this ACone meets the
+     * @param isPolyhedralMin weather or not this ACone meets the
      * necessary criteria
      */
-    public ArgMinContainer(Vec argMin, boolean meetsNecesaryCriteria) {
-        super(argMin, meetsNecesaryCriteria);
+    public ArgMinContainer(Vec argMin, boolean isPolyhedralMin) {    
+        this.argMin = argMin;
+        this.isPolyhedralMin = isPolyhedralMin;
     }
 
     /**
@@ -30,16 +34,8 @@ public class ArgMinContainer<Vec extends Vector<Vec>> extends Pair<Vec, Boolean>
      * @return
      */
     public Vec argMin() {
-        return l;
+        return argMin;
     }
 
-    /**
-     * Does this ACone meet the necessary criteria
-     *
-     * @return
-     */
-    public boolean meetsNecCrti() {
-        return r;
-    }
 
 }

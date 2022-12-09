@@ -1,10 +1,7 @@
 package Convex.LinearRn;
 
-import Convex.RnPolyhedron;
-import Hilbert.HalfSpace;
 import Hilbert.Plane;
 import Matricies.Matrix;
-import Matricies.Point;
 import Matricies.Point;
 import java.util.NoSuchElementException;
 
@@ -166,26 +163,6 @@ public class RnPlane extends Plane<Point> {
         return Math.abs(normal().dot(p) - b.get(0)) <= dim() * epsilon;
     }
 
-    /**
-     * This plane represented by the intersection of two halfspaces.
-     *
-     * @param as a plane that intersects with this one.
-     * @return a new polytope equal to this plane.
-     */
-    public RnAffineSpace intersection(RnPlane as) {
-        return new RnAffineSpace(new RnPlane[]{this, as});
-    }
-
-    /**
-     * The Polytope that is the halfspace defined by this plane.
-     * @return 
-     */
-    public RnPolyhedron asPolytope() {
-        RnPolyhedron p = new RnPolyhedron();
-        p.addFace(new HalfSpace<Point>(this));
-        p.addFace(new HalfSpace<Point>(flipNormal()));
-        return p;
-    }
 
     /**
      * returns the intersection of this plane and a line. If no such
