@@ -1,6 +1,5 @@
 package Hilbert;
 
-import Convex.ConvexSet;
 import Matricies.Point;
 import Matricies.Point;
 import java.lang.reflect.Array;
@@ -18,13 +17,13 @@ import java.util.stream.Stream;
  * @author Dov Neimand
  * @param <Vec> the type of element in the Hilbert space
  */
-public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
+public class AffineSpace<Vec extends Vector<Vec>>{
 
     /**
      * The linear space underlying the affine space. If the affine space is Ax =
      * b then this linear space is Ax = 0.
      */
-    protected LinearSpace<Vec> linearSpace;
+    protected final LinearSpace<Vec> linearSpace;
 
     /**
      * The vector that has Ax=b.
@@ -128,6 +127,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
             b = new Point(planes.length, i -> planes[i].b.get(0));
             linearSpace = new LinearSpace(normals);
         }
+        else linearSpace = LinearSpace.allSpace();
     }
 
     /**
@@ -143,13 +143,11 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         )));
 
     }
-
-    @Override
+    
     public boolean hasElement(Vec x) {
         return hasElement(x, tolerance);
     }
-
-    @Override
+    
     public boolean hasElement(Vec x, double tolerance) {
 
         for (int i = 0; i < linearSpace.normals.length; i++)
@@ -225,7 +223,7 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
     private long subSpaceDim = -2;
 
     private AffineSpace() {
-
+        linearSpace = LinearSpace.allSpace();
     }
 
     /**
@@ -313,12 +311,6 @@ public class AffineSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec> {
         for (int i = 0; i < b.dim(); i++)
             planes.add(new Plane(linearSpace.normals[i], b.get(i)));
         return planes;
-    }
-
-    @Override
-    public Vec proj(Vec x) {
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**

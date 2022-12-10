@@ -11,7 +11,7 @@ import java.util.function.Function;
  * A projection function for an affine space.
  * @author dov
  */
-public class ProjectionFunction implements Function<Point, Point> {
+public class ProjectPoint implements Function<Point, Point> {
 
     /**
      * The matrix for projecting onto the linear space.
@@ -29,7 +29,7 @@ public class ProjectionFunction implements Function<Point, Point> {
      * space is a linear space.
      * @param epsilon a small number
      */
-    public ProjectionFunction(LinearSpace ls, Point p, double epsilon) {
+    public ProjectPoint(LinearSpace ls, Point p, double epsilon) {
         
         Matrix nullSpaceMatrix = new RnLinearSpace(ls).matrix();
         Matrix A = RnLinearSpace.colSpaceMatrix(nullSpaceMatrix);
@@ -49,8 +49,8 @@ public class ProjectionFunction implements Function<Point, Point> {
      * A projection function for Rn.
      * @return 
      */
-    public static ProjectionFunction ID(){
-        class ID extends ProjectionFunction{
+    public static ProjectPoint ID(){
+        class ID extends ProjectPoint{
             
         public ID() {
             super(null, null, 0);
@@ -58,7 +58,7 @@ public class ProjectionFunction implements Function<Point, Point> {
 
         @Override
         public Point apply(Point t) {
-            return t.asDense();
+            return t;
         }
             
         }

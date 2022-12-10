@@ -1,7 +1,7 @@
 package main;
 
 
-import Convex.LinearRn.RnAffineProjection;
+import Convex.LinearRn.ProhjectOntoAffine;
 import Hilbert.HalfSpace;
 import Hilbert.Optimization.polyhedralMin;
 import Hilbert.StrictlyConvexFunction;
@@ -66,12 +66,12 @@ public class Main {
 
     public static void testSquare() {
         Point proj = new Point(6, -8);
-        System.out.println(new polyhedralMin<>(new RnAffineProjection(proj), square()).argMin());
+        System.out.println(new polyhedralMin<>(new ProhjectOntoAffine(proj), square()).argMin());
     }
 
     public static void testCube() {
         Point proj = new Point(new double[]{.5, .1, -9});
-        System.out.println(new polyhedralMin<>(new RnAffineProjection(proj), cube()));
+        System.out.println(new polyhedralMin<>(new ProhjectOntoAffine(proj), cube()));
     }
 
     /**
@@ -95,13 +95,13 @@ public class Main {
         for (int i = 0; i < numTests; i++) {
             List<HalfSpace<Point>> poly = randomNonEmpty(numFaces, 1, numDim);
             
-            StrictlyConvexFunction proj = new RnAffineProjection(Point.uniformBoundedRand(new Point(numDim), r * 10));
+            StrictlyConvexFunction proj = new ProhjectOntoAffine(Point.uniformBoundedRand(new Point(numDim), r * 10));
 
             double startTime = System.currentTimeMillis();
 
             if (printResults) System.out.println("projection is "
-                        + new polyhedralMin<>(proj, poly));
-            else new polyhedralMin<>(proj, poly);
+                        + new polyhedralMin<>(proj, poly).argMin());
+            else new polyhedralMin<>(proj, poly).argMin();
 
             double time = System.currentTimeMillis() - startTime;
 
@@ -110,7 +110,9 @@ public class Main {
         System.out.println("main.Main.tableVal()");
         System.out.println("time(numFaces, numDim) = (" + numFaces + ", "
                 + numDim + ")");
-        return avg / 1000.0;
+        
+        double miliPerSec = 1000.0;
+        return avg / miliPerSec;
     }
 
     private static String[] buildHeaders(int numCols) {
@@ -135,7 +137,7 @@ public class Main {
     public static void testProjection() {
         int numTests = 100;
 
-        int numDimChecks = 5, numFaceChecks = 10, faceIncrement = 5, dimIncrement = 1;
+        int numDimChecks = 5, numFaceChecks = 10, faceIncrement = 3, dimIncrement = 1;
 
         double table[][] = new double[numFaceChecks][numDimChecks];
 
@@ -149,9 +151,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        testProjection();
+//        testProjection();
 
-//        System.out.println(tableVal(100, 6, 30, false, false));//(6,30) -> ~.07 without "acceleration"
+        System.out.println(tableVal(100, 6, 30, false));//(6,30) -> ~.07 without "acceleration"
 //        testCube();
     }
 

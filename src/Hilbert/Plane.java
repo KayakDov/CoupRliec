@@ -90,8 +90,7 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
     public Plane<Vec> flipNormal(){
         return new Plane<>(normal().mult(-1), -b());
     }
-
-    @Override
+    
     public Vec proj(Vec x) {
         return x.dif(normal().mult((x.dif(p())).ip(normal())));
     }

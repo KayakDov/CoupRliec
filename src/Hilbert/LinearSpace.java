@@ -9,7 +9,7 @@ import java.util.stream.Stream;
  * @author Dov Neimand
  * @param <Vec> the elements of the Hilbert Space
  */
-public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Vec>{
+public class LinearSpace<Vec extends Vector<Vec>> {
     /**
      * The set of vectors normal to the planes that intersect to form this space.
      */
@@ -49,20 +49,13 @@ public class LinearSpace<Vec extends Vector<Vec>> implements Convex.ConvexSet<Ve
     
     public double tolerance = 1e-8;
     
-    @Override
     public boolean hasElement(Vec x) {
         return hasElement(x, tolerance);
     }
-
-    @Override
+    
     public boolean hasElement(Vec x, double tolerance) {
         if (normals.length == 0) return true;
         return Arrays.stream(normals).allMatch(normal -> normal.ip(x) < tolerance);
-    }
-
-    @Override
-    public Vec proj(Vec x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     public Stream<Vec> stream(){

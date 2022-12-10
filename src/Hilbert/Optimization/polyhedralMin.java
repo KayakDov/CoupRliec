@@ -142,4 +142,11 @@ public class polyhedralMin<Vec extends Vector<Vec>> {
         if (k == 0) return 1;
         return choose(n - 1, k - 1) * n / k;
     }
+
+    @Override
+    public String toString() {
+        return argMin().toString();
+    }
+    
+    
 }

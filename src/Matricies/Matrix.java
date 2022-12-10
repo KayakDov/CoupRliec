@@ -409,11 +409,11 @@ public class Matrix extends DMatrixRMaj {
     }
 
     public static Matrix fromCols(int numCols, IntFunction<Point> setCol) {
-        Point firstCol = setCol.apply(0).asDense();
+        Point firstCol = setCol.apply(0);
         int colLength = firstCol.dim();
         Matrix fromCols = new Matrix(colLength, numCols);
         fromCols.setCol(0, firstCol);
-        IntStream.range(1, numCols).forEach(i -> fromCols.setCol(i, setCol.apply(i).asDense()));
+        IntStream.range(1, numCols).forEach(i -> fromCols.setCol(i, setCol.apply(i)));
         return fromCols;
     }
 

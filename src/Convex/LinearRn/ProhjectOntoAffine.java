@@ -9,14 +9,9 @@ import Matricies.Point;
  * affine spaces or a function of points.
  * @author Dov Neimand
  */
-public class RnAffineProjection implements StrictlyConvexFunction<Point>{
+public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
 
-    /**
-     * The space that this function projects onto.  If this is set than the
-     * function can be called on different points.
-     */
-    private RnAffineSpace projectOnto;
-    
+    private ProjectPoint proj;
     /**
      * The point being projected.  If this is set, the function can be called
      * on different affine spaces.
@@ -28,7 +23,7 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
      * can be called on any number of spaces.  Apply should not be called.
      * @param project the point being projected.
      */
-    public RnAffineProjection(Point project) {
+    public ProhjectOntoAffine(Point project) {
         this.project = project;
     }
 
@@ -37,18 +32,15 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
      * function may be called on points.
      * @param projectOnto the affine space being projected onto.
      */
-    public RnAffineProjection(RnAffineSpace projectOnto) {
-        this.projectOnto = projectOnto;
+    public ProhjectOntoAffine(RnAffineSpace projectOnto) {
+        proj = new ProjectPoint(projectOnto.RnLinearSpace(), projectOnto.p(), tolerance);
     }
     
     
-    public Point argMinAffine(RnAffineSpace A) {
-        try{
-        if(project != null) return A.proj(project);
-        } catch(ProjectionFunction.NoProjFuncExists ex){
-            return null;
-        }
-        throw new RuntimeException("No point to be projected has been set.");
+    public Point argMinAffine(RnAffineSpace affineSpace) {
+        if(affineSpace.isAllSpace()) return project;
+        return new ProjectPoint(affineSpace.linearSpace(), affineSpace.p(), tolerance)
+                    .apply(project);
     }
 
     /**
@@ -58,9 +50,15 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
      */
     @Override
     public Double apply(Point t) {
-        if(projectOnto != null) return projectOnto.d(t);
+        if(this.proj != null) return proj.apply(t).d(t);
         return Double.valueOf(0);
     }
+    
+    /**
+     * A small number
+     */
+    public double tolerance = 1e-8;
+
     
     /**
      * The projection onto the saved affine space
@@ -68,7 +66,10 @@ public class RnAffineProjection implements StrictlyConvexFunction<Point>{
      * @return the nearest point in the affine space to the point projected.
      */
     public Point argMinAffine(Point y) {
-        if(projectOnto != null) return projectOnto.proj(y);
+        if(proj != null) {
+            return proj.apply(y);
+            
+        }
         throw new RuntimeException("No affine space to project onto has been set.");
     }
 

@@ -1,24 +1,19 @@
 package Convex.LinearRn;
 
-import Convex.ConvexSet;
 import Hilbert.LinearSpace;
-import Matricies.Matrix;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelon;
 import Matricies.Point;
-import Matricies.Point;
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
-import java.util.stream.IntStream;
 
 /**
  * An object that describes a linear/vector space
  *
  * @author Dov Neimand
  */
-public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point>  {
+public class RnLinearSpace extends LinearSpace<Point> {
 
     /**
      * Has a projection function been found for this space.
@@ -169,15 +164,15 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
     /**
      * The function that projects onto this linear space.
      */
-    public ProjectionFunction projFunc = null;
+    public ProjectPoint projFunc = null;
 
     /**
      * The function that projects onto this linear space.
      * @return 
      */
-    public ProjectionFunction getProjFunc() {
+    public ProjectPoint getProjFunc() {
         if (projFunc == null)
-            projFunc = new ProjectionFunction(this, null, tolerance);
+            projFunc = new ProjectPoint(this, null, tolerance);
 
         return projFunc;
     }
@@ -195,7 +190,7 @@ public class RnLinearSpace extends LinearSpace<Point> implements ConvexSet<Point
 
     }
 
-    @Override
+    
     public Point proj(Point p) {
         if (isAllSpace()) return p;
 

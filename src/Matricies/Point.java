@@ -1,5 +1,4 @@
 package Matricies;
-import Convex.ConvexSet;
 import Convex.LinearRn.RnPlane;
 import Hilbert.Vector;
 import java.util.Arrays;
@@ -295,14 +294,7 @@ public class Point extends Matrix implements Vector<Point>{
     public double getLast() {
         return get(dim() - 1);
     }
-
     
-
-    @Override
-    public Point asDense() {
-        return this;
-    }
-
     /**
      *
      * @return the point as an array
@@ -393,21 +385,6 @@ public class Point extends Matrix implements Vector<Point>{
     public DoubleStream stream() {
         return Arrays.stream(data);
     }
-
-    /**
-     * Is this point in a convex set
-     *
-     * @param cs the convex set
-     * @return true if the point is in the set. False otherwise.
-     */
-    public boolean isMember(ConvexSet cs) {
-        return cs.hasElement(this);
-    }
-
-    public boolean isMember(ConvexSet cs, double tolerance) {
-        return cs.hasElement(this, tolerance);
-    }
-
 
     /**
      * Is this point above the plane

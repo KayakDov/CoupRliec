@@ -1,15 +1,11 @@
 package Hilbert;
 
-
-import Convex.ConvexSet;
-import Matricies.Point;
-
 /**
  *
  * @author Dov Neimand
  * @param <Vec> The Hilbert Space
  */
-public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
+public class HalfSpace<Vec extends Vector<Vec>>{
     /**
      * The surface of the half space
      */
@@ -57,9 +53,6 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         this.boundry = new Plane<>(normal, onPlane);
     }
     
-
-    
-    @Override
     public boolean hasElement(Vec x){
         return boundry.above(x) || boundry.hasElement(x);
     }
@@ -82,8 +75,12 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
         return !boundry.hasElement(x, epsilon) && boundry.above(x);
     }
     
-    
-    @Override
+    /**
+     * Is the proffered element within an epsilon distance of this half space.
+     * @param x
+     * @param epsilon
+     * @return 
+     */
     public boolean hasElement(Vec x, double epsilon){
         return boundry.above(x) || boundry.hasElement(x, epsilon);
     }
@@ -128,9 +125,8 @@ public class HalfSpace<Vec extends Vector<Vec>> implements ConvexSet<Vec>{
     @Override
     public String toString() {
         return boundary().toString().replace("=", "<=") + " " + (name != null? name:"");
-    }    
-
-    @Override
+    }
+    
     public Vec proj(Vec x) {
         if(hasElement(x) || boundry.hasElement(x)) return x;
         return boundry.proj(x);
