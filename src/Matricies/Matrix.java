@@ -5,64 +5,27 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.DoubleFunction;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.IntToDoubleFunction;
-import java.util.function.Predicate;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseTriplet;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.SingularOps_DDRM;
-import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverDense;
 
 public class Matrix extends DMatrixRMaj {
 
-    protected double tolerance = 1e-9;
-
-    public void setEpsilon(double epsilon) {
-        this.tolerance = epsilon;
-    }
-
     /**
-     * copy the 2d vector into this matrix.
-     *
-     * @param matrix
+     * Solves the system of equations Ax=b where this matrix is A
+     * @param b the b in the aforementioned equation
+     * @return the x in the aforementioned equation.
      */
-    public Matrix(double[][] matrix) {
-        this(matrix.length, matrix[0].length, (i, j) -> matrix[i][j]);
-    }
-
-    /**
-     * Is this a square matrix
-     *
-     * @return
-     */
-    
-    public boolean isSquare() {
-        return numRows == numCols;
-    }
-
-    /**
-     * Copy constructor
-     *
-     * @param m
-     */
-    public Matrix(Matrix m) {
-        this(m.numRows, m.numCols);
-        System.arraycopy(m.data, 0, data, 0, data.length);
-    }
-
-    
     public Point solve(Point b) {
         DMatrixRMaj solve = new DMatrixRMaj(numCols, 1);
-        CommonOps_DDRM.solve(this, b.asDense(), solve);
+        CommonOps_DDRM.solve(this, b, solve);
         return new Point(solve.data);
 
     }
@@ -72,34 +35,8 @@ public class Matrix extends DMatrixRMaj {
      *
      * @return
      */
-    
     public Stream<Point> rowStream() {
         return IntStream.range(0, numRows).mapToObj(i -> row(i));
-    }
-
-    /**
-     * A stream of columns
-     *
-     * @return
-     */
-    
-    public Stream<Point> colStream() {
-        return IntStream.range(0, numCols).mapToObj(i -> col(i));
-    }
-
-    /**
-     *
-     * @param i row
-     * @param j column
-     * @return the value at M_i,j
-     */
-    @Override
-    public double get(int i, int j) {
-        return data[numCols * i + j];
-    }
-
-    public double get(int i) {
-        return data[i];
     }
 
     /**
@@ -116,15 +53,16 @@ public class Matrix extends DMatrixRMaj {
 
     /**
      * Creates a stream of integer points nxm
+     *
      * @param n
      * @param m
-     * @return 
+     * @return
      */
-    public static Stream<Pair<Integer>> z2Stream(int n, int m){
+    public static Stream<Pair<Integer>> z2Stream(int n, int m) {
         return IntStream.range(0, n)
-                .boxed().flatMap(i ->
-                        IntStream.range(0, m)
-                                .mapToObj(j -> new Pair<Integer>(i, j)));
+                .boxed().flatMap(i
+                        -> IntStream.range(0, m)
+                        .mapToObj(j -> new Pair<Integer>(i, j)));
     }
 
     /**
@@ -134,11 +72,10 @@ public class Matrix extends DMatrixRMaj {
      * @param A
      * @return
      */
-    
     public Matrix mult(Matrix A) {
 
         DMatrixRMaj mult = new DMatrixRMaj(numRows, A.cols());
-        CommonOps_DDRM.mult(this, A.asDense(), mult);
+        CommonOps_DDRM.mult(this, A, mult);
         return new Matrix(mult);
     }
 
@@ -148,35 +85,8 @@ public class Matrix extends DMatrixRMaj {
      * @param k the constant
      * @return
      */
-    
     public Matrix mult(double k) {
         return new Matrix(numRows, numCols).setAll(i -> data[i] * k);
-    }
-
-    /**
-     * The determinant
-     *
-     * @return
-     */
-    
-    public double det() {
-        if (numCols == 1) return data[0];
-        return CommonOps_DDRM.det(this);
-    }
-
-    /**
-     * The sum of two matrices.
-     *
-     * @param m
-     * @return
-     */
-    
-    public Matrix plus(Matrix m) {
-        Matrix mDense = m.asDense();
-        Matrix plus = new Matrix(numRows, numCols);
-        CommonOps_DDRM.add(this, mDense, plus);
-        return plus;
-
     }
 
     /**
@@ -197,8 +107,13 @@ public class Matrix extends DMatrixRMaj {
         this(n, n);
     }
 
+    /**
+     * This matrix minus another matrix
+     * @param m
+     * @return 
+     */
     public Matrix minus(Matrix m) {
-        Matrix mDense = m.asDense();
+        Matrix mDense = m;
         Matrix minus = new Matrix(numRows, numCols);
 
         CommonOps_DDRM.subtract(this, mDense, minus);
@@ -223,34 +138,32 @@ public class Matrix extends DMatrixRMaj {
      * @param n
      * @return the nth column
      */
-    
     public Point col(int n) {
         return new Point(numRows, i -> get(i, n));
     }
 
-    
+    /**
+     * 
+     * @param n
+     * @return the nth row
+     */
     public Point row(int n) {
         return new Point(numCols, i -> get(n, i));
     }
 
     /**
-     * sets the nth column to v
-     *
+     * Sets the column at index n to v.
      * @param n
      * @param v
-     * @return this
+     * @return 
      */
-    private Matrix setCol(int n, double[] v) {
-        return setCol(n, new Point(v));
-    }
-
     private Matrix setCol(int n, Point v) {
         IntStream.range(0, numRows).forEach(i -> set(i, n, v.get(i)));
         return this;
     }
 
     /**
-     * Sets the nth column to v
+     * Sets the nth row to v
      *
      * @param n
      * @param v
@@ -260,7 +173,12 @@ public class Matrix extends DMatrixRMaj {
         return setRow(n, v.data);
     }
 
-
+    /**
+     * Sets the ith row to x
+     * @param i
+     * @param x
+     * @return 
+     */
     private Matrix setRow(int i, double[] x) {
         System.arraycopy(x, 0, data, numCols * i, x.length);
         return this;
@@ -271,43 +189,42 @@ public class Matrix extends DMatrixRMaj {
      *
      * @return a new matrix, the transpose of this matrix
      */
-    
     public Matrix T() {
         return new Matrix(numCols, numRows, (i, j) -> get(j, i));
     }
 
     /**
-     * sets all the elements of the matrix to a scalar.
-     *
-     * @param x the value to set the elements of the matrix equal to.
-     * @return this matrix.
+     * Sets every element in this matrix as a function of the index in the
+     * underlying data array.
+     * @param f
+     * @return 
      */
-    public Matrix setAll(double x) {
-        return setAll(i -> x);
-    }
-
     protected Matrix setAll(IntToDoubleFunction f) {
         Arrays.setAll(data, i -> f.applyAsDouble(i));
         return this;
     }
 
-    protected Matrix mapToDense(DoubleFunction<Double> f) {
+    /**
+     * maps this matrix to another by mapping each element to one in the same
+     * position in the new matrix.
+     * @param f a function f : R to R
+     * @return 
+     */
+    protected Matrix map(DoubleFunction<Double> f) {
         return new Matrix(numRows, numCols, (i, j) -> f.apply(get(i, j)));
     }
+
+    /**
+     * A function from Z^2 to R
+     */
     public interface Z2ToR extends BiFunction<Integer, Integer, Double> {
 
-        
         public default Double apply(Pair<Integer> pair) {
             return apply(pair.l, pair.r);
         }
-        
+
     }
-    public interface Z2Predicate extends BiPredicate<Integer, Integer>{
-        public default boolean test(Pair<Integer> pair){
-            return test(pair.l, pair.r);
-        }
-    }
-    
+
     /**
      * sets all the elements of the matrix, in parallel, to f(i, j)
      *
@@ -333,7 +250,15 @@ public class Matrix extends DMatrixRMaj {
         super(rows, cols);
         this.data = array;
     }
-
+    
+    /**
+     * A copy constructor
+     * @param m 
+     */
+    public Matrix(DMatrixRMaj m) {
+        this(m.data, m.numRows, m.numCols);
+    }
+    
     /**
      * the identity matrix
      *
@@ -345,40 +270,7 @@ public class Matrix extends DMatrixRMaj {
         for (int i = 0; i < n; i++) id.set(i, i, 1);
         return id;
     }
-
-    /**
-     * returns a new row identical to this one, but with two rows swapped
-     *
-     * @param rowA the first row to swap
-     * @param rowB the second row to swap
-     * @return a new matrix with two rows swapped
-     */
-    public Matrix swapRows(int rowA, int rowB) {
-        Point temp = row(rowA);
-        setRow(rowA, row(rowB));
-        setRow(rowB, temp);
-        return this;
-    }
-
-    public Matrix(DMatrixRMaj m) {
-        this(m.data, m.numRows, m.numCols);
-    }
-
-    /**
-     * the PQ decomposition of this matrix. This may also be called QR?
-     *
-     * @return
-     */
     
-    public Pair<Matrix> QRDecomposition() {
-        org.ejml.interfaces.decomposition.QRDecomposition<DMatrixRMaj> qrd
-                = DecompositionFactory_DDRM.qr();
-
-        qrd.decompose(this);
-
-        return new Pair<>(new Matrix(qrd.getQ(null, true)), new Matrix(qrd.getR(null, true)));
-    }
-
     /**
      * creates a new Matrix from a set of rows
      *
@@ -392,22 +284,12 @@ public class Matrix extends DMatrixRMaj {
     }
 
     /**
-     * Returns a matrix with rows set by the passed function.
-     *
-     * @param numRows
-     * @param setRow;
-     * @return a matrix created from rows.
+     * Creates a matrix from columns generated by a mapping from the index
+     * to the column value.
+     * @param numCols the total number of columns
+     * @param setCol the mapping.
+     * @return 
      */
-    public static Matrix fromRows(int numRows, IntFunction<Point> setRow) {
-        Point firstRow = setRow.apply(0);
-        int rowLength = firstRow.dim();
-        Matrix fromRows = new Matrix(numRows, rowLength);
-        fromRows.setRow(0, firstRow);
-        for (int i = 1; i < numRows; i++)
-            fromRows.setRow(i, setRow.apply(i));
-        return fromRows;
-    }
-
     public static Matrix fromCols(int numCols, IntFunction<Point> setCol) {
         Point firstCol = setCol.apply(0);
         int colLength = firstCol.dim();
@@ -418,44 +300,21 @@ public class Matrix extends DMatrixRMaj {
     }
 
     /**
-     * creates a new Matrix from a set of cols
-     *
-     * @param cols an array of columns
-     * @return
-     */
-    public static Matrix fromCols(Point[] cols) {
-        return new Matrix(cols[0].dim(), cols.length, (i, j) -> cols[j].get(i));
-    }
-
-    public Point[] rowArray() {
-        Point[] points = new Point[numRows];
-        Arrays.parallelSetAll(points, i -> row(i));
-        return points;
-    }
-
-    /**
-     * a list of the rows of this array
-     *
-     * @return
-     */
-    
-    public List<Point> rowList() {
-        return Arrays.asList(rowArray());
-    }
-
-    /**
      * is this matrix equal to zero.
      *
      * @param epsilon
      * @return
      */
-    
     public boolean isZero(double epsilon) {
         for (int i = 0; i < data.length; i++)
             if (data[i] < -epsilon || data[i] > epsilon) return false;
         return true;
     }
 
+    /**
+     * The rank of this matrix.
+     * @return 
+     */
     public long rank() {
         if (numRows == 0 || numCols == 0) return 0;
         return SingularOps_DDRM.rank(this);
@@ -467,126 +326,66 @@ public class Matrix extends DMatrixRMaj {
      * @param rows the rows to be added
      * @return a new matrix with the rows from both of the previous matrices
      */
-    
     public Matrix rowConcat(Matrix rows) {
-
-        Matrix rowsDense = rows.asDense();
+        
         double[] rowConcatArray = Arrays.copyOf(data, data.length
                 + rows.cols() * rows.rows());
 
-        System.arraycopy(rowsDense.data, 0, rowConcatArray, data.length, rowsDense.data.length);
+        System.arraycopy(rows.data, 0, rowConcatArray, data.length, rows.data.length);
 
-        return new Matrix(rowConcatArray, this.numRows + rowsDense.numRows, numCols);
+        return new Matrix(rowConcatArray, this.numRows + rows.numRows, numCols);
     }
 
     /**
-     * Creates a new matrix whose rows are appended to this one
-     *
-     * @param row
-     * @return a new matrix with the rows from both of the previous matrices
+     * The reduced row echelon form of this matrix.
+     * @return 
      */
-    
-    public Matrix rowConcat(Point row) {
-        return rowConcat(row.T());
-    }
-
-    /**
-     * A new matrix that is concatenation of the columns in this matrix and the
-     * new columns
-     *
-     * @param cols the columns to be concatenated
-     * @return a new matrix, the concatenation of this one and the new columns.
-     */
-    
-    public Matrix colConcat(Matrix cols) {
-        Matrix colsDense = cols.asDense();
-        return Matrix.fromCols(cols.cols() + cols(), i -> i < this.numCols
-                ? col(i)
-                : colsDense.col(i - this.numCols));
-    }
-
-    
     public ReducedRowEchelon reducedRowEchelon() {
         return new ReducedRowEchelon(this);
     }
 
     /**
-     * A matrix where each column is a random point.
-     *
-     * @param numPoints the number of columns
-     * @param center the center around which the uniformly random points are
-     * created
-     * @param r the radius of the points
-     * @return a new matrix
+     * The number of rows in this matrix.
+     * @return 
      */
-    public static Matrix randomColPoints(int numPoints, Point center, double r) {
-
-        return Matrix.fromCols(numPoints, i -> Point.uniformBoundedRand(center, r));
-    }
-
-    /**
-     * A matrix where each row is a random point.
-     *
-     * @param numPoints the number of columns
-     * @param center the center around which the uniformly random points are
-     * created
-     * @param r the radius of the points
-     * @return a new matrix
-     */
-    public static Matrix randomRowPoints(int numPoints, Point center, double r) {
-        return Matrix.fromRows(numPoints, i -> Point.uniformBoundedRand(center, r));
-    }
-
-    public boolean hasFullRank() {
-        return rank() == numRows;
-    }
-
-    
     public int rows() {
         return numRows;
     }
 
-    
+    /**
+     * The number of columns in this matrix.
+     * @return 
+     */
     public int cols() {
         return numCols;
     }
 
-    
-    public Matrix asDense() {
-        return this;
-    }
-
-    
-
-    
     public boolean equals(Matrix obj) {
-        return Arrays.equals(obj.asDense().data, data);
+        return Arrays.equals(obj.data, data);
     }
 
-    
-    public int numNonZeroes() {
-        return (int) Matrix.z2Stream(numRows, numCols).filter(p -> get(p.l, p.r)
-                != 0).count();
-
-    }
-
-    
+    /**
+     * An array of the rows of this matrix.
+     * @return 
+     */
     public Point[] rowsArray() {
         return rowStream().toArray(Point[]::new);
     }
 
-    
-    public Matrix sameType() {
-        return new Matrix(numRows, numCols);
-    }
-
-    
+    /**
+     * Creates a square matrix that contains all the same elements of this matrix
+     * with the same indices, and 0's in all the other locations.
+     * @return 
+     */
     public Matrix square() {
         int size = Math.max(numRows, numCols);
-        return new Matrix(size, size, (i, j) -> i<numRows && j < numCols? get(i, j): 0);
+        return new Matrix(size, size, (i, j) -> i < numRows && j < numCols ? get(i, j) : 0);
     }
 
-    
+    /**
+     * The psuedo inverse of this matrix.
+     * @return 
+     */
     public Matrix pseudoInverse() {
         LinearSolverDense<DMatrixRMaj> pseudoInverseFinder = LinearSolverFactory_DDRM.pseudoInverse(false);
         pseudoInverseFinder.setA(this);
@@ -595,9 +394,14 @@ public class Matrix extends DMatrixRMaj {
         return new Matrix(pseudoInv);
     }
 
-    public static Matrix subMatrixFromCols(Set<Integer> cols, Matrix greater) {
+    /**
+     * Builds a sub matrix of the proffered matrix from the selected columns.
+     * @param cols the columns to be included in the submatrix.
+     * @return 
+     */
+    public Matrix subMatrixFromCols(Set<Integer> cols) {
 
-        Matrix sub = new Matrix(greater.numRows, cols.size() + 1);
+        Matrix sub = new Matrix(numRows, cols.size() + 1);
         Iterator<Integer> fromCol = cols.iterator();
 
         int toJ = 0;
@@ -608,42 +412,30 @@ public class Matrix extends DMatrixRMaj {
             fromJ = fromCol.next();
 
             for (int i = 0; i < sub.numRows; i++)
-                sub.set(i, toJ, greater.get(i, fromJ));
+                sub.set(i, toJ, get(i, fromJ));
 
         }
 
         return sub;
     }
-    
-    
+
     /**
-     * gets the row index for an index in the underlying 1-d array.
+     * maps an index in the underlying 1d array, data, to a row in this matrix.
      *
      * @param k the index in the underlying 1-d array
      * @return the index of the matching row.
      */
-    public int rowIndex(int k) {
+    private int rowIndex(int k) {
         return k / cols();
     }
-    
-    
+
     /**
-     * gets the column index for an index in the underlying 1-d array.
+     * maps an index in the underlying 1d array, data, to a column in this matrix.
      *
      * @param k the index in the underlying 1-d array
      * @return the index of the matching column.
      */
-    public int colIndex(int k) {
+    private int colIndex(int k) {
         return k % cols();
-    }
-    
-    /**
-     * Is the given index in this matrix?
-     * @param row 
-     * @param col 
-     * @return 
-     */
-    public boolean has(int row, int col){
-        return row >= 0 && col >= 0 && row <= rows() && col <= rows();
     }
 }

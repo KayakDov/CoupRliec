@@ -42,17 +42,6 @@ public interface Vector<Vec extends Vector> {
     }
     
     /**
-     * reflects this point through start center point
-     *
-     * @param center
-     * @param scale
-     * @return the new point
-     */
-    public default Vec reflectThrough(Vec center, double scale) {
-        return (Vec)center.sum((Vec)((Vec)center.dif(this)).mult(scale));
-    }
-    
-    /**
      * The norm of this vector squared
      * @return 
      */

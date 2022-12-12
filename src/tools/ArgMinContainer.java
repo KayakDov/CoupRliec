@@ -5,8 +5,8 @@ import Hilbert.Vector;
 
 
 /**
- * This class is nothing more than a pair, the argmin and weather or not the
- * necessary criteria are met.
+ * This class is a pair, the argmin and weather or not the
+ * sufficient criteria are met.
  *
  * @author Dov Neimand
  * @param <Vec>

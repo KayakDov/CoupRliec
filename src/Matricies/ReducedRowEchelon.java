@@ -8,7 +8,6 @@ import org.ejml.dense.row.CommonOps_DDRM;
 
 
 /**
- * TODO:  Remove the need for this code and use ejml instead.
  * the older version of this code
  * @author Dov Neimand
  */
@@ -22,7 +21,7 @@ public class ReducedRowEchelon extends Matrix {
      */
     public ReducedRowEchelon(Matrix m) {
         
-        super(CommonOps_DDRM.rref(m.asDense(), -1, null));
+        super(CommonOps_DDRM.rref(m, -1, null));
         
         this.freeVariables = new HashSet<>(numCols);
         
@@ -30,44 +29,62 @@ public class ReducedRowEchelon extends Matrix {
         
     }
         
-    private HashSet<Integer> freeVariables;
+    /**
+     * The free variables of this reduced row echelon form.
+     */
+    private final HashSet<Integer> freeVariables;
 
+    /**
+     * Gets the column indices of the free variables.
+     * @return 
+     */
     public HashSet<Integer> freeVariables(){
         return freeVariables;
     }
     
+    /**
+     * Sets the free variables.
+     */
     private void setFreeVariables(){
         for(int i = 0, j = 0; j < cols(); j++)
             if(i < rows() && get(i, j) != 0) i++;
             else freeVariables().add(j);
     }
     
+    /**
+     * 
+     * @return true if there are nor free variables, false otherwise.
+     */
     public  boolean noFreeVariable() {
         return freeVariables().isEmpty();
     }
 
-    public  boolean isFreeVariabls(int i) {
-        return freeVariables().contains(i);
-    }
-
+    /**
+     * The free variable indices.
+     * @return 
+     */
     public  Stream<Integer> getFreeVariables() {
         return freeVariables().stream();
     }
 
+    /**
+     * The basic variable indices.
+     * @return 
+     */
     public  Stream<Integer> getBasicVariables() {
         return IntStream.range(0, cols()).filter(i -> !freeVariables().contains(i)).mapToObj(i -> i);
     }
 
+    /**
+     * The number of free variables.
+     * @return 
+     */
     public  int numFreeVariables() {
         return freeVariables().size();
     }
 
-    public  long rank() {
+    @Override
+    public long rank() {
         return cols() - freeVariables().size();
     }
-    
-    public  boolean hasFullRank(){
-        return rows() - numFreeVariables() == cols();
-    }
-
 }

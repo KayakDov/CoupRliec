@@ -3,7 +3,6 @@ package Hilbert.Optimization;
 
 import Hilbert.HalfSpace;
 import Hilbert.StrictlyConvexFunction;
-import Hilbert.PCone;
 import Hilbert.Vector;
 import java.util.Collections;
 import java.util.List;
@@ -15,28 +14,33 @@ import java.util.List;
  * @author Dov Neimand
  * @param <Vec> the type of Hilbert space this is over
  */
-public class polyhedralMin<Vec extends Vector<Vec>> {
+public class PolyhedralMin<Vec extends Vector<Vec>> {
 
     protected final StrictlyConvexFunction<Vec> f;
-    protected final List<HalfSpace<Vec>> poly;
+    protected final List<HalfSpace<Vec>> constraints;
 
-    public polyhedralMin(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
+    /**
+     * The constructor
+     * @param f The objective function
+     * @param halfSpaces the constraints
+     */
+    public PolyhedralMin(StrictlyConvexFunction<Vec> f, List<HalfSpace<Vec>> halfSpaces) {
+        this.hilb = new PCone(halfSpaces);
         this.f = f;
-        poly = halfSpaces;
+        constraints = halfSpaces;
     }
 
     /**
      * This gives the total number of affine spaces.
      *
-     * @return
+     * @return The size of the set of all affine spaces of the polyhedron.
      */
     private int totallNumberOfAffineSpaces() {
         int tot = 0;
         for (int i = 0; i <= minRN(); i++)
-            tot += choose(poly.size(), i);
+            tot += choose(constraints.size(), i);
         return tot;
     }
-
     /**
      * The percent of affine spaces the minimum value was computed over.
      *
@@ -44,7 +48,7 @@ public class polyhedralMin<Vec extends Vector<Vec>> {
      */
     public double fracAffineSpacesChecked() {
         argMin();
-        return (double) numAffineSpacesChecked / totallNumberOfAffineSpaces();
+        return (double) hilb.numAffineSpacesComputed() / totallNumberOfAffineSpaces();
     }
 
     /**
@@ -53,7 +57,7 @@ public class polyhedralMin<Vec extends Vector<Vec>> {
      * @param coDim the set of affine spaces of codimension i
      * @return the set of affine spaces of the polyhedron of codim i + 1
      */
-    private List<PCone<Vec>> coDimPlusPlus(List<PCone<Vec>> coDim) {
+    private List<PCone<Vec>> coDimPlus1(List<PCone<Vec>> coDim) {
 
         return coDim.parallelStream()
                 .flatMap(pCone -> pCone.immediateSubCones()).toList();
@@ -68,9 +72,9 @@ public class polyhedralMin<Vec extends Vector<Vec>> {
      * @return
      */
     public int dim() {
-        if (poly.size() == 0)
+        if (constraints.isEmpty())
             throw new NullPointerException("The polyhedron is empty.");
-        return poly.get(0).normal().dim();
+        return constraints.get(0).normal().dim();
     }
 
 
@@ -101,27 +105,24 @@ public class polyhedralMin<Vec extends Vector<Vec>> {
      * @return
      */
     protected int minRN() {
-        return Math.min(poly.size(), dim());
+        return Math.min(constraints.size(), dim());
     }
 
-    /**
-     * This variable is meant to track the number of affine spaces checked when
-     * the algorithm is fun.
-     */
-    private int numAffineSpacesChecked = 0;
-
+    
+    private PCone<Vec> hilb;
+    
     /**
      * Finds the arg aMin over the polyhedron.
      *
      * @return
      */
     public Vec argMin() {
-
-        PCone<Vec> hilb = new PCone(poly);
-
+        
+        if(constraints.isEmpty()) return f.argMin();
+        
         List<PCone<Vec>> pConeCoDimI = Collections.singletonList(hilb);
 
-        for (int i = 0; i <= minRN(); pConeCoDimI = coDimPlusPlus(pConeCoDimI), i++) {
+        for (int i = 0; i <= minRN(); pConeCoDimI = coDimPlus1(pConeCoDimI), i++) {
             Vec min = posMinOnLevel(pConeCoDimI, f);
             if (min != null) return min;
 

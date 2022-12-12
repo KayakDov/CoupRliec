@@ -1,9 +1,7 @@
 package Matricies;
-import Convex.LinearRn.RnPlane;
 import Hilbert.Vector;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.DoubleStream;
 import java.util.function.DoubleFunction;
 import java.util.function.IntToDoubleFunction;
 
@@ -15,13 +13,13 @@ public class Point extends Matrix implements Vector<Point>{
 
     /**
      * constructor
-     *
+     * Note, the array passed is the array used and changes made to it will be
+     * made to the array.
      * @param x
      */
     public Point(double... x) {
         super(x.length, 1);
-        System.arraycopy(x, 0, data, 0, x.length);
-        hash = Arrays.hashCode(x);
+        data = x;
     }
 
     /**
@@ -45,49 +43,6 @@ public class Point extends Matrix implements Vector<Point>{
         data[i] = val;
     }
 
-    public static Point sparse(int dim, int numNonZeroes) {
-        Point m = new Point(dim);
-        m.data = null;
-        return m;
-    }
-
-    /**
-     * Creates an unsafe point quickly.
-     *
-     * @param x, the values of the point. Changing the array after it's passed
-     * will change the point.
-     * @return a point linked to the array
-     */
-//    public static Point fastPoint(double[] x) {
-//        Point p = new Point();
-//        p.x = x;
-//        return p;
-//    }
-    /**
-     * change the dimensions of the space this point exists in.
-     *
-     * @param d
-     */
-//    public void setDimensions(int d)w
-    /**
-     * copy constructor
-     *
-     * @param p
-     */
-    public Point(Point p) {
-        this(p.data.length);
-        System.arraycopy(p.data, 0, data, 0, p.data.length);
-        this.hash = p.hash;
-    }
-
-    private int hash;
-
-    public Point setHash() {
-        hash = Arrays.hashCode(super.data);
-        return this;
-    }
-
-
     /**
      * @see plus
      * @param p
@@ -109,7 +64,11 @@ public class Point extends Matrix implements Vector<Point>{
         return Math.sqrt(distSq(mp));
     }
 
-    
+    /**
+     * The distance squared from this point to another.
+     * @param mp
+     * @return 
+     */
     public double distSq(Point mp) {
         return minus(mp).dot(minus(mp));
     }
@@ -133,11 +92,11 @@ public class Point extends Matrix implements Vector<Point>{
     public Point dir() {
         double m = magnitude();
         if (m == 0) return new Point(dim());
-        return mapToDense(x -> x / m);
+        return map(x -> x / m);
     }
 
     @Override
-    public Point mapToDense(DoubleFunction<Double> f) {
+    public Point map(DoubleFunction<Double> f) {
         return new Point(dim(), i -> f.apply(data[i]));
     }
 
@@ -158,17 +117,6 @@ public class Point extends Matrix implements Vector<Point>{
 
     }
 
-
-    /**
-     * the dot product between this point and p
-     *
-     * @param p
-     * @return
-     */
-    public double dot(double[] p) {
-        return dot(new Point(p));
-    }
-
     /**
      * scalar multiplication
      *
@@ -177,14 +125,9 @@ public class Point extends Matrix implements Vector<Point>{
      */
     @Override
     public Point mult(double k) {
-        return mapToDense(x -> x * k);
+        return map(x -> x * k);
     }
-
-    @Override
-    public Matrix mult(Matrix matrix) {
-        return new Matrix(this).T().mult(matrix);
-    }
-
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -195,31 +138,6 @@ public class Point extends Matrix implements Vector<Point>{
                 sb.append(", ");
         }
         return sb.append(")").toString();
-    }
-
-    /**
-     * creates a point from a string formatted as follows: (1.0, 2.0, 3.0)
-     *
-     * @param fromString
-     */
-    public Point(String fromString) {
-        this((int) (fromString.chars().filter(c -> c == (int) (',')).count() + 1));
-
-        fromString = fromString.replaceAll("\\(", "")
-                .replaceAll("\\)", "")
-                .replaceAll(" ", "");
-
-        data = Arrays.stream(fromString.split(",")).mapToDouble(Double::parseDouble).toArray();
-        setHash();
-    }
-
-    /**
-     *
-     * @return this point is defined and has real values
-     */
-    
-    public boolean isReal() {
-        return stream().allMatch(y -> (!Double.isNaN(y) && Double.isFinite(y)));
     }
 
     /**
@@ -234,11 +152,9 @@ public class Point extends Matrix implements Vector<Point>{
         return equals(p);
     }
 
-
     @Override
     public int hashCode() {
-//        return Arrays.hashCode(data);
-        return hash;
+        return Arrays.hashCode(data);
     }
 
     @Override
@@ -248,19 +164,6 @@ public class Point extends Matrix implements Vector<Point>{
         if (getClass() != obj.getClass()) return false;
         final Point other = (Point) obj;
         return Arrays.equals(this.data, other.data);
-    }
-
-    /**
-     * is this point really near p?
-     *
-     * @param p the point near by
-     * @param acc the distance aloud to p
-     * @return
-     */
-    
-    public boolean equals(Point p, double acc) {
-        if (p == null) return false;
-        return d(p) < acc;
     }
 
     /**
@@ -285,28 +188,7 @@ public class Point extends Matrix implements Vector<Point>{
             return 0;
         return data[i];
     }
-
-    /**
-     * gets the value in the last dimension
-     *
-     * @return
-     */
-    public double getLast() {
-        return get(dim() - 1);
-    }
     
-    /**
-     *
-     * @return the point as an array
-     */
-    
-    public double[] array() {
-        return data;
-    }
-
-
-    
-
     public double x() {
         return get(0);
     }
@@ -330,15 +212,6 @@ public class Point extends Matrix implements Vector<Point>{
         return new Point(dim(), i -> get(i) + p.get(i));
     }
 
-    
-    public Point dot(Matrix m) {
-        if (m.rows() != dim())
-            throw new ArithmeticException("wrong number of rows in matrix to multiply by this point");
-
-        return new Point(m.cols(), i -> m.row(i).dot(this));
-    }
-
-
     /**
      * creates a one dimensional point
      *
@@ -352,60 +225,14 @@ public class Point extends Matrix implements Vector<Point>{
     public static Random rand = new Random(1);
 
     /**
-     * generates a vertex randomly distributed in a sphere of radius r
-     * around a central point.
+     * generates a vertex randomly distributed on the surface of a sphere.
      *
-     * @param center the center of the sphere the vertes is randomly generated
-     * in.
+     * @param dim the dimension of the point to be created.
      * @param r the radius of the sphere.
-     * @return a random vertex in a sphere.
+     * @return a random vertex on the surface of the sphere.
      */
-    public static Point uniformBoundedRand(Point center, double r) {
-        return center.mapToDense(t -> t + r * (2 * rand.nextDouble() - 1));
-    }
-
-    /**
-     * creates a new point with a gaussian distribution near the
-     * provided mean.
-     *
-     * @param dim the dimensions of the new point
-     * @param mean the center of the distribution
-     * @param standardDeviation the standard deviation of the distribution.
-     * @param rand the random number generator
-     * @return a new randomly distributed point.
-     */
-    public static Point gaussianRand(int dim, Point mean, Point standardDeviation, Random rand) {
-        return new Point(dim, i -> rand.nextGaussian()
-                * standardDeviation.get(i) + mean.get(i));
-    }
-
-
-
-    
-    public DoubleStream stream() {
-        return Arrays.stream(data);
-    }
-
-    /**
-     * Is this point above the plane
-     *
-     * @param plane
-     * @return
-     */
-    
-    public boolean above(RnPlane plane) {
-        return plane.below(this);
-    }
-
-    /**
-     * is this point below the plane
-     *
-     * @param plane
-     * @return
-     */
-    
-    public boolean below(RnPlane plane) {
-        return plane.above(this);
+    public static Point uniformRandSphereSurface(int dim, double r) {
+        return new Point(dim, i -> rand.nextGaussian()).dir().mult(r);
     }
 
     /**
@@ -414,13 +241,11 @@ public class Point extends Matrix implements Vector<Point>{
      * @param p the point to concatenate with this point
      * @return a new point
      */
-    
     public Point concat(Point p) {
         Point concat = new Point(dim() + p.dim());
         System.arraycopy(data, 0, concat.data, 0, dim());
-        System.arraycopy(p.asDense().data, 0, concat.data, dim(), p.dim());
-
-        return concat.setHash();
+        System.arraycopy(p.data, 0, concat.data, dim(), p.dim());
+        return concat;
     }
 
     /**
@@ -429,33 +254,19 @@ public class Point extends Matrix implements Vector<Point>{
      * @param d
      * @return
      */
-    
     public Point concat(double d) {
         return concat(Point.oneD(d));
     }
 
+    /**
+     * A constructor.  Each value is assigned as a function of its index.
+     * @param dim
+     * @param f 
+     */
     public Point(int dim, IntToDoubleFunction f){
         this(dim);
         Arrays.setAll(data, f);
     }
-//    @Override
-//    public Point setAll(IntToDoubleFunction f) {
-//        
-//        return setHash();
-//    }
-
-    /**
-     * The constructor, a 4f point
-     *
-     * @param x
-     * @param y
-     * @param z
-     * @param t
-     */
-    public Point(double x, double y, double z, double t) {
-        this(new double[]{x, y, z, t});
-    }
-
 
     @Override
     public Matrix T() {
@@ -471,6 +282,4 @@ public class Point extends Matrix implements Vector<Point>{
     public double ip(Point v) {
         return dot(v);
     }
-    
-    
 }

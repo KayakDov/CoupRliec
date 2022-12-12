@@ -2,8 +2,6 @@ package Convex.LinearRn;
 
 import Hilbert.LinearSpace;
 import Matricies.Matrix;
-import Matricies.Matrix;
-import Matricies.Point;
 import Matricies.Point;
 import java.util.function.Function;
 
@@ -36,7 +34,7 @@ public class ProjectPoint implements Function<Point, Point> {
 
         if (!A.isZero(epsilon) && A.rows() == p.dim()) pm = A.mult(A.pseudoInverse());
         else{
-            if(A.asDense().rank() == A.asDense().numCols) {
+            if(A.rank() == A.numCols) {
                 if(p == null)p =  new Point(nullSpaceMatrix.rows());
                 pm = null;
             }else throw new NoProjFuncExists(ls);

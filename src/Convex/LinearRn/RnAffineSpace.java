@@ -4,7 +4,6 @@ import Hilbert.AffineSpace;
 import Matricies.Matrix;
 import Matricies.ReducedRowEchelon;
 import Matricies.Point;
-import java.util.NoSuchElementException;
 
 /**
  * This is an affine space of finite co-dimension, represented internally as the
@@ -31,8 +30,7 @@ public class RnAffineSpace extends AffineSpace<Point> {
      * @param onSpace a point in the affine space
      */
     public RnAffineSpace(RnLinearSpace ls, Point onSpace) {
-        super(ls);
-        super.b = ls.matrix().mult(onSpace);
+        super(ls, ls.matrix().mult(onSpace));
         this.p = onSpace;
     }
 

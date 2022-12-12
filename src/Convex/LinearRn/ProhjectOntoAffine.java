@@ -16,7 +16,7 @@ public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
      * The point being projected.  If this is set, the function can be called
      * on different affine spaces.
      */
-    private Point project;
+    private Point p;
 
     /**
      * The constructor.  The point being projected is constant.  ArgMinAffine 
@@ -24,23 +24,19 @@ public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
      * @param project the point being projected.
      */
     public ProhjectOntoAffine(Point project) {
-        this.project = project;
+        this.p = project;
     }
-
+    
     /**
-     * The affine space being projected onto is set.  The methods of this
-     * function may be called on points.
-     * @param projectOnto the affine space being projected onto.
+     * The argMin over the given affine space.  This will return the point
+     * in the affine space closes the the p.
+     * @param affineSpace
+     * @return the minimal argument over the given affine space.
      */
-    public ProhjectOntoAffine(RnAffineSpace projectOnto) {
-        proj = new ProjectPoint(projectOnto.RnLinearSpace(), projectOnto.p(), tolerance);
-    }
-    
-    
-    public Point argMinAffine(RnAffineSpace affineSpace) {
-        if(affineSpace.isAllSpace()) return project;
+    public Point argMin(RnAffineSpace affineSpace) {
+        if(affineSpace.isAllSpace()) return p;
         return new ProjectPoint(affineSpace.linearSpace(), affineSpace.p(), tolerance)
-                    .apply(project);
+                    .apply(p);
     }
 
     /**
@@ -50,8 +46,8 @@ public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
      */
     @Override
     public Double apply(Point t) {
-        if(this.proj != null) return proj.apply(t).d(t);
-        return Double.valueOf(0);
+        if(this.proj != null) return p.d(t);
+        return 0.0;
     }
     
     /**
@@ -60,28 +56,13 @@ public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
     public double tolerance = 1e-8;
 
     
-    /**
-     * The projection onto the saved affine space
-     * @param y the point to be projected.
-     * @return the nearest point in the affine space to the point projected.
-     */
-    public Point argMinAffine(Point y) {
-        if(proj != null) {
-            return proj.apply(y);
-            
-        }
-        throw new RuntimeException("No affine space to project onto has been set.");
-    }
-
     @Override
     public Point argMin(AffineSpace<Point> A) {
-        return argMinAffine(new RnAffineSpace(A));
+        return argMin(new RnAffineSpace(A));
     }
 
     @Override
     public double min(AffineSpace<Point> A) {
-        return project.d(argMin(A));
+        return p.d(argMin(A));
     }
-    
-    
 }

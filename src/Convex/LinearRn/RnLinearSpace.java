@@ -15,25 +15,8 @@ import java.util.function.IntToDoubleFunction;
  */
 public class RnLinearSpace extends LinearSpace<Point> {
 
-    /**
-     * Has a projection function been found for this space.
-     *
-     * @return
-     */
-    public boolean hasProjFunction() {
-        return projFunc != null;
-    }
-
     public RnLinearSpace(LinearSpace<Point> ls) {
         super(ls.normals());
-    }
-
-    @Override
-    public int hashCode() {
-        int hashCode = 0;
-        for (int i = 0; i < normals.length; i++)
-            hashCode += normals[i].hashCode();
-        return hashCode;
     }
 
     /**
@@ -97,29 +80,12 @@ public class RnLinearSpace extends LinearSpace<Point> {
     }
 
     /**
-     * The orthogonal complement of this linear space
-     *
-     * @return a new space
-     */
-    public RnLinearSpace OrhtogonalComplement() {
-        return colSpace(matrix().T());
-    }
-
-    /**
      * The matrix used for the null space. Changing this matrix will change this
      * linear space.
      *
      * @return
      */
     protected Matrix matrix() {
-        return Matrix.fromRows(normals);
-    }
-
-    /**
-     * The matrix with Ax = 0.
-     * @return 
-     */
-    public Matrix nullSpaceMatrix() {
         return Matrix.fromRows(normals);
     }
 
@@ -147,105 +113,7 @@ public class RnLinearSpace extends LinearSpace<Point> {
 
         if (rre.noFreeVariable()) return new Point(rre.numRows);
 
-        return Matrix.subMatrixFromCols(rre.freeVariables(), IMinus);
-    }
-
-    @Override
-    public boolean hasElement(Point x) {
-        return hasElement(x, tolerance);
-    }
-
-    @Override
-    public boolean hasElement(Point x, double tolerance) {
-        if (normals.length == 0) return true;
-        return Arrays.stream(normals).allMatch(normal -> normal.dot(x) < tolerance);
-    }
-
-    /**
-     * The function that projects onto this linear space.
-     */
-    public ProjectPoint projFunc = null;
-
-    /**
-     * The function that projects onto this linear space.
-     * @return 
-     */
-    public ProjectPoint getProjFunc() {
-        if (projFunc == null)
-            projFunc = new ProjectPoint(this, null, tolerance);
-
-        return projFunc;
-    }
-
-
-    /**
-     * An exception to be thrown if this linear space can't be projected onto with
-     * the current method.
-     */
-    public class NoProjFuncExists extends RuntimeException {
-
-        public NoProjFuncExists() {
-            super("There is no projection function for this linear space.");
-        }
-
-    }
-
-    
-    public Point proj(Point p) {
-        if (isAllSpace()) return p;
-
-        return getProjFunc().apply(p);
-
-    }
-
-    /**
-     * Throws out the projection function.
-     */
-    public void clearProjFunc() {
-        projFunc = null;
-    }
-
-
-    /**
-     * The linear sum of two vector spaces = {a + b | a in this, b in ls}
-     *
-     * @param ls the other vector space
-     * @return a new vector space
-     */
-    public RnLinearSpace lineaerSum(RnLinearSpace ls) {
-        return RnLinearSpace.colSpace(colSpaceMatrix().rowConcat(ls.colSpaceMatrix()));
-    }
-
-    /**
-     * Creates a linear space equal to Rn.
-     * @param dim
-     * @return 
-     */
-    public static RnLinearSpace allSpace(int dim) {
-        return new RnLinearSpace(new Point[0]);
-    }
-
-    /**
-     * The dimension of the space.
-     *
-     * @return
-     */
-    public long subSpaceDim() {
-        return colSpaceMatrix().rank();
-
-    }
-
-    /**
-     * The intersection of this space and another.
-     *
-     * @param ls
-     * @return
-     */
-    public RnLinearSpace intersection(RnLinearSpace ls) {
-        Point[] intersection = new Point[normals.length + ls.normals.length];
-        System.arraycopy(normals, 0, intersection, 0, normals.length);
-        System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
-        return new RnLinearSpace(intersection);
+        return IMinus.subMatrixFromCols(rre.freeVariables());
     }
 
 }

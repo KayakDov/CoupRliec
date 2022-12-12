@@ -43,35 +43,18 @@ public class LinearSpace<Vec extends Vector<Vec>> {
         this.normals = normalVectors;
     }
 
+    /**
+     * Is this space the Hilbert space.
+     * @return 
+     */
     public boolean isAllSpace(){
         return normals == null || normals.length == 0;
     }
     
-    public double tolerance = 1e-8;
-    
-    public boolean hasElement(Vec x) {
-        return hasElement(x, tolerance);
-    }
-    
-    public boolean hasElement(Vec x, double tolerance) {
-        if (normals.length == 0) return true;
-        return Arrays.stream(normals).allMatch(normal -> normal.ip(x) < tolerance);
-    }
-    
-    public Stream<Vec> stream(){
-        return Arrays.stream(normals);
-    }
-    
     /**
-     * returns a linear space that is the intersection of this space and another.
-     * @param ls
-     * @return 
+     * A tolerance used to avoid numerical errors.
      */
-    public LinearSpace<Vec> intersection(LinearSpace<Vec> ls){
-        Vec[] intersection = Arrays.copyOf(normals, normals.length + ls.normals.length);
-        System.arraycopy(ls.normals, 0, intersection, normals.length, ls.normals.length);
-        return new LinearSpace<>(intersection);
-    }
+    public double tolerance = 1e-8;
     
     private LinearSpace(){
         

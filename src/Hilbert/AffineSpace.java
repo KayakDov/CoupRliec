@@ -1,13 +1,6 @@
 package Hilbert;
 
 import Matricies.Point;
-import Matricies.Point;
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * This is an affine space of finite co-dimension, represented internally as the
@@ -46,31 +39,8 @@ public class AffineSpace<Vec extends Vector<Vec>>{
      * @param b
      */
     public AffineSpace(LinearSpace<Vec> ls, Point b) {
-        this(ls);
-        this.b = b;
-    }
-
-    /**
-     * The constructor. This should be used if a point p is available and called
-     * together with setP(), if not then this will be a linear space.
-     *
-     * @param ls
-     */
-    public AffineSpace(LinearSpace<Vec> ls) {
         this.linearSpace = ls;
-    }
-
-    /**
-     * This method sets a point on the affine space.If b has a value, then it is
-     * incumbent on the caller to make sure this point is in the affine space.
-     * If b does not have a value, then this method sets b.
-     *
-     * @param onSpace a point in the affine space.
-     * @return returns this
-     */
-    public AffineSpace<Vec> setP(Vec onSpace) {
-        p = onSpace;
-        return this;
+        this.b = b;
     }
 
     /**
@@ -107,47 +77,30 @@ public class AffineSpace<Vec extends Vector<Vec>>{
         return linearSpace.normals;
     }
 
+    /**
+     * A copy constructor
+     * @param as 
+     */
     public AffineSpace(AffineSpace<Vec> as) {
         this(as.linearSpace, as.b);
     }
-
-    /**
-     * The constructor.
-     *
-     * @param planes The planes that intersect to form this affine space.
-     */
-    public AffineSpace(Plane<Vec>[] planes) {
-        if (planes.length != 0) {
-
-            Vec[] normals = (Vec[]) (Array.newInstance(
-                    planes[0].normal().getClass(),
-                    planes.length
-            ));
-            Arrays.setAll(normals, i -> planes[i].normal());
-            b = new Point(planes.length, i -> planes[i].b.get(0));
-            linearSpace = new LinearSpace(normals);
-        }
-        else linearSpace = LinearSpace.allSpace();
-    }
-
-    /**
-     * A constructor
-     *
-     * @param intersectingPlanes planes that intersect to form this affine
-     * space.
-     */
-    public AffineSpace(List<? extends Plane<Vec>> intersectingPlanes) {
-        this((Plane[]) (Array.newInstance(
-                intersectingPlanes.get(0).getClass(),
-                intersectingPlanes.size()
-        )));
-
-    }
     
+    /**
+     * Does this affine space contain the proffered element. A default tolerance 
+     * is used.
+     * @param x
+     * @return 
+     */
     public boolean hasElement(Vec x) {
         return hasElement(x, tolerance);
     }
     
+    /**
+     * Does this affine space have the proffered element.
+     * @param x
+     * @param tolerance
+     * @return 
+     */
     public boolean hasElement(Vec x, double tolerance) {
 
         for (int i = 0; i < linearSpace.normals.length; i++)
@@ -171,42 +124,6 @@ public class AffineSpace<Vec extends Vector<Vec>>{
     }
 
     /**
-     * The intersection of this affine space and the given affine space
-     *
-     * @param as another affine space
-     * @return the intersection of the two spaces.
-     */
-    public AffineSpace<Vec> intersection(AffineSpace<Vec> as) {
-        if (isAllSpace()) return as;
-        if (as.isAllSpace()) return this;
-
-        return new AffineSpace(linearSpace.intersection(as.linearSpace).normals, b.concat(as.b));
-
-    }
-
-    /**
-     * The intersections of the given affine spaces
-     *
-     * @param space
-     * @return a new affine space
-     */
-    public static <Vec extends Vector<Vec>> AffineSpace<Vec> intersection(AffineSpace<Vec>[] space) {
-        if (space.length == 0)
-            throw new RuntimeException("Empty intersection?");
-        return intersection(Arrays.stream(space));
-    }
-
-    /**
-     * The intersections of the given affine spaces
-     *
-     * @param space
-     * @return a new affine space
-     */
-    public static <Vec extends Vector<Vec>> AffineSpace<Vec> intersection(Stream<? extends AffineSpace<Vec>> space) {
-        return space.map(as -> (AffineSpace) as).reduce((a, b) -> a.intersection(b)).get();
-    }
-
-    /**
      * The underlying linear space. If Ax = b the this returns Null(A).
      *
      * @return
@@ -220,8 +137,6 @@ public class AffineSpace<Vec extends Vector<Vec>>{
         return linearSpace().toString() + "*x = " + b;//(p != null ? "\nwith point " + p : "\nb = " + b);
     }
 
-    private long subSpaceDim = -2;
-
     private AffineSpace() {
         linearSpace = LinearSpace.allSpace();
     }
@@ -230,37 +145,18 @@ public class AffineSpace<Vec extends Vector<Vec>>{
      * An affine space that is all of the space.
      *
      * @param <T> the type of vector space.
-     * @return
+     * @return The Hilbert space.
      */
     public static <T extends Vector<T>> AffineSpace<T> allSpace() {
-        return new AffineSpace<T>();
+        return new AffineSpace<>();
     }
 
+    /**
+     * Is this space the Hilbert space?
+     * @return true if it is, false otherwise.
+     */
     public boolean isAllSpace() {
         return linearSpace == null || linearSpace.isAllSpace();
-    }
-
-    /**
-     * A stream of a list of planes that intersect to form this affine space.
-     *
-     * @return
-     */
-    public Stream<Plane<Vec>> planeStream() {
-        return IntStream.range(0, b.dim())
-                .mapToObj(i -> new Plane<Vec>(linearSpace.normals()[i], b.get(i)));
-    }
-
-
-    /**
-     * Will return a plane for which this affine space is a subset. If this
-     * affine space is the solution to Ax=b then this will give the solutions to
-     * row(A,i) dot x = b_i
-     *
-     * @param i
-     * @return
-     */
-    public Plane subsetOfPlane(int i) {
-        return new Plane(linearSpace.normals()[i], b.get(i));
     }
 
     @Override
@@ -279,65 +175,7 @@ public class AffineSpace<Vec extends Vector<Vec>>{
      * @return
      */
     public boolean equals(AffineSpace obj) {
-
         return obj.linearSpace.equals(linearSpace) && obj.b.equals(b);
-
-    }
-
-//    /**
-//     * If this affine space is defined by the set of solutions to Ax=b, then
-//     * this function returns the set of A'x = b', where A' is A with one row
-//     * removed.
-//     *
-//     * @return the keys for the afformentioned affine spaces
-//     */
-//    public ASKeyRI[] immidiateSuperKeys() {
-//        int numRows = linearSpace.getNormals().length;
-//
-//        if (numRows == 1)
-//            throw new RuntimeException("oneDown may not be called on planes.");
-//
-//        ASKeyRI[] oneDownArray = new ASKeyRI[numRows];
-//        Arrays.setAll(oneDownArray, i -> new ASKeyRI(this, i));
-//        return oneDownArray;
-//    }
-    /**
-     * The planes that intersect to make this affine space
-     *
-     * @return
-     */
-    public HashSet<Plane<Vec>> intersectingPlanesSet() {
-        HashSet<Plane<Vec>> planes = new HashSet<>(b.dim());
-        for (int i = 0; i < b.dim(); i++)
-            planes.add(new Plane(linearSpace.normals[i], b.get(i)));
-        return planes;
-    }
-
-    /**
-     * Is the given row index of this affine spaces constraints equal to the
-     * given hyperplane.
-     *
-     * @param i the index of one of the constraints that make this affine space.
-     * @param p the plane that might be equal to the constraint.
-     * @return true if the constraint at the given index is equal to the
-     * hyperplane, false otherwise.
-     */
-    public boolean rowEquals(int i, Plane<Vec> p) {
-        return this.nullMatrixRows()[i].equals(p.normal()) && b.get(i) == p.b();
-    }
-
-    /**
-     * are the given constraints equal
-     *
-     * @param i the i constraint in this affine space
-     * @param j the j constraint in the given affine space
-     * @param p the given affine space
-     * @return true if the i constraint in this affine space is equal to the j
-     * constraint in the given affine space.
-     */
-    public boolean rowEquals(int i, int j, AffineSpace<Vec> p) {
-        return this.nullMatrixRows()[i].equals(p.nullMatrixRows()[j])
-                && b.get(i) == p.b.get(j);
     }
 
     /**

@@ -1,8 +1,5 @@
 package Hilbert;
 
-import Convex.LinearRn.RnAffineSpace;
-import Matricies.Point;
-import Hilbert.Vector;
 import java.util.function.Function;
 
 /**
@@ -37,7 +34,7 @@ public interface StrictlyConvexFunction<Vec extends Vector<Vec>> extends Functio
      * @return 
      */
     public default Vec argMin(HalfSpace<Vec> hs){
-        Vec hilbAMin = StrictlyConvexFunction.this.argMin();
+        Vec hilbAMin = argMin();
         if(hs.hasElement(hilbAMin)) return hilbAMin;
         else return argMin(hs.boundry);
     }
