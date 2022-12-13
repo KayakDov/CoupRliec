@@ -91,9 +91,8 @@ public class PolyhedralMin<Vec extends Vector<Vec>> {
     private Vec posMinOnLevel(List<PCone<Vec>> level, StrictlyConvexFunction<Vec> f) {
 
         return level.parallelStream()
-                .map(pCone -> pCone.aMin(f))
-                .filter(aMin -> aMin.isPolyhedralMin)
-                .map(container -> container.argMin())
+                .filter(pCone -> pCone.meetsNecAndSufCriteria(f))
+                .map(pCone -> pCone.savedArgMin)
                 .findAny()
                 .orElse(null);
     }

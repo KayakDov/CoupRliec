@@ -1,4 +1,4 @@
-package tools;
+package Testing;
 
 /**
  * A class to time methods.

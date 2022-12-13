@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import tools.ArgMinContainer;
 
 /**
  *
@@ -49,17 +48,11 @@ public class PCone<Vec extends Vector<Vec>> {
      *
      */
     private final int[] hsIndicies;
-
-    /**
-     * All the immediate supercones of this cone.
-     */
-    private PCone<Vec>[] superCones;
-
     /**
      * The arg min of this cone, which is not available by default and needs to
      * be calculated.
      */
-    protected ArgMinContainer<Vec> savedArgMin;
+    protected Vec savedArgMin;
 
     /**
      * The constructor for a p-cone that is the Hilbert Space
@@ -176,14 +169,14 @@ public class PCone<Vec extends Vector<Vec>> {
      * Has the optimal point been computed for this cones corresponding affine
      * space.
      */
-    private boolean affineSpaceComputed = false;
+    private boolean meetsNecessary = false;
 
     /**
      * Has the optimal point been computed for this cones corresponding affine
      * space.
      */
     public boolean isAffineSpaceComputed() {
-        return affineSpaceComputed;
+        return meetsNecessary;
     }
 
     /**
@@ -209,22 +202,18 @@ public class PCone<Vec extends Vector<Vec>> {
      *
      * @return
      */
-    public ArgMinContainer<Vec> aMin(StrictlyConvexFunction<Vec> f) {
-
-        if (savedArgMin != null) return savedArgMin;
-
-        for (int i = 0; i < codim(); i++) {
-            ArgMinContainer<Vec> argMinSuper = immidiateSuper(i).aMin(f);
-            if (argMinSuper.isPolyhedralMin) return argMinSuper;
-
-            if (getHS(i).hasElement(argMinSuper.argMin()))
-                return savedArgMin = new ArgMinContainer(argMinSuper.argMin(), false);
+    public Vec aMin(StrictlyConvexFunction<Vec> f) {
+        for (int i = 0; i < codim(); i++) { //Note:This line can be parrallized, but it's not worth it unless you have lots of processors.
+            Vec argMinSuper = immidiateSuper(i).savedArgMin;
+            
+            if (getHS(i).hasElement(argMinSuper))
+                return savedArgMin = argMinSuper;
         }
 
         Vec aMin = f.argMin(affineSpace());
-        affineSpaceComputed = true;
+        meetsNecessary = true;
 
-        return savedArgMin = new ArgMinContainer(aMin, allHalfSpaces.parallelStream().allMatch(hs -> hs.hasElement(aMin)));
+        return savedArgMin = aMin;
 
     }
 
@@ -258,11 +247,22 @@ public class PCone<Vec extends Vector<Vec>> {
      * @return 
      */
     public long numAffineSpacesComputed(){
-        return (affineSpaceComputed?1:0) + (immediateSubcones ==null?0:
+        return (meetsNecessary?1:0) + (immediateSubcones ==null?0:
                 Arrays.stream(immediateSubcones)
                         .filter(subCone -> subCone != null)
                         .mapToLong(subCone -> subCone.numAffineSpacesComputed())
                         .sum());
+    }
+    
+    /**
+     * Checks fist if this pcone meets the necessary criteria, then the sufficient criteria.
+     * @param f
+     * @return 
+     */
+    public boolean meetsNecAndSufCriteria(StrictlyConvexFunction<Vec> f){
+        if(savedArgMin == null) aMin(f);
+        if(!meetsNecessary) return false;
+        return allHalfSpaces.parallelStream().allMatch(hs -> hs.hasElement(savedArgMin));
     }
 
 }
