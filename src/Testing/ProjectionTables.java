@@ -48,7 +48,7 @@ public class ProjectionTables {
      * 3 would, for example, check 1, 3, 6, 9 ... random linear constraints
      * @param dimIncrement The increment of the number of dimensions.
      */
-    public ProjectionTables(int numTests, int numDimChecks, int numConstraintsChecks, int constraintIncrement, int dimIncrement) {
+    public ProjectionTables(int numTests, int numDimChecks, int dimIncrement, int numConstraintsChecks, int constraintIncrement) {
         headers = ProjectionTables.buildHeaders(numDimChecks);
         rowNames = ProjectionTables.buildRowNames(numConstraintsChecks, constraintIncrement);
         timeTable = new double[numConstraintsChecks][numDimChecks];

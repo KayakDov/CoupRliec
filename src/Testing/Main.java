@@ -55,14 +55,15 @@ public class Main {
     public static void printTables() {
         int numTests, numDimChecks, numConstraintsChecks,
                 constraintIncrement, dimIncrement;
+        final boolean PRINT_FRACTIONS = true, PRINT_TIMES = true;
 
         new ProjectionTables(
                 numTests = 100,
-                numDimChecks = 5,
+                numDimChecks = 5, 
+                dimIncrement = 1,
                 numConstraintsChecks = 10,
-                constraintIncrement = 3,
-                dimIncrement = 1
-        ).print(true, false);
+                constraintIncrement = 3
+        ).print(PRINT_TIMES, PRINT_FRACTIONS);
     }
 
     public static void main(String[] args) {
