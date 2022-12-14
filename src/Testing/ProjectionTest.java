@@ -24,7 +24,7 @@ public class ProjectionTest extends Test<Point>{
      * @return a set of random constraints.
      */
     public static List<HalfSpace<Point>> randomNonEmpty(int numConstraints, double radius, int dim) {
-        Random rand = new Random(3);
+        Random rand = Point.rand;
         return IntStream.range(0, numConstraints).mapToObj(i -> {
             Point random = Point.uniformRandSphereSurface(dim, radius);
             return new HalfSpace<>(random, random);
@@ -40,11 +40,14 @@ public class ProjectionTest extends Test<Point>{
      * @param projectionPointRadius the distance of the randomly generated point to be projected from the origin.
      */
     public ProjectionTest(int numTests, int numDim, int numConstraints, int polyhedronRadius, int projectionPointRadius) {
-        super(numTests, randomNonEmpty(numConstraints, polyhedronRadius, numDim), new ProhjectOntoAffine(Point.uniformRandSphereSurface(numDim, projectionPointRadius)));
+        super(numTests, () -> randomNonEmpty(numConstraints, polyhedronRadius, numDim), new ProhjectOntoAffine(defaultProjPoint(numDim)));
     }
     
     
-    
+    private static Point defaultProjPoint(int numDim){
+        return new Point(numDim, 0, 10);
+    }
+            
     private static final int DEFAULT_PROJ_R = 10, DEFAULT_POLY_R = 1;
     /**
      * Tests the algorithm on the projection function.

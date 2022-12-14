@@ -59,17 +59,18 @@ public class Main {
 
         new ProjectionTables(
                 numTests = 100,
-                numDimChecks = 5, 
+                numDimChecks = 5,
                 dimIncrement = 1,
                 numConstraintsChecks = 10,
-                constraintIncrement = 3
+                constraintIncrement = 5
         ).print(PRINT_TIMES, PRINT_FRACTIONS);
     }
 
     public static void main(String[] args) {
 
-        printTables();
-//        System.out.println(new ProjectionTest(1, 6, 30).getArgMins().toString());
+//        printTables();
+        for (int i = 5; i < 100; i++)
+            System.out.println("(" + i + (", " + new ProjectionTest(1000, 3, i).averageTimes()) +")");
 //        testCube();
     }
 

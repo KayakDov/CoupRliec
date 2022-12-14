@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -53,20 +54,22 @@ public class Test<Vec extends Vector<Vec>> {
      * want the fraction of affine spaces computed.
      * @return the table value
      */
-    public Test(int numTests, List<HalfSpace<Vec>> poly,  StrictlyConvexFunction<Vec> f) {
+    public Test(int numTests, Supplier<List<HalfSpace<Vec>>> poly,  StrictlyConvexFunction<Vec> f) {
         argMins = new ArrayList<>(numTests);
         times = new ArrayList<>(numTests);
         fractions = new ArrayList<>(numTests);
 
         for (int i = 0; i < numTests; i++) {
             
-            PolyhedralMin<Vec> pm = new PolyhedralMin<>(f, poly);
+            PolyhedralMin<Vec> pm = new PolyhedralMin<>(f, poly.get());
             
             double startTime = System.currentTimeMillis();
             
             Vec aMin = pm.argMin();
             
             double time = System.currentTimeMillis() - startTime;
+            
+            System.gc();
                         
             argMins.add(aMin);
             times.add((double)time / MILI_PER_SEC);
@@ -81,7 +84,7 @@ public class Test<Vec extends Vector<Vec>> {
      * @param list
      * @return 
      */
-    private double avg(List<Double> list){
+    private static double avg(List<Double> list){
         return list.stream().mapToDouble(d -> d).average().getAsDouble();
     }
     
