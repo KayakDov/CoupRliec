@@ -11,6 +11,8 @@ import java.util.function.IntToDoubleFunction;
  */
 public class Point extends Matrix implements Vector<Point>{
 
+    
+
     /**
      * constructor
      * Note, the array passed is the array used and changes made to it will be
@@ -38,9 +40,10 @@ public class Point extends Matrix implements Vector<Point>{
      * @param i the index that with a non 0 value.
      * @param val the value at the given index.
      */
-    public Point(int dim, int i, double val){
-        this(dim);
-        data[i] = val;
+    public static Point nonZeroIndexAt(int dim, int i, double val) {
+        double[] d = new double[dim];
+        d[i] = val;
+        return new Point(d);
     }
 
     /**

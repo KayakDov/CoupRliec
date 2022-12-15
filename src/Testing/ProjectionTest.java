@@ -45,7 +45,7 @@ public class ProjectionTest extends Test<Point>{
     
     
     private static Point defaultProjPoint(int numDim){
-        return new Point(numDim, 0, 10);
+        return Point.nonZeroIndexAt(numDim, 0, 10);
     }
             
     private static final int DEFAULT_PROJ_R = 10, DEFAULT_POLY_R = 1;

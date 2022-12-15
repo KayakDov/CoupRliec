@@ -45,7 +45,7 @@ public class Main {
     }
 
     public static void testCube() {
-        Point proj = new Point(new double[]{-6, .37, 12});
+        Point proj = new Point(5, .2, 5);
         System.out.println(new PolyhedralMin<>(new ProhjectOntoAffine(proj), cube()));
     }
 
@@ -69,8 +69,9 @@ public class Main {
     public static void main(String[] args) {
 
 //        printTables();
-        for (int i = 5; i < 100; i++)
+        for (int i = 5; i < 200; i++)
             System.out.println("(" + i + (", " + new ProjectionTest(1000, 3, i).averageTimes()) +")");
+        
 //        testCube();
     }
 

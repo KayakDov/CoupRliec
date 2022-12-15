@@ -71,7 +71,7 @@ public class RnLinearSpace extends LinearSpace<Point> {
                 IntToDoubleFunction setPoint = j -> rcef.get(j + basis.cols(), i);
                 return new Point(rows, setPoint);
             }
-            else return new Point(rows, i - basis.cols(), -1);
+            else return Point.nonZeroIndexAt(rows, i - basis.cols(), -1);
 
         };
         Matrix nullMatrix = Matrix.fromCols(cols, setCol);
