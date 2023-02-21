@@ -53,16 +53,26 @@ public class Plane<Vec extends Vector<Vec>> extends AffineSpace<Vec>{
      * @return 
      */
     public boolean above(Vec v){
-        return normal().ip(v) < b();
+        return dist(v) > 0;
+    }
+    
+    /**
+     * The signed distance of a vector from this plane.  The distance will be
+     * negative if v is below the plane, and positive otherwise.
+     * @param v a vector in H
+     * @return the signed distance of v from this plane.
+     */
+    public double dist(Vec v){
+        return normal().ip(v) - b();
     }
       
     /**
      * Is this plane above or does it contain the given point.
-     * @param x
+     * @param v
      * @return 
      */
-    public boolean aboveOrContains(Vec x) {
-        return normal().ip(x) <= b() + tolerance;
+    public boolean aboveOrContains(Vec v) {
+        return dist(v) <= tolerance;
     }
     
     /**

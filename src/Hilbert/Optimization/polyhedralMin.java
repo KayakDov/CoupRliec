@@ -59,7 +59,7 @@ public class PolyhedralMin<Vec extends Vector<Vec>> {
      */
     private List<PCone<Vec>> coDimPlus1(List<PCone<Vec>> coDim) {
 
-        return coDim.parallelStream()
+        return coDim.stream()//.parallelStream()
                 .flatMap(pCone -> pCone.immediateSubCones()).toList();
 
     }
@@ -90,7 +90,7 @@ public class PolyhedralMin<Vec extends Vector<Vec>> {
      */
     private Vec posMinOnLevel(List<PCone<Vec>> level, StrictlyConvexFunction<Vec> f) {
 
-        return level.parallelStream()
+        return level.stream()//.parallelStream()
                 .filter(pCone -> pCone.meetsNecAndSufCriteria(f))
                 .map(pCone -> pCone.savedArgMin)
                 .findAny()

@@ -3,16 +3,9 @@ package Testing;
 import Convex.LinearRn.ProhjectOntoAffine;
 import Hilbert.HalfSpace;
 import Hilbert.Optimization.PolyhedralMin;
-import Hilbert.StrictlyConvexFunction;
 import Matricies.Point;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.stream.IntStream;
-import tools.Pair;
 
 public class Main {
 
@@ -45,8 +38,10 @@ public class Main {
     }
 
     public static void testCube() {
-        Point proj = new Point(5, .2, 5);
-        System.out.println(new PolyhedralMin<>(new ProhjectOntoAffine(proj), cube()));
+        Point proj = new Point(-5, .2, 5);
+        System.out.println(
+                new PolyhedralMin<>(new ProhjectOntoAffine(proj), cube())
+        );
     }
 
     /**
@@ -69,10 +64,11 @@ public class Main {
     public static void main(String[] args) {
 
 //        printTables();
-        for (int i = 5; i < 200; i++)
-            System.out.println("(" + i + (", " + new ProjectionTest(1000, 3, i).averageTimes()) +")");
         
-//        testCube();
+//        for (int i = 5; i < 200; i++)
+//            System.out.println("(" + i + (", " + new ProjectionTest(1000, 3, i).averageTimes()) +")");
+        
+        testCube();
     }
 
 }
