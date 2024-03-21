@@ -1,6 +1,6 @@
 package Testing;
 
-import Convex.LinearRn.ProhjectOntoAffine;
+import Convex.LinearRn.ProjectOntoAffine;
 import Hilbert.HalfSpace;
 import Hilbert.Optimization.PolyhedralMin;
 import Hilbert.StrictlyConvexFunction;

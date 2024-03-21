@@ -111,7 +111,7 @@ public class RnLinearSpace extends LinearSpace<Point> {
 
         Matrix IMinus = Matrix.identity(Math.max(rre.numRows, rre.numCols)).minus(rre.square());
 
-        if (rre.noFreeVariable()) return new Point(rre.numRows);
+        if (rre.noFreeVariables()) return new Point(rre.numRows);
 
         return IMinus.subMatrixFromCols(rre.freeVariables());
     }

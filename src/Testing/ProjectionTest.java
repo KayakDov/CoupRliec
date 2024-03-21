@@ -1,7 +1,7 @@
 
 package Testing;
 
-import Convex.LinearRn.ProhjectOntoAffine;
+import Convex.LinearRn.ProjectOntoAffine;
 import Hilbert.HalfSpace;
 import Matricies.Point;
 import java.util.List;
@@ -40,7 +40,7 @@ public class ProjectionTest extends Test<Point>{
      * @param projectionPointRadius the distance of the randomly generated point to be projected from the origin.
      */
     public ProjectionTest(int numTests, int numDim, int numConstraints, int polyhedronRadius, int projectionPointRadius) {
-        super(numTests, () -> randomNonEmpty(numConstraints, polyhedronRadius, numDim), new ProhjectOntoAffine(defaultProjPoint(numDim)));
+        super(numTests, () -> randomNonEmpty(numConstraints, polyhedronRadius, numDim), new ProjectOntoAffine(defaultProjPoint(numDim)));
     }
     
     

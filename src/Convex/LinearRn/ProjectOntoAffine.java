@@ -9,7 +9,7 @@ import Matricies.Point;
  * affine spaces or a function of points.
  * @author Dov Neimand
  */
-public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
+public class ProjectOntoAffine implements StrictlyConvexFunction<Point>{
 
     private ProjectPoint proj;
     /**
@@ -23,7 +23,7 @@ public class ProhjectOntoAffine implements StrictlyConvexFunction<Point>{
      * can be called on any number of spaces.  Apply should not be called.
      * @param project the point being projected.
      */
-    public ProhjectOntoAffine(Point project) {
+    public ProjectOntoAffine(Point project) {
         this.p = project;
     }
     

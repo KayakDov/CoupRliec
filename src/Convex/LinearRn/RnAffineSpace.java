@@ -47,7 +47,8 @@ public class RnAffineSpace extends AffineSpace<Point> {
      * A point in the affine space. If on has not previously been found or set,
      * then it is computed.
      *
-     * @return
+     * @return A point in the affine space. If on has not previously been found or set,
+     * then it is computed.
      */
     @Override
     public Point p() {
@@ -56,7 +57,7 @@ public class RnAffineSpace extends AffineSpace<Point> {
 
         ReducedRowEchelon rre = new ReducedRowEchelon(nullMatrix());
 
-        if (rre.noFreeVariable())
+        if (rre.noFreeVariables())
             return p = nullMatrix().solve(b);
 
         Matrix append = Matrix.fromRows(rre.getFreeVariables()
@@ -86,9 +87,9 @@ public class RnAffineSpace extends AffineSpace<Point> {
     }
 
     /**
-     * the dimension of the space containing this affine space
+     * The dimension of the space containing this affine space.
      *
-     * @return
+     * @return The dimension of the space containing this affine space.
      */
     public int dim() {
         if (nullMatrixRows().length == 0 && p != null) return p.dim();

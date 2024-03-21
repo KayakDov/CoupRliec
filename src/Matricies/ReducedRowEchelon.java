@@ -55,7 +55,7 @@ public class ReducedRowEchelon extends Matrix {
      * 
      * @return true if there are nor free variables, false otherwise.
      */
-    public  boolean noFreeVariable() {
+    public  boolean noFreeVariables() {
         return freeVariables().isEmpty();
     }
 

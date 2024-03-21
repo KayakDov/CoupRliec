@@ -1,7 +1,6 @@
 package Hilbert;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * The class represents a linear subspace of a Hilbert Space, where this subspace

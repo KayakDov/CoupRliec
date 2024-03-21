@@ -1,6 +1,6 @@
 package Testing;
 
-import Convex.LinearRn.ProhjectOntoAffine;
+import Convex.LinearRn.ProjectOntoAffine;
 import Hilbert.HalfSpace;
 import Hilbert.Optimization.PolyhedralMin;
 import Matricies.Point;
@@ -34,13 +34,12 @@ public class Main {
 
     public static void testSquare() {
         Point proj = new Point(6, -8);
-        System.out.println(new PolyhedralMin<>(new ProhjectOntoAffine(proj), square()).argMin());
+        System.out.println(new PolyhedralMin<>(new ProjectOntoAffine(proj), square()).argMin());
     }
 
     public static void testCube() {
         Point proj = new Point(-5, .2, 5);
-        System.out.println(
-                new PolyhedralMin<>(new ProhjectOntoAffine(proj), cube())
+        System.out.println(new PolyhedralMin<>(new ProjectOntoAffine(proj), cube())
         );
     }
 
